@@ -1,5 +1,6 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Collider))]
@@ -20,6 +21,12 @@ public class WorkItem : MonoBehaviour
 
     [Header("Colors")]
     public Color brokenColor = new Color(1f, 0.2f, 0.2f, 1f);
+
+    [Header("Uduino / 外部输出（可选）")]
+    [Tooltip("故障发生时触发，可连到 Uduino 输出等")]
+    public UnityEvent OnBroken;
+    [Tooltip("修好时触发，可连到 Uduino 输出等")]
+    public UnityEvent OnFixed;
 
     [Header("Debug")]
     public bool debugLogs = false;
@@ -156,6 +163,7 @@ public class WorkItem : MonoBehaviour
         IsBroken = true;
 
         ApplyTintOverride(brokenColor);
+        OnBroken?.Invoke();
 
         if (debugLogs)
             Debug.Log($"[WorkItem] {name} BROKE -> tint applied");
@@ -167,6 +175,7 @@ public class WorkItem : MonoBehaviour
         IsBroken = false;
 
         ClearTintOverride();
+        OnFixed?.Invoke();
 
         if (debugLogs)
             Debug.Log($"[WorkItem] {name} FIXED -> tint cleared");

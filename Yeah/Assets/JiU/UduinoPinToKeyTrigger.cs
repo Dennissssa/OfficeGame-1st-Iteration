@@ -45,15 +45,34 @@ namespace JiU
         [Tooltip("触发后多少秒内不再重复触发（避免同一帧或短时间重复）")]
         public float cooldownSeconds = 0.3f;
 
+        [Header("多引脚时（错帧读取）")]
+        [Tooltip("同一场景有多个 UduinoPinToKeyTrigger 时，用读槽错开读取，避免串口冲突。0=第一个，1=第二个… 留 0 也可自动分配")]
+        public int readSlotIndex = 0;
+
+        [Header("Debug（运行游戏时排查用）")]
+        [Tooltip("勾选后在 Console 输出：当前读值、是否满足条件、是否触发、冷却/槽位等")]
+        public bool debugLogs = false;
+        [Tooltip("每多少帧打印一次当前读值，避免刷屏（仅当 debugLogs 开启时生效）")]
+        public int debugLogIntervalFrames = 30;
+
         [Header("可选：自定义回调")]
         [Tooltip("达到阈值时额外调用，可不填")]
         public UnityEvent onTriggered;
 
         private float _lastTriggerTime = -999f;
         private bool _lastConditionMet;
+        private int _lastReadValue = -1;
+        private static readonly System.Collections.Generic.List<UduinoPinToKeyTrigger> s_allTriggers = new System.Collections.Generic.List<UduinoPinToKeyTrigger>();
+        private float _lastDebugLogTime;
+        private float _lastInvalidReadLogTime;
+        private bool _hasLoggedStartup;
 
         void Start()
         {
+            // 无论是否勾选 Debug，都打一条启动日志，方便确认脚本在运行
+            Debug.Log($"[JiU.UduinoPinToKeyTrigger] 已启动: {gameObject.name} Pin={pinNumber} ({ (useAnalogRead ? "模拟" : "数字") }) " +
+                $"阈值={thresholdValue}。勾选 Inspector 里「Debug Logs」可看详细读值与触发。");
+
             if (UduinoManager.Instance == null)
             {
                 Debug.LogWarning("[JiU.UduinoPinToKeyTrigger] 场景中未找到 UduinoManager，请确保已添加 Uduino 并连接设备。");
@@ -64,16 +83,78 @@ namespace JiU
                 UduinoManager.Instance.pinMode(pinNumber, PinMode.Input);
             else
                 UduinoManager.Instance.pinMode(pinNumber, PinMode.Input_pullup);
+
+            if (debugLogs)
+            {
+                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} ({ (useAnalogRead ? "模拟" : "数字") }) " +
+                    $"阈值={thresholdValue} 模式={triggerMode} 按键={triggerKeyCode} 冷却={cooldownSeconds}s");
+            }
+        }
+
+        void OnEnable()
+        {
+            lock (s_allTriggers)
+            {
+                if (!s_allTriggers.Contains(this))
+                    s_allTriggers.Add(this);
+            }
+        }
+
+        void OnDisable()
+        {
+            lock (s_allTriggers)
+            {
+                s_allTriggers.Remove(this);
+            }
         }
 
         void Update()
         {
             if (UduinoManager.Instance == null || !UduinoManager.Instance.IsRunning())
+            {
+                // 未连接时每隔约 1 秒打一次，不依赖 Debug Logs 勾选，方便发现「运行游戏时没连上」
+                if (Time.time - _lastDebugLogTime > 1f)
+                {
+                    _lastDebugLogTime = Time.time;
+                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} Uduino 未运行或未连接，跳过读取。请确认已点 Play 且设备已连接。");
+                }
                 return;
+            }
 
-            int value = useAnalogRead
-                ? UduinoManager.Instance.analogRead(pinNumber)
-                : UduinoManager.Instance.digitalRead(pinNumber);
+            // 首次进入「已连接」状态时打一条，确认脚本在跑且 Uduino 已就绪
+            if (!_hasLoggedStartup)
+            {
+                _hasLoggedStartup = true;
+                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} Uduino 已连接，开始按帧读取。勾选 Debug Logs 可看具体 value。");
+            }
+
+            int total = s_allTriggers.Count;
+            int myIndex = s_allTriggers.IndexOf(this);
+            int slot = (readSlotIndex >= 0 && readSlotIndex < total) ? readSlotIndex : myIndex;
+            bool doReadThisFrame = (total <= 1) || (slot >= 0 && (Time.frameCount % total) == slot);
+
+            if (debugLogs && total > 1 && doReadThisFrame && Time.frameCount % (total * 60) == slot)
+                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 当前槽位 slot={slot}/{total}，本帧轮到我读");
+
+            int value;
+            if (doReadThisFrame)
+            {
+                value = useAnalogRead
+                    ? UduinoManager.Instance.analogRead(pinNumber)
+                    : UduinoManager.Instance.digitalRead(pinNumber);
+                _lastReadValue = value;
+                if (debugLogs && debugLogIntervalFrames > 0 && (Time.frameCount % debugLogIntervalFrames == 0))
+                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 读到 value={value} (阈值={thresholdValue})");
+                if (debugLogs && value == -1 && Time.time - _lastInvalidReadLogTime > 2f)
+                {
+                    _lastInvalidReadLogTime = Time.time;
+                    Debug.LogWarning($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 读回 -1，可能未就绪或串口无响应");
+                }
+            }
+            else
+            {
+                value = _lastReadValue >= 0 ? _lastReadValue : 0;
+            }
 
             bool conditionMet = CheckCondition(value);
 
@@ -82,9 +163,13 @@ namespace JiU
                 if (Time.time - _lastTriggerTime >= cooldownSeconds)
                 {
                     _lastTriggerTime = Time.time;
+                    if (debugLogs)
+                        Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 触发! value={value} -> 模拟按键 {triggerKeyCode}");
                     TriggerKey();
                     onTriggered?.Invoke();
                 }
+                else if (debugLogs)
+                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 条件已满足但冷却中，跳过 (还需 {cooldownSeconds - (Time.time - _lastTriggerTime):F2}s)");
             }
 
             _lastConditionMet = conditionMet;
