@@ -1,6 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
@@ -27,6 +28,17 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     public UIManager ui;
     public ScreenVignetteTint screenTint;
+
+    [Header("Boss 事件（可选）")]
+    [Tooltip("Boss 预警开始时触发（可用来播预警音效）")]
+    public UnityEvent OnBossWarningStarted;
+    [Tooltip("Boss 实际到达时触发（可用来关预警音、换 UI 图）")]
+    public UnityEvent OnBossArrived;
+    [Tooltip("Boss 离开时触发（可用来把 UI 图换回）")]
+    public UnityEvent OnBossLeft;
+
+    [Tooltip("因 Boss 检查导致游戏失败时触发（可用来播 Boss 生气音效）")]
+    public UnityEvent OnGameOverBossCaused;
 
     [Header("Optional")]
     public bool autoFindItemsOnStart = true;
@@ -138,6 +150,7 @@ public class GameManager : MonoBehaviour
             // 预警阶段：倒计时 + 屏幕逐渐变红
             BossWarning = true;
             BossWarningTimeLeft = bossWarningDuration;
+            OnBossWarningStarted?.Invoke();
 
             if (screenTint != null)
                 screenTint.SetTarget(1f, bossWarningDuration);
@@ -155,6 +168,7 @@ public class GameManager : MonoBehaviour
 
             // 上司到达：检查停留
             BossIsHere = true;
+            OnBossArrived?.Invoke();
             if (screenTint != null)
                 screenTint.SetTarget(0.35f, 0.15f);
 
@@ -166,6 +180,7 @@ public class GameManager : MonoBehaviour
             }
 
             BossIsHere = false;
+            OnBossLeft?.Invoke();
 
             // ✅ Boss 离开后解除冻结
             FreezeFailures = false;
@@ -197,23 +212,32 @@ public class GameManager : MonoBehaviour
         BossWarning = false;
         BossIsHere = false;
 
-        // ✅ 游戏结束也解除冻结（避免重开/回到菜单时状态不对）
         FreezeFailures = false;
+
+        // 因 Boss 检查导致失败时触发（先触发以便播生气音效，再暂停）
+        bool bossCaused = reason != null && (reason.Contains("Boss") || reason.Contains("Work is too low"));
+        if (bossCaused)
+            OnGameOverBossCaused?.Invoke();
 
         if (screenTint != null)
             screenTint.SetTarget(0f, 0.1f);
 
         if (ui != null)
             ui.ShowGameOver(surviveTime, work, reason);
+
+        // 暂停游戏场景，仅 UI 可交互，保证失败音效能正常播完
+        Time.timeScale = 0f;
     }
 
     public void Restart()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void Quit()
     {
+        Time.timeScale = 1f;
         Application.Quit();
     }
 }
