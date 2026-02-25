@@ -45,6 +45,9 @@ public class WorkItem : MonoBehaviour
     private InputAction repairAction;
     private InputAction debugBreakAction;
 
+    //this doesn't really have a point but it's fun lol
+    public GameObject smokeParticles;
+
     private static readonly int[] ColorPropIds =
     {
         Shader.PropertyToID("_BaseColor"),
@@ -147,6 +150,10 @@ public class WorkItem : MonoBehaviour
                 // ✅ Boss预警开始到Boss离开期间：不产生新故障
                 if (GameManager.FreezeFailures)
                     continue;
+                if (smokeParticles != null)
+                { 
+                    Instantiate(smokeParticles, transform.position, Quaternion.identity);
+                }
                 int baitOrBreak = Random.Range(0, 6);
                 if (baitOrBreak < 5)
                 {
@@ -225,6 +232,10 @@ public class WorkItem : MonoBehaviour
         if (IsBaiting)
             IsBaiting = false;
         ClearTintOverride();
+        if (smokeParticles != null)
+        { 
+            Instantiate(smokeParticles, transform.position, Quaternion.identity);
+        }
         Fix();
     }
 
@@ -237,7 +248,10 @@ public class WorkItem : MonoBehaviour
             IsBaiting = false;
         }
 
-        
+        if (smokeParticles != null)
+        { 
+            Instantiate(smokeParticles, transform.position, Quaternion.identity);
+        }
 
         ClearTintOverride();
         OnFixed?.Invoke();
