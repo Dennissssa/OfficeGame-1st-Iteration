@@ -59,6 +59,12 @@ namespace JiU
         [Tooltip("达到阈值时额外调用，可不填")]
         public UnityEvent onTriggered;
 
+        [Header("直接修好目标（推荐与 WorkItem 联用时使用）")]
+        [Tooltip("触发时直接对这些 WorkItem 调用 TryRepair()，只影响列表中的物品")]
+        public WorkItem[] directRepairTargets = Array.Empty<WorkItem>();
+        [Tooltip("勾选时会模拟按键（上述「要模拟的按键」），所有绑定该键的 WorkItem 都会收到修好；已设直接修好目标时建议取消勾选，避免误修其他物品")]
+        public bool simulateKey = true;
+
         private float _lastTriggerTime = -999f;
         private bool _lastConditionMet;
         private int _lastReadValue = -1;
@@ -164,9 +170,15 @@ namespace JiU
                 {
                     _lastTriggerTime = Time.time;
                     if (debugLogs)
-                        Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 触发! value={value} -> 模拟按键 {triggerKeyCode}");
-                    TriggerKey();
+                        Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 触发! value={value}" + (simulateKey ? $" -> 模拟按键 {triggerKeyCode}" : " -> 仅直接修好目标"));
+                    if (simulateKey)
+                        TriggerKey();
                     onTriggered?.Invoke();
+                    foreach (var w in directRepairTargets)
+                    {
+                        if (w != null)
+                            w.TryRepair();
+                    }
                 }
                 else if (debugLogs)
                     Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 条件已满足但冷却中，跳过 (还需 {cooldownSeconds - (Time.time - _lastTriggerTime):F2}s)");

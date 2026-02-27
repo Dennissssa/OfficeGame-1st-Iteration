@@ -750,9 +750,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
+  breakWeight: 0
   baitWeight: 1
   repairBindingPath: <Keyboard>/3
+  repairKeyCodeFallback: 49
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -1499,6 +1500,7 @@ MonoBehaviour:
   breakWeight: 5
   baitWeight: 2
   repairBindingPath: <Keyboard>/1
+  repairKeyCodeFallback: 49
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -1795,9 +1797,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
+  breakWeight: 0
   baitWeight: 1
   repairBindingPath: <Keyboard>/2
+  repairKeyCodeFallback: 49
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -2591,6 +2594,9 @@ MonoBehaviour:
   onTriggered:
     m_PersistentCalls:
       m_Calls: []
+  directRepairTargets:
+  - {fileID: 363469229}
+  simulateKey: 0
 --- !u!4 &939205866
 Transform:
   m_ObjectHideFlags: 0
@@ -3078,9 +3084,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
+  breakWeight: 0
   baitWeight: 1
   repairBindingPath: <Keyboard>/4
+  repairKeyCodeFallback: 49
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -3805,9 +3812,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
+  breakWeight: 0
   baitWeight: 1
   repairBindingPath: <Keyboard>/5
+  repairKeyCodeFallback: 49
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
