@@ -10,6 +10,14 @@ public class WorkItem : MonoBehaviour
     public float minTimeToBreak = 4f;
     public float maxTimeToBreak = 10f;
 
+    [Header("Broke / Bait 触发概率")]
+    [Tooltip("下一次故障时触发 Broke 的权重，与 Bait 权重共同决定概率。例如 8 和 2 表示约 80% Broke、20% Bait")]
+    [Min(0f)]
+    public float breakWeight = 5f;
+    [Tooltip("下一次故障时触发 Bait 的权重")]
+    [Min(0f)]
+    public float baitWeight = 1f;
+
     [Header("Hotkey Repair (Input System)")]
     [Tooltip("Examples: <Keyboard>/1  <Keyboard>/2  <Keyboard>/numpad1  <Keyboard>/q")]
     public string repairBindingPath = "<Keyboard>/1";
@@ -28,8 +36,10 @@ public class WorkItem : MonoBehaviour
     public UnityEvent OnBroken;
     [Tooltip("I'm scared")] 
     public UnityEvent OnBaiting;
-    [Tooltip("修好时触发，可连到 Uduino 输出等")]
+    [Tooltip("修好时触发（玩家击打修好时），可连到 Uduino / LED 恢复等")]
     public UnityEvent OnFixed;
+    [Tooltip("Bait 时间到自行结束时触发（玩家未击打），可连到 LED 恢复等")]
+    public UnityEvent OnBaitingEnded;
 
     [Header("Debug")]
     public bool debugLogs = false;
@@ -147,21 +157,24 @@ public class WorkItem : MonoBehaviour
                 float t = Random.Range(minTimeToBreak, maxTimeToBreak);
                 yield return new WaitForSeconds(t);
 
-                // ✅ Boss预警开始到Boss离开期间：不产生新故障
+                // Boss 预警开始到离开期间：不产生新故障
                 if (GameManager.FreezeFailures)
                     continue;
-                if (smokeParticles != null)
-                { 
-                    Instantiate(smokeParticles, transform.position, Quaternion.identity);
-                }
-                int baitOrBreak = Random.Range(0, 6);
-                if (baitOrBreak < 5)
+
+                // 按 Inspector 中的 breakWeight / baitWeight 决定本次是 Broke 还是 Bait
+                float total = breakWeight + baitWeight;
+                if (total <= 0f)
                 {
-                    Break();
+                    if (Random.value < 0.5f) Break();
+                    else Bait();
                 }
                 else
                 {
-                    Bait();   
+                    float roll = Random.Range(0f, total);
+                    if (roll < breakWeight)
+                        Break();
+                    else
+                        Bait();
                 }
             }
             else
@@ -171,29 +184,26 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    private void OnRepairPerformed(InputAction.CallbackContext ctx)
+    private void TryRepair()
     {
         if (!IsBroken)
         {
-            if (IsBaiting)
-            {
+            if (IsBaiting && GameManager.Instance != null)
                 GameManager.Instance.UltraPunishment();
-            }
-            else
-            {
+            else if (GameManager.Instance != null)
                 GameManager.Instance.Punishment();
-            }
         }
-        
-
         if (requirePlayerInRange)
         {
             if (player == null) return;
-            float d = Vector3.Distance(player.position, transform.position);
-            if (d > interactRange) return;
+            if (Vector3.Distance(player.position, transform.position) > interactRange) return;
         }
-
         Fix();
+    }
+
+    private void OnRepairPerformed(InputAction.CallbackContext ctx)
+    {
+        TryRepair();
     }
 
     private void OnDebugBreakPerformed(InputAction.CallbackContext ctx)
@@ -230,28 +240,20 @@ public class WorkItem : MonoBehaviour
     {
         yield return new WaitForSeconds(3);
         if (IsBaiting)
+        {
             IsBaiting = false;
-        ClearTintOverride();
-        if (smokeParticles != null)
-        { 
-            Instantiate(smokeParticles, transform.position, Quaternion.identity);
+            ClearTintOverride();
+            OnBaitingEnded?.Invoke();
         }
         Fix();
     }
 
     public void Fix()
     {
-        if (!IsBroken) return;
+        // 仅当当前处于 Broke 或 Bait 时才执行修好逻辑并触发 OnFixed；正常状态下按键不触发
+        if (!IsBroken && !IsBaiting) return;
         IsBroken = false;
-        if (IsBaiting)
-        { 
-            IsBaiting = false;
-        }
-
-        if (smokeParticles != null)
-        { 
-            Instantiate(smokeParticles, transform.position, Quaternion.identity);
-        }
+        IsBaiting = false;
 
         ClearTintOverride();
         OnFixed?.Invoke();

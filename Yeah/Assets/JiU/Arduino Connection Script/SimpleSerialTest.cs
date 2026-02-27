@@ -4,7 +4,7 @@ using System.IO.Ports;
 public class SimpleSerialTest : MonoBehaviour
 {
     // Keeping your specific Mac/Linux port path
-    SerialPort dataStream = new SerialPort("/dev/cu.usbserial-14210", 9600);
+    SerialPort dataStream = new SerialPort("COM6", 9600);
     public bool isDevilActive = false;
 
     void Start()
