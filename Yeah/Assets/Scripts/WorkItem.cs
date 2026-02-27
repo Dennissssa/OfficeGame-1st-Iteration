@@ -21,6 +21,8 @@ public class WorkItem : MonoBehaviour
     [Header("Hotkey Repair (Input System)")]
     [Tooltip("Examples: <Keyboard>/1  <Keyboard>/2  <Keyboard>/numpad1  <Keyboard>/q")]
     public string repairBindingPath = "<Keyboard>/1";
+    [Tooltip("与上面按键一致，用于 Uduino/模拟按键时的备用轮询；若使用 UduinoPinToKeyTrigger 建议同时把该脚本的「直接修好目标」指向本物体")]
+    public KeyCode repairKeyCodeFallback = KeyCode.Alpha1;
 
     [Header("Optional Distance Requirement")]
     public bool requirePlayerInRange = false;
@@ -101,6 +103,64 @@ public class WorkItem : MonoBehaviour
 
         debugBreakAction.performed -= OnDebugBreakPerformed;
         debugBreakAction.Disable();
+    }
+
+    void Update()
+    {
+        // 备用：Uduino/模拟按键有时不会触发 InputAction.performed，在 Broke/Bait 时轮询键盘
+        if ((IsBroken || IsBaiting) && repairKeyCodeFallback != KeyCode.None && UnityEngine.InputSystem.Keyboard.current != null)
+        {
+            var key = KeyCodeToKey(repairKeyCodeFallback);
+            if (key != UnityEngine.InputSystem.Key.None && UnityEngine.InputSystem.Keyboard.current[key].wasPressedThisFrame)
+                TryRepair();
+        }
+    }
+
+    static UnityEngine.InputSystem.Key KeyCodeToKey(KeyCode kc)
+    {
+        switch (kc)
+        {
+            case KeyCode.Alpha0: return UnityEngine.InputSystem.Key.Digit0;
+            case KeyCode.Alpha1: return UnityEngine.InputSystem.Key.Digit1;
+            case KeyCode.Alpha2: return UnityEngine.InputSystem.Key.Digit2;
+            case KeyCode.Alpha3: return UnityEngine.InputSystem.Key.Digit3;
+            case KeyCode.Alpha4: return UnityEngine.InputSystem.Key.Digit4;
+            case KeyCode.Alpha5: return UnityEngine.InputSystem.Key.Digit5;
+            case KeyCode.Alpha6: return UnityEngine.InputSystem.Key.Digit6;
+            case KeyCode.Alpha7: return UnityEngine.InputSystem.Key.Digit7;
+            case KeyCode.Alpha8: return UnityEngine.InputSystem.Key.Digit8;
+            case KeyCode.Alpha9: return UnityEngine.InputSystem.Key.Digit9;
+            case KeyCode.Space: return UnityEngine.InputSystem.Key.Space;
+            case KeyCode.Return: return UnityEngine.InputSystem.Key.Enter;
+            case KeyCode.Escape: return UnityEngine.InputSystem.Key.Escape;
+            case KeyCode.A: return UnityEngine.InputSystem.Key.A;
+            case KeyCode.B: return UnityEngine.InputSystem.Key.B;
+            case KeyCode.C: return UnityEngine.InputSystem.Key.C;
+            case KeyCode.D: return UnityEngine.InputSystem.Key.D;
+            case KeyCode.E: return UnityEngine.InputSystem.Key.E;
+            case KeyCode.F: return UnityEngine.InputSystem.Key.F;
+            case KeyCode.G: return UnityEngine.InputSystem.Key.G;
+            case KeyCode.H: return UnityEngine.InputSystem.Key.H;
+            case KeyCode.I: return UnityEngine.InputSystem.Key.I;
+            case KeyCode.J: return UnityEngine.InputSystem.Key.J;
+            case KeyCode.K: return UnityEngine.InputSystem.Key.K;
+            case KeyCode.L: return UnityEngine.InputSystem.Key.L;
+            case KeyCode.M: return UnityEngine.InputSystem.Key.M;
+            case KeyCode.N: return UnityEngine.InputSystem.Key.N;
+            case KeyCode.O: return UnityEngine.InputSystem.Key.O;
+            case KeyCode.P: return UnityEngine.InputSystem.Key.P;
+            case KeyCode.Q: return UnityEngine.InputSystem.Key.Q;
+            case KeyCode.R: return UnityEngine.InputSystem.Key.R;
+            case KeyCode.S: return UnityEngine.InputSystem.Key.S;
+            case KeyCode.T: return UnityEngine.InputSystem.Key.T;
+            case KeyCode.U: return UnityEngine.InputSystem.Key.U;
+            case KeyCode.V: return UnityEngine.InputSystem.Key.V;
+            case KeyCode.W: return UnityEngine.InputSystem.Key.W;
+            case KeyCode.X: return UnityEngine.InputSystem.Key.X;
+            case KeyCode.Y: return UnityEngine.InputSystem.Key.Y;
+            case KeyCode.Z: return UnityEngine.InputSystem.Key.Z;
+            default: return UnityEngine.InputSystem.Key.None;
+        }
     }
 
     void Start()
@@ -184,7 +244,8 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    private void TryRepair()
+    /// <summary>尝试修好（按键或 Uduino 触发）。可从 Inspector 中 UduinoPinToKeyTrigger 的 onTriggered 或「直接修好目标」调用。</summary>
+    public void TryRepair()
     {
         if (!IsBroken)
         {
