@@ -1596,7 +1596,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 30b1bb24e6139064e9eeb30fde8a35f8, type: 2}
     - target: {fileID: 919132149155446097, guid: cbd2aa6689416944f9fafe9a02edc494, type: 3}
       propertyPath: m_Name
-      value: Work5
+      value: Phone
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4178,7 +4178,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 30b1bb24e6139064e9eeb30fde8a35f8, type: 2}
     - target: {fileID: 919132149155446097, guid: b87286a03798773449dd4bf6ce9de5aa, type: 3}
       propertyPath: m_Name
-      value: Work1
+      value: Monitor
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4746,7 +4746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 65f999c03cd1e5a4a883e0e047d810b8, type: 3}
       propertyPath: m_Name
-      value: Work4
+      value: Skull
       objectReference: {fileID: 0}
     - target: {fileID: 1581719105826604550, guid: 65f999c03cd1e5a4a883e0e047d810b8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -6467,7 +6467,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 30b1bb24e6139064e9eeb30fde8a35f8, type: 2}
     - target: {fileID: 919132149155446097, guid: 54833eb6d72fcf1438da8fc91c280fb5, type: 3}
       propertyPath: m_Name
-      value: Work2
+      value: Lamp
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7001,7 +7001,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 30b1bb24e6139064e9eeb30fde8a35f8, type: 2}
     - target: {fileID: 919132149155446097, guid: 5ee0516ef7daef34c901a0a14c61c2f3, type: 3}
       propertyPath: m_Name
-      value: Work3
+      value: Speaker
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
