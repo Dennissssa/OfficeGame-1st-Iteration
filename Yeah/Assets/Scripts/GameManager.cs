@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
 
     private float surviveTime = 0f;
     private bool isGameOver = false;
+    public ArduinoSerialBridge arduinoBridgeScript;
 
     public bool BossIsHere { get; private set; } = false;
     public bool BossWarning { get; private set; } = false;
@@ -68,7 +69,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         work = Mathf.Clamp(work, 0f, maxWork);
-
+            
         if (autoFindItemsOnStart)
         {
             if (items.Count != 0)
@@ -106,7 +107,8 @@ public class GameManager : MonoBehaviour
 
         int working = 0;
         int broken = 0;
-
+        
+        
         for (int i = 0; i < items.Count; i++)
         {
             if (items[i] == null) continue;
