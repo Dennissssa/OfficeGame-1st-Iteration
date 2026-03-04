@@ -911,7 +911,7 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
-  itemName: Speaker
+  itemName: Monitor
 --- !u!65 &206531937
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1659,7 +1659,7 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
-  itemName: Monitor
+  itemName: Skull
 --- !u!65 &363469230
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2096,7 +2096,7 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
-  itemName: Lamp
+  itemName: Phone
 --- !u!65 &528905811
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3526,7 +3526,7 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
-  itemName: Skull
+  itemName: Lamp
 --- !u!65 &983266345
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4391,7 +4391,7 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
-  itemName: Phone
+  itemName: Speaker
 --- !u!65 &1141977273
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5635,15 +5635,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  autoFindItemsOnStart: 1
+  autoFindItemsOnStart: 0
   warningText: {fileID: 1838282527}
-  items: []
+  items:
+  - {fileID: 983266344}
+  - {fileID: 1141977272}
+  - {fileID: 363469229}
+  - {fileID: 528905810}
+  - {fileID: 206531936}
   anomalyTexts:
-  - {fileID: 2050037866}
-  - {fileID: 383483020}
   - {fileID: 1328258632}
   - {fileID: 47812029}
   - {fileID: 1583875790}
+  - {fileID: 2050037866}
+  - {fileID: 383483020}
 --- !u!4 &1583755465
 Transform:
   m_ObjectHideFlags: 0

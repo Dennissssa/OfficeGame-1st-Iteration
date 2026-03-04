@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -70,8 +71,15 @@ public class GameManager : MonoBehaviour
 
         if (autoFindItemsOnStart)
         {
-            items.Clear();
-            items.AddRange(FindObjectsOfType<WorkItem>());
+            if (items.Count != 0)
+            {
+                return;
+            }
+            else
+            {
+                            items.Clear();
+                            items.AddRange(FindObjectsOfType<WorkItem>());
+            }
         }
 
         if (ui != null)
@@ -105,14 +113,13 @@ public class GameManager : MonoBehaviour
             
             if (items[i].IsBroken)
             {
-                //Debug.Log($"{items[i].itemName} is broken! you should repair it by hitting {anomalyTexts[i].text}.");
+                anomalyTexts[i].text = $"{items[i].itemName} is broken!";
                 broken++;
-                anomalyTexts[i].enabled = true;
             }
             else
             {
+                anomalyTexts[i].text = " ";
                 working++;
-                anomalyTexts[i].enabled = false;
             }
         }
 
