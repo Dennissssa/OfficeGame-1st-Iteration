@@ -109,12 +109,13 @@ public class WorkItem : MonoBehaviour
     void Update()
     {
         // 备用：Uduino/模拟按键有时不会触发 InputAction.performed，在 Broke/Bait 时轮询键盘
-        if ((IsBroken || IsBaiting) && repairKeyCodeFallback != KeyCode.None && UnityEngine.InputSystem.Keyboard.current != null)
-        {
-            var key = KeyCodeToKey(repairKeyCodeFallback);
-            if (key != UnityEngine.InputSystem.Key.None && UnityEngine.InputSystem.Keyboard.current[key].wasPressedThisFrame)
-                TryRepair();
-        }
+
+            if ((IsBroken || IsBaiting) && repairKeyCodeFallback != KeyCode.None && UnityEngine.InputSystem.Keyboard.current != null)
+            {
+                var key = KeyCodeToKey(repairKeyCodeFallback);
+                if (key != UnityEngine.InputSystem.Key.None && UnityEngine.InputSystem.Keyboard.current[key].wasPressedThisFrame)
+                    TryRepair();
+            }
     }
 
     static UnityEngine.InputSystem.Key KeyCodeToKey(KeyCode kc)
