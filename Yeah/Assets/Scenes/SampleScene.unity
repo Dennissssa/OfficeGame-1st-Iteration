@@ -309,7 +309,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 47812027}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.00037700744}
   m_LocalScale: {x: 3.1921, y: 3.1921, z: 3.1921005}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -317,7 +317,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -42.4}
+  m_AnchoredPosition: {x: 0.0005316846, y: -148.3999}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &47812029
@@ -886,7 +886,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 0
+  breakWeight: 5
   baitWeight: 2
   repairBindingPath: <Keyboard>/3
   repairKeyCodeFallback: 49
@@ -1634,8 +1634,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 1
-  baitWeight: 5
+  breakWeight: 5
+  baitWeight: 1
   repairBindingPath: <Keyboard>/1
   repairKeyCodeFallback: 49
   requirePlayerInRange: 0
@@ -1725,7 +1725,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 383483018}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.0018919761}
   m_LocalScale: {x: 3.1921, y: 3.1921, z: 3.1921005}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1733,7 +1733,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -203}
+  m_AnchoredPosition: {x: 0.0012287436, y: -45.999893}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &383483020
@@ -4789,7 +4789,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1328258630}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 3.1921, y: 3.1921, z: 3.1921005}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4797,7 +4797,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 8}
+  m_AnchoredPosition: {x: 0, y: -98}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1328258632
@@ -5649,6 +5649,7 @@ MonoBehaviour:
   - {fileID: 1583875790}
   - {fileID: 2050037866}
   - {fileID: 383483020}
+  arduinoBridgeScript: {fileID: 1987669260}
 --- !u!4 &1583755465
 Transform:
   m_ObjectHideFlags: 0
@@ -5789,7 +5790,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1583875788}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.00037700744}
   m_LocalScale: {x: 3.1921, y: 3.1921, z: 3.1921005}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5797,7 +5798,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -94}
+  m_AnchoredPosition: {x: 0.0005316846, y: -199.99991}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1583875790
@@ -6744,7 +6745,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2050037864}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 3.1921, y: 3.1921, z: 3.1921005}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6752,7 +6753,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -150}
+  m_AnchoredPosition: {x: 0, y: 7}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2050037866
