@@ -107,6 +107,7 @@ public class GameManager : MonoBehaviour
 
         int working = 0;
         int broken = 0;
+        int baiting = 0;
         
         
         for (int i = 0; i < items.Count; i++)
@@ -118,6 +119,10 @@ public class GameManager : MonoBehaviour
                 anomalyTexts[i].text = $"{items[i].itemName} is broken!";
                 broken++;
             }
+            else if (items[i].IsBaiting)
+            {
+                anomalyTexts[i].text = $"{items[i].itemName} is fine :)";
+            }
             else
             {
                 anomalyTexts[i].text = " ";
@@ -125,7 +130,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (broken > 0)
+        if (broken > 0 || baiting >0)
         {
             warningText.SetActive(true);
         }
