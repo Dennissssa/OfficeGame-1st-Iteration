@@ -886,8 +886,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/3
   repairKeyCodeFallback: 51
   requirePlayerInRange: 0
@@ -911,6 +911,8 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
+  breakInt: 0
+  baitInt: 0
   itemName: Monitor
 --- !u!65 &206531937
 BoxCollider:
@@ -1542,7 +1544,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
+  breakWeight: 2
   baitWeight: 1
   repairBindingPath: <Keyboard>/1
   repairKeyCodeFallback: 49
@@ -1567,6 +1569,8 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
+  breakInt: 0
+  baitInt: 0
   itemName: Skull
 --- !u!65 &363469230
 BoxCollider:
@@ -1911,6 +1915,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   EffectsSource: {fileID: 1780784104}
   MusicSource: {fileID: 387048559}
+  EffectsSourceList: []
   EffectsList:
   - {fileID: 8300000, guid: 32de7bd7c292ead4cbd46e38793969d8, type: 3}
   - {fileID: 8300000, guid: 1e7171e3ae9b59a469eaef09686d50f2, type: 3}
@@ -2271,8 +2276,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/2
   repairKeyCodeFallback: 50
   requirePlayerInRange: 0
@@ -2296,6 +2301,8 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
+  breakInt: 0
+  baitInt: 0
   itemName: Phone
 --- !u!65 &528905811
 BoxCollider:
@@ -3189,10 +3196,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
-  repairBindingPath: <Keyboard>/2
-  repairKeyCodeFallback: 50
+  breakWeight: 2
+  baitWeight: 1
+  repairBindingPath: <Keyboard>/6
+  repairKeyCodeFallback: 54
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -3214,7 +3221,9 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
-  itemName: Phone
+  breakInt: 0
+  baitInt: 0
+  itemName: Printer
 --- !u!65 &882021888
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3863,8 +3872,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/4
   repairKeyCodeFallback: 52
   requirePlayerInRange: 0
@@ -3888,6 +3897,8 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
+  breakInt: 0
+  baitInt: 0
   itemName: Lamp
 --- !u!65 &983266345
 BoxCollider:
@@ -4476,10 +4487,10 @@ Transform:
   m_Children:
   - {fileID: 1127083643}
   - {fileID: 528905814}
-  - {fileID: 882021886}
   - {fileID: 206531945}
   - {fileID: 983266346}
   - {fileID: 1141977277}
+  - {fileID: 882021886}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1125699853 stripped
@@ -4729,8 +4740,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/5
   repairKeyCodeFallback: 53
   requirePlayerInRange: 0
@@ -4754,6 +4765,8 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
+  breakInt: 0
+  baitInt: 0
   itemName: Speaker
 --- !u!65 &1141977273
 BoxCollider:
@@ -6874,65 +6887,9 @@ MonoBehaviour:
   onHit:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 363469229}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 528905810}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 882021887}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 206531936}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
       - m_Target: {fileID: 983266344}
         m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
+        m_MethodName: TryRepair
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6946,7 +6903,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1141977272}
         m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
+        m_MethodName: TryRepair
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6956,7 +6913,63 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  blockHitKeyCode: 32
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 363469229}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 528905810}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 206531936}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 882021887}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  blockHitKeyCode: 0
   ledBindings:
   - LedIndex: 1
     WorkItem: {fileID: 983266344}
