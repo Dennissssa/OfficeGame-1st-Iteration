@@ -886,8 +886,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/3
   repairKeyCodeFallback: 51
   requirePlayerInRange: 0
@@ -1544,7 +1544,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
+  breakWeight: 2
   baitWeight: 1
   repairBindingPath: <Keyboard>/1
   repairKeyCodeFallback: 49
@@ -2970,8 +2970,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/2
   repairKeyCodeFallback: 50
   requirePlayerInRange: 0
@@ -3890,10 +3890,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
-  repairBindingPath: <Keyboard>/2
-  repairKeyCodeFallback: 50
+  breakWeight: 2
+  baitWeight: 1
+  repairBindingPath: <Keyboard>/6
+  repairKeyCodeFallback: 54
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -3917,7 +3917,7 @@ MonoBehaviour:
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   breakInt: 0
   baitInt: 0
-  itemName: Phone
+  itemName: Printer
 --- !u!65 &882021888
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4566,8 +4566,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/4
   repairKeyCodeFallback: 52
   requirePlayerInRange: 0
@@ -5181,10 +5181,10 @@ Transform:
   m_Children:
   - {fileID: 1127083643}
   - {fileID: 528905814}
-  - {fileID: 882021886}
   - {fileID: 206531945}
   - {fileID: 983266346}
   - {fileID: 1141977277}
+  - {fileID: 882021886}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1125699853 stripped
@@ -5434,8 +5434,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorkItem
   minTimeToBreak: 4
   maxTimeToBreak: 10
-  breakWeight: 5
-  baitWeight: 2
+  breakWeight: 2
+  baitWeight: 1
   repairBindingPath: <Keyboard>/5
   repairKeyCodeFallback: 53
   requirePlayerInRange: 0
@@ -7581,65 +7581,9 @@ MonoBehaviour:
   onHit:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 363469229}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 528905810}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 882021887}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 206531936}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
       - m_Target: {fileID: 983266344}
         m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
+        m_MethodName: TryRepair
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7653,7 +7597,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1141977272}
         m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: Fix
+        m_MethodName: TryRepair
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7663,7 +7607,63 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  blockHitKeyCode: 32
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 363469229}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 528905810}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 206531936}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 882021887}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  blockHitKeyCode: 0
   ledBindings:
   - LedIndex: 1
     WorkItem: {fileID: 983266344}
