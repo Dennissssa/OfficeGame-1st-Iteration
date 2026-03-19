@@ -62,6 +62,8 @@ public class WorkItem : MonoBehaviour
 
     public int breakInt;
     public int baitInt;
+    public int rightSFX;
+    public int wrongSFX;
 
     public string itemName;
     private static readonly int[] ColorPropIds =
@@ -272,15 +274,24 @@ public class WorkItem : MonoBehaviour
         if (!IsBroken)
         {
             if (IsBaiting && GameManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySound(wrongSFX);
                 GameManager.Instance.UltraPunishment();
+            }
+
             else if (GameManager.Instance != null)
+            {
                 GameManager.Instance.Punishment();
+                AudioManager.Instance.PlaySound(wrongSFX);
+            }
+
         }
         if (requirePlayerInRange)
         {
             if (player == null) return;
             if (Vector3.Distance(player.position, transform.position) > interactRange) return;
         }
+        AudioManager.Instance.PlaySound(rightSFX);
         Fix();
     }
 
