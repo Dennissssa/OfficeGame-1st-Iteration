@@ -916,6 +916,12 @@ MonoBehaviour:
   rightSFX: 8
   wrongSFX: 9
   itemName: Speaker
+  audioGameobjects:
+  - {fileID: 8680841436234328683, guid: edcf5b3d4a71eda45b035a8d5d633820, type: 3}
+  - {fileID: 8643865231716734881, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+  - {fileID: 5674536529729015940, guid: ca215a16417306742965283369e1d6ea, type: 3}
+  - {fileID: 7778681539260138732, guid: 574745dd9c8b5f842b0fad9ff45f9ba6, type: 3}
+  instantiatedAudio: {fileID: 0}
 --- !u!65 &206531937
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -942,28 +948,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5ee0516ef7daef34c901a0a14c61c2f3, type: 3}
   m_PrefabInstance: {fileID: 2110646147}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &206531948
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 206531932}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c54a91b37279dd44bac784065b40e02a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JiU.PlaySoundOnEventAudioManager
-  effectIndex: 5
-  loopBrokenSound: 1
-  baitEffectIndex: -1
-  loopBaitSound: 1
-  baitEndedEffectIndex: -1
-  workItem: {fileID: 206531936}
-  pitchRandomRange: 0.257
-  onPlayed:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &236805277
 GameObject:
   m_ObjectHideFlags: 0
@@ -1523,9 +1507,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cbd2aa6689416944f9fafe9a02edc494, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1141977275}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cbd2aa6689416944f9fafe9a02edc494, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1141977278}
   m_SourcePrefab: {fileID: 100100000, guid: cbd2aa6689416944f9fafe9a02edc494, type: 3}
 --- !u!1 &363469228 stripped
 GameObject:
@@ -1576,6 +1557,12 @@ MonoBehaviour:
   rightSFX: 8
   wrongSFX: 9
   itemName: Monitor
+  audioGameobjects:
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 5674536529729015940, guid: ca215a16417306742965283369e1d6ea, type: 3}
+  - {fileID: 7778681539260138732, guid: 574745dd9c8b5f842b0fad9ff45f9ba6, type: 3}
+  instantiatedAudio: {fileID: 0}
 --- !u!65 &363469230
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3404,6 +3391,12 @@ MonoBehaviour:
   rightSFX: 8
   wrongSFX: 9
   itemName: Lamp
+  audioGameobjects:
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 5674536529729015940, guid: ca215a16417306742965283369e1d6ea, type: 3}
+  - {fileID: 7778681539260138732, guid: 574745dd9c8b5f842b0fad9ff45f9ba6, type: 3}
+  instantiatedAudio: {fileID: 0}
 --- !u!65 &528905811
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4326,6 +4319,12 @@ MonoBehaviour:
   rightSFX: 8
   wrongSFX: 9
   itemName: Printer
+  audioGameobjects:
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 5674536529729015940, guid: ca215a16417306742965283369e1d6ea, type: 3}
+  - {fileID: 7778681539260138732, guid: 574745dd9c8b5f842b0fad9ff45f9ba6, type: 3}
+  instantiatedAudio: {fileID: 0}
 --- !u!65 &882021888
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5004,6 +5003,12 @@ MonoBehaviour:
   rightSFX: 8
   wrongSFX: 9
   itemName: Skull
+  audioGameobjects:
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
+  - {fileID: 5674536529729015940, guid: ca215a16417306742965283369e1d6ea, type: 3}
+  - {fileID: 7778681539260138732, guid: 574745dd9c8b5f842b0fad9ff45f9ba6, type: 3}
+  instantiatedAudio: {fileID: 0}
 --- !u!65 &983266345
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5874,6 +5879,12 @@ MonoBehaviour:
   rightSFX: 8
   wrongSFX: 9
   itemName: Phone
+  audioGameobjects:
+  - {fileID: 6825840694735046581, guid: aff615ff67878a344b2b7eafacfbb4fd, type: 3}
+  - {fileID: 6412183632952345661, guid: 566823e1dda52fc4f8206941df5c8556, type: 3}
+  - {fileID: 5674536529729015940, guid: ca215a16417306742965283369e1d6ea, type: 3}
+  - {fileID: 7778681539260138732, guid: 574745dd9c8b5f842b0fad9ff45f9ba6, type: 3}
+  instantiatedAudio: {fileID: 0}
 --- !u!65 &1141977273
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5997,28 +6008,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: cbd2aa6689416944f9fafe9a02edc494, type: 3}
   m_PrefabInstance: {fileID: 356470514}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1141977278
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1141977271}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c54a91b37279dd44bac784065b40e02a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JiU.PlaySoundOnEventAudioManager
-  effectIndex: 4
-  loopBrokenSound: 1
-  baitEffectIndex: -1
-  loopBaitSound: 1
-  baitEndedEffectIndex: -1
-  workItem: {fileID: 1141977272}
-  pitchRandomRange: 0.275
-  onPlayed:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &1156744594
 GameObject:
   m_ObjectHideFlags: 0
@@ -8447,9 +8436,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5ee0516ef7daef34c901a0a14c61c2f3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 206531936}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5ee0516ef7daef34c901a0a14c61c2f3, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 206531948}
   m_SourcePrefab: {fileID: 100100000, guid: 5ee0516ef7daef34c901a0a14c61c2f3, type: 3}
 --- !u!1 &2128317765
 GameObject:
@@ -8493,6 +8479,63 @@ RectTransform:
   m_AnchoredPosition: {x: 505, y: -23}
   m_SizeDelta: {x: 638.42004, y: 159.605}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1001 &8166999085815421071
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5142592028962305008, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8643865231716734881, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
+      propertyPath: m_Name
+      value: EvilChoirSoundPrefab
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2d85de3e81c56b944a603a9652b27b15, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -8508,3 +8551,4 @@ SceneRoots:
   - {fileID: 1987669259}
   - {fileID: 1585928528}
   - {fileID: 1346157740}
+  - {fileID: 8166999085815421071}

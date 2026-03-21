@@ -1,4 +1,6 @@
+using NUnit.Framework;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -57,6 +59,8 @@ public class WorkItem : MonoBehaviour
     private InputAction repairAction;
     private InputAction debugBreakAction;
 
+
+
     //this doesn't really have a point but it's fun lol
     public GameObject smokeParticles;
 
@@ -74,6 +78,10 @@ public class WorkItem : MonoBehaviour
         Shader.PropertyToID("_UnlitColor"),
         Shader.PropertyToID("_MainColor"),
     };
+
+    //0 is the broken sound (if any), 1 is the bait sound (destroys self), 2 is the correct sound, 3 is the wrong sound
+    public List<GameObject> audioGameobjects = new List<GameObject>();
+    public GameObject instantiatedAudio;
 
     void Awake()
     {
@@ -235,12 +243,12 @@ public class WorkItem : MonoBehaviour
                     if (Random.value < 0.5f)
                     {
                         Break();
-                        AudioManager.Instance.PlaySound(breakInt);  
+
                     }
                     else
                     {
                         Bait();
-                        AudioManager.Instance.PlaySound(baitInt);
+
                     }
                 }
                 else
@@ -249,13 +257,11 @@ public class WorkItem : MonoBehaviour
                     if (roll < breakWeight)
                     {
                         Break();
-                        AudioManager.Instance.PlaySound(breakInt);
                     }
 
                     else
                     {
                         Bait();
-                        AudioManager.Instance.PlaySound(baitInt);
                     }
 
                 }
@@ -271,18 +277,20 @@ public class WorkItem : MonoBehaviour
     public void TryRepair()
     {
         Debug.Log($"I am trying to fix {this.itemName}"!);
+        if (instantiatedAudio != null )
+        {
+            Destroy(instantiatedAudio.gameObject);
+        }
         if (!IsBroken)
         {
             if (IsBaiting && GameManager.Instance != null)
             {
-                AudioManager.Instance.PlaySound(wrongSFX);
                 GameManager.Instance.UltraPunishment();
             }
 
             else if (GameManager.Instance != null)
             {
                 GameManager.Instance.Punishment();
-                AudioManager.Instance.PlaySound(wrongSFX);
             }
 
         }
@@ -291,7 +299,6 @@ public class WorkItem : MonoBehaviour
             if (player == null) return;
             if (Vector3.Distance(player.position, transform.position) > interactRange) return;
         }
-        AudioManager.Instance.PlaySound(rightSFX);
         Fix();
     }
 
@@ -309,7 +316,8 @@ public class WorkItem : MonoBehaviour
     {
         if (IsBroken) return;
         IsBroken = true;
-        
+        instantiatedAudio = Instantiate(audioGameobjects[0], transform.position, Quaternion.identity);
+
         ApplyTintOverride(brokenColor);
         OnBroken?.Invoke();
 
@@ -321,7 +329,8 @@ public class WorkItem : MonoBehaviour
     {
         if (IsBaiting) return;
         IsBaiting = true;
-        
+        Instantiate(audioGameobjects[1], transform.position, Quaternion.identity);
+
         ApplyTintOverride(baitColor);
         OnBaiting?.Invoke();
         
@@ -345,10 +354,14 @@ public class WorkItem : MonoBehaviour
     public void Fix()
     {
         // 仅当当前处于 Broke 或 Bait 时才执行修好逻辑并触发 OnFixed；正常状态下按键不触发
-        if (!IsBroken && !IsBaiting) return;
+        if (!IsBroken && !IsBaiting)
+        {
+            Instantiate(audioGameobjects[3], transform.position, Quaternion.identity);
+            return;
+        }
         IsBroken = false;
         IsBaiting = false;
-
+        Instantiate(audioGameobjects[2], transform.position, Quaternion.identity);
         ClearTintOverride();
         OnFixed?.Invoke();
 
