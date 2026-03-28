@@ -22,6 +22,9 @@ public class WorkItem : MonoBehaviour
     public float baitWeight = 1f;
 
     [Header("Hotkey Repair (Input System)")]
+    [Tooltip("关闭后：本物体的 Input System 绑定与键盘轮询都不会调用 TryRepair()；Uduino / Inspector 仍可显式调用 TryRepair")]
+    public bool enableHotkeyRepair = true;
+
     [Tooltip("Examples: <Keyboard>/1  <Keyboard>/2  <Keyboard>/numpad1  <Keyboard>/q")]
     public string repairBindingPath = "<Keyboard>/1";
     [Tooltip("与上面按键一致，用于 Uduino/模拟按键时的备用轮询；若使用 UduinoPinToKeyTrigger 建议同时把该脚本的「直接修好目标」指向本物体")]
@@ -36,12 +39,16 @@ public class WorkItem : MonoBehaviour
     public Color brokenColor = new Color(1f, 0.2f, 0.2f, 1f);
     public Color baitColor = new Color(0.2f, 1f, 0.2f, 1f);
 
+    [Header("外观与逻辑同步")]
+    [Tooltip("勾选时：每帧在 Broke/Bait 状态下重新写入 MaterialPropertyBlock，避免其它脚本、Animator 或材质实例化盖掉着色，造成「看起来像已修好但逻辑仍损坏」。")]
+    public bool keepVisualSyncedWithLogic = true;
+
     [Header("Uduino / 外部输出（可选）")]
     [Tooltip("故障发生时触发，可连到 Uduino 输出等")]
     public UnityEvent OnBroken;
     [Tooltip("I'm scared")] 
     public UnityEvent OnBaiting;
-    [Tooltip("修好时触发（玩家击打修好时），可连到 Uduino / LED 恢复等")]
+    [Tooltip("恢复为正常态时触发：玩家修好 Broke（Fix）、或 Bait 倒计时自然结束（与 OnBaitingEnded 同帧稍后）；可连材质还原 / LED / 停损坏音等")]
     public UnityEvent OnFixed;
     [Tooltip("Bait 时间到自行结束时触发（玩家未击打），可连到 LED 恢复等")]
     public UnityEvent OnBaitingEnded;
@@ -64,6 +71,8 @@ public class WorkItem : MonoBehaviour
 
     private InputAction repairAction;
     private InputAction debugBreakAction;
+    bool _lastEnableHotkeyRepair;
+    bool _warnedNoSupportedColorProperty;
 
     //this doesn't really have a point but it's fun lol
     public GameObject smokeParticles;
@@ -98,8 +107,8 @@ public class WorkItem : MonoBehaviour
 
     void OnEnable()
     {
-        repairAction.Enable();
-        repairAction.performed += OnRepairPerformed;
+        _lastEnableHotkeyRepair = enableHotkeyRepair;
+        ConfigureHotkeyRepairInput();
 
         debugBreakAction.Enable();
         debugBreakAction.performed += OnDebugBreakPerformed;
@@ -107,23 +116,61 @@ public class WorkItem : MonoBehaviour
 
     void OnDisable()
     {
-        repairAction.performed -= OnRepairPerformed;
-        repairAction.Disable();
+        if (repairAction != null)
+        {
+            repairAction.performed -= OnRepairPerformed;
+            repairAction.Disable();
+        }
 
         debugBreakAction.performed -= OnDebugBreakPerformed;
         debugBreakAction.Disable();
     }
 
+    void ConfigureHotkeyRepairInput()
+    {
+        if (repairAction == null) return;
+
+        repairAction.performed -= OnRepairPerformed;
+
+        if (enableHotkeyRepair)
+        {
+            repairAction.performed += OnRepairPerformed;
+            repairAction.Enable();
+        }
+        else
+            repairAction.Disable();
+    }
+
     void Update()
     {
-        // 备用：Uduino/模拟按键有时不会触发 InputAction.performed，在 Broke/Bait 时轮询键盘
+        if (enableHotkeyRepair != _lastEnableHotkeyRepair)
+        {
+            _lastEnableHotkeyRepair = enableHotkeyRepair;
+            if (isActiveAndEnabled)
+                ConfigureHotkeyRepairInput();
+        }
 
-            if ((IsBroken || IsBaiting) && repairKeyCodeFallback != KeyCode.None && UnityEngine.InputSystem.Keyboard.current != null)
-            {
-                var key = KeyCodeToKey(repairKeyCodeFallback);
-                if (key != UnityEngine.InputSystem.Key.None && UnityEngine.InputSystem.Keyboard.current[key].wasPressedThisFrame)
-                    TryRepair();
-            }
+        // 备用：Uduino/模拟按键有时不会触发 InputAction.performed，在 Broke/Bait 时轮询键盘（受 enableHotkeyRepair 控制）
+        if (!enableHotkeyRepair)
+            return;
+
+        if ((IsBroken || IsBaiting) && repairKeyCodeFallback != KeyCode.None && UnityEngine.InputSystem.Keyboard.current != null)
+        {
+            var key = KeyCodeToKey(repairKeyCodeFallback);
+            if (key != UnityEngine.InputSystem.Key.None && UnityEngine.InputSystem.Keyboard.current[key].wasPressedThisFrame)
+                TryRepair();
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (!keepVisualSyncedWithLogic)
+            return;
+
+        if (IsBroken)
+            ApplyTintOverride(brokenColor);
+        else if (IsBaiting)
+            ApplyTintOverride(baitColor);
     }
 
     static UnityEngine.InputSystem.Key KeyCodeToKey(KeyCode kc)
@@ -249,9 +296,24 @@ public class WorkItem : MonoBehaviour
                 {
                     if (Random.value < 0.5f)
                     {
-                        if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
+                        if (GameManager.Instance != null && GameManager.Instance.BlockNewHackEventsNow())
+                        {
+                            if (baitWeight > 0f)
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && GameManager.Instance.BlockNewBrokeDuringBossStay())
+                        {
+                            if (baitWeight > 0f)
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
                             continue;
-                        Break();
+                        else
+                            Break();
                     }
                     else
                         Bait();
@@ -261,9 +323,24 @@ public class WorkItem : MonoBehaviour
                     float roll = Random.Range(0f, total);
                     if (roll < breakWeight)
                     {
-                        if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
+                        if (GameManager.Instance != null && GameManager.Instance.BlockNewHackEventsNow())
+                        {
+                            if (baitWeight > 0f)
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && GameManager.Instance.BlockNewBrokeDuringBossStay())
+                        {
+                            if (baitWeight > 0f)
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
                             continue;
-                        Break();
+                        else
+                            Break();
                     }
                     else
                         Bait();
@@ -279,7 +356,7 @@ public class WorkItem : MonoBehaviour
     /// <summary>尝试修好（按键或 Uduino 触发）。可从 Inspector 中 UduinoPinToKeyTrigger 的 onTriggered 或「直接修好目标」调用。</summary>
     public void TryRepair()
     {
-        Debug.Log($"I am trying to fix {this.itemName}!");
+        //Debug.Log($"I am trying to fix {this.itemName}!");
 
         // 仅真正「损坏」且通过距离等校验后才会 Win + Fix；Bait / 空闲乱按只走 Lose 并 return
         if (!IsBroken)
@@ -306,6 +383,12 @@ public class WorkItem : MonoBehaviour
 
         OnRepairCorrect?.Invoke();
         Fix();
+
+        if (GameManager.Instance != null)
+        {
+            string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+            GameManager.Instance.DebugLogPerformanceAfterSuccessfulRepair(label);
+        }
     }
 
     private void OnRepairPerformed(InputAction.CallbackContext ctx)
@@ -322,8 +405,11 @@ public class WorkItem : MonoBehaviour
     {
         if (IsBroken) return;
         IsBroken = true;
-        
-        ApplyTintOverride(brokenColor);
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.OnWorkItemEnteredHackedState(this);
+
+        WarnIfTintDidNotApply(ApplyTintOverride(brokenColor), "Broke");
         OnBroken?.Invoke();
 
         if (debugLogs)
@@ -335,9 +421,9 @@ public class WorkItem : MonoBehaviour
         if (IsBaiting) return;
         IsBaiting = true;
         
-        ApplyTintOverride(baitColor);
+        WarnIfTintDidNotApply(ApplyTintOverride(baitColor), "Bait");
         OnBaiting?.Invoke();
-        
+
         if (debugLogs)
             Debug.Log($"[WorkItem] {name} BAIT -> tint applied");
         StartCoroutine(BaitSelfFix());
@@ -346,13 +432,17 @@ public class WorkItem : MonoBehaviour
     IEnumerator BaitSelfFix()
     {
         yield return new WaitForSeconds(3);
-        if (IsBaiting)
-        {
-            IsBaiting = false;
-            ClearTintOverride();
-            OnBaitingEnded?.Invoke();
-        }
-        Fix();
+        if (!IsBaiting)
+            yield break;
+
+        IsBaiting = false;
+        ClearTintOverride();
+        OnBaitingEnded?.Invoke();
+
+        // 纯 Bait 结束时原先调用 Fix() 会因「已非 Broke/Bait」直接 return，导致 OnFixed 不触发；
+        // 若在 Inspector 里用 OnFixed 换回「正常材质」，会出现外观已像修好、事件链却缺一步，与击打修好不同步。
+        if (!IsBroken)
+            OnFixed?.Invoke();
     }
 
     public void Fix()
@@ -369,8 +459,23 @@ public class WorkItem : MonoBehaviour
             Debug.Log($"[WorkItem] {name} FIXED -> tint cleared");
     }
 
-    private void ApplyTintOverride(Color c)
+    void WarnIfTintDidNotApply(bool applied, string context)
     {
+        if (applied || _warnedNoSupportedColorProperty)
+            return;
+
+        _warnedNoSupportedColorProperty = true;
+        Debug.LogWarning(
+            $"[WorkItem] 「{name}」进入 {context} 时未能在任何 Renderer 材质上写入颜色属性（需含 _BaseColor / _Color / _TintColor / _UnlitColor / _MainColor 之一）。" +
+            "逻辑上仍会损坏，但外观可能不变，易与击打修好时的反馈混淆。请换用支持上述属性的 Shader，或用 OnBroken 自行换材质。",
+            this);
+    }
+
+    /// <returns>是否至少对一个材质槽写入了颜色</returns>
+    bool ApplyTintOverride(Color c)
+    {
+        bool anySlot = false;
+
         for (int r = 0; r < allRenderers.Length; r++)
         {
             Renderer rend = allRenderers[r];
@@ -410,7 +515,12 @@ public class WorkItem : MonoBehaviour
 
             if (debugLogs && !wroteAny)
                 Debug.LogWarning($"[WorkItem] {name} renderer({rend.name}) could not be tinted (no supported color props).");
+
+            if (wroteAny)
+                anySlot = true;
         }
+
+        return anySlot;
     }
 
     private void ClearTintOverride()

@@ -16,10 +16,6 @@ public class UIManager : MonoBehaviour
     [Min(1f)]
     public float workBossMinIndicatorWidth = 6f;
 
-    [Header("Boss Warning UI")]
-    public GameObject bossCountdownRoot;
-    public TMP_Text bossCountdownText;
-
     [Header("Game Over UI")]
     public GameObject gameOverRoot;
     public TMP_Text gameOverTitleText;
@@ -49,7 +45,7 @@ public class UIManager : MonoBehaviour
 
     /// <summary>
     /// ???????? Boss ??? Work ????? Slider ?????????????0~maxWork ???? Fill Area ??????????????
-    /// ???????????? Slider ?? Fill Area???? Fill ???????¨º???????????????
+    /// ???????????? Slider ?? Fill Area???? Fill ???????Â¨Âº???????????????
     /// </summary>
     public void SetWorkBossMinThresholdIndicator(float bossMinWorkThreshold, float maxWork)
     {
@@ -73,19 +69,7 @@ public class UIManager : MonoBehaviour
     public void SetTime(float t)
     {
         if (timeText != null)
-            timeText.text = $"TIME: {t:0.0}s";
-    }
-
-    public void SetBossCountdown(float secondsLeft)
-    {
-        if (bossCountdownRoot != null) bossCountdownRoot.SetActive(true);
-        if (bossCountdownText != null)
-            bossCountdownText.text = $"BOSS IN: {Mathf.CeilToInt(secondsLeft)}";
-    }
-
-    public void HideBossCountdown()
-    {
-        if (bossCountdownRoot != null) bossCountdownRoot.SetActive(false);
+            timeText.text = $"??: {Mathf.Max(0f, t):0.0}s";
     }
 
     public void ShowGameOver(float surviveTime, float finalWork, string reason, float performanceScore)

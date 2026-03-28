@@ -5,10 +5,10 @@ using UnityEngine.UI;
 namespace JiU
 {
     /// <summary>
-    /// Boss 预警：将 Image 物体 SetActive(true)，可选换「靠近」图。
-    /// Boss 刚到：换第一张图；等待可编辑时间后再换第二张图。
-    /// Boss 离开：换回默认 Sprite，再 SetActive(false)。
-    /// 依赖 GameManager 的 OnBossWarningStarted / OnBossArrived / OnBossLeft。
+    /// Boss 预警：将 Image 显示、换「靠近」图、巡逻动画。
+    /// 若 BossIncomingConfig 开启 enablePreArrivalFreeze 且 freezeWindowBeforeArrival &gt; 0，
+    /// 则 Image 与巡逻动画推迟到该「到达前冻结窗口」内再出现（与 BlockNewHackEventsNow 一致）。
+    /// Boss 刚到：换第一张图；延迟后可换第二张。离开：恢复 Sprite 并 SetActive(false)。
     /// </summary>
     public class BossArrivalUISprite : MonoBehaviour
     {
@@ -40,6 +40,8 @@ namespace JiU
 
         Sprite _initialSprite;
         Coroutine _secondSpriteRoutine;
+        Animation _patrolAnimation;
+        bool _freezeWindowApproachApplied;
 
         void Start()
         {
@@ -66,17 +68,65 @@ namespace JiU
         {
             if (targetImage == null) return;
 
+            GameManager gm = GameManager.Instance;
+            if (DeferBossVisualToFreezeWindow(gm))
+            {
+                _freezeWindowApproachApplied = false;
+                TrySetPatrolAnimation(false);
+                if (activateOnBossWarning)
+                    targetImage.gameObject.SetActive(false);
+                return;
+            }
+
+            ApplyApproachVisualAndPatrol();
+        }
+
+        static bool DeferBossVisualToFreezeWindow(GameManager gm)
+        {
+            BossIncomingConfig cfg = gm != null ? gm.bossIncomingConfig : null;
+            return cfg != null && cfg.enablePreArrivalFreeze && cfg.freezeWindowBeforeArrival > 0.0001f;
+        }
+
+        void ApplyApproachVisualAndPatrol()
+        {
+            if (targetImage == null) return;
+
             if (activateOnBossWarning)
                 targetImage.gameObject.SetActive(true);
 
             if (spriteDuringApproach != null)
                 targetImage.sprite = spriteDuringApproach;
+
+            TrySetPatrolAnimation(true);
+        }
+
+        void LateUpdate()
+        {
+            GameManager gm = GameManager.Instance;
+            if (gm == null || targetImage == null || !gm.BossWarning)
+                return;
+
+            if (!DeferBossVisualToFreezeWindow(gm))
+                return;
+
+            if (_freezeWindowApproachApplied)
+                return;
+
+            if (!gm.BlockNewHackEventsNow())
+                return;
+
+            _freezeWindowApproachApplied = true;
+            ApplyApproachVisualAndPatrol();
         }
 
         void OnBossArrived()
         {
             if (targetImage == null) return;
 
+            if (activateOnBossWarning)
+                targetImage.gameObject.SetActive(true);
+
+            TrySetPatrolAnimation(false);
             StopSecondSpriteRoutine();
 
             if (spriteWhenBossHere != null)
@@ -106,8 +156,45 @@ namespace JiU
             }
         }
 
+        void TrySetPatrolAnimation(bool play)
+        {
+            Transform animHost = targetImage != null ? targetImage.transform : transform;
+
+            if (!play)
+            {
+                if (_patrolAnimation != null)
+                {
+                    _patrolAnimation.Stop();
+                    _patrolAnimation.clip = null;
+                }
+
+                return;
+            }
+
+            GameManager gm = GameManager.Instance;
+            BossIncomingConfig cfg = gm != null ? gm.bossIncomingConfig : null;
+            if (cfg == null || !cfg.enableBossPatrolAnimation || cfg.patrolAnimationClip == null)
+                return;
+
+            AnimationClip clip = cfg.patrolAnimationClip;
+
+            _patrolAnimation = animHost.GetComponent<Animation>();
+            if (_patrolAnimation == null)
+                _patrolAnimation = animHost.gameObject.AddComponent<Animation>();
+
+            _patrolAnimation.Stop();
+            _patrolAnimation.playAutomatically = false;
+
+            // 老版本 Unity 没有 Play(AnimationClip)，用默认 clip + Play()，兼容 Legacy Animation。
+            _patrolAnimation.clip = clip;
+            _patrolAnimation.wrapMode = WrapMode.Loop;
+            _patrolAnimation.Play();
+        }
+
         void OnBossLeft()
         {
+            _freezeWindowApproachApplied = false;
+            TrySetPatrolAnimation(false);
             StopSecondSpriteRoutine();
             if (targetImage == null) return;
 

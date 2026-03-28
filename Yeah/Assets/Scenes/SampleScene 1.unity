@@ -305,6 +305,7 @@ RectTransform:
   - {fileID: 830590484}
   - {fileID: 1566167713}
   - {fileID: 412877140}
+  - {fileID: 1547515225}
   m_Father: {fileID: 1631198163}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -950,7 +951,8 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 10
+  baitWeight: 5
+  enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/3
   repairKeyCodeFallback: 51
   requirePlayerInRange: 0
@@ -958,6 +960,7 @@ MonoBehaviour:
   player: {fileID: 0}
   brokenColor: {r: 1, g: 0.2, b: 0.2, a: 1}
   baitColor: {r: 0.2, g: 1, b: 0.2, a: 1}
+  keepVisualSyncedWithLogic: 1
   OnBroken:
     m_PersistentCalls:
       m_Calls: []
@@ -1635,7 +1638,8 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 10
+  baitWeight: 1
+  enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/1
   repairKeyCodeFallback: 49
   requirePlayerInRange: 0
@@ -1643,6 +1647,7 @@ MonoBehaviour:
   player: {fileID: 0}
   brokenColor: {r: 1, g: 0.25, b: 0.25, a: 1}
   baitColor: {r: 0.2, g: 1, b: 0.2, a: 1}
+  keepVisualSyncedWithLogic: 1
   OnBroken:
     m_PersistentCalls:
       m_Calls: []
@@ -2029,6 +2034,7 @@ GameObject:
   - component: {fileID: 412877140}
   - component: {fileID: 412877142}
   - component: {fileID: 412877141}
+  - component: {fileID: 412877143}
   m_Layer: 5
   m_Name: Boss
   m_TagString: Untagged
@@ -2044,15 +2050,15 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 412877139}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 35}
-  m_LocalScale: {x: 0.28, y: 0.28, z: 0.28}
+  m_LocalPosition: {x: 0, y: 0, z: 93}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 63575736}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -357, y: -32}
+  m_AnchoredPosition: {x: -1253, y: -19}
   m_SizeDelta: {x: 3744, y: 2470}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &412877141
@@ -2093,6 +2099,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 412877139}
   m_CullTransparentMesh: 1
+--- !u!95 &412877143
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 412877139}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: cc4e5c803d8e2b24eb5d850f4a9af9f9, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &455094936
 GameObject:
   m_ObjectHideFlags: 0
@@ -2281,7 +2309,8 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 10
+  baitWeight: 15
+  enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/2
   repairKeyCodeFallback: 50
   requirePlayerInRange: 0
@@ -2289,6 +2318,7 @@ MonoBehaviour:
   player: {fileID: 0}
   brokenColor: {r: 1, g: 0.3, b: 0.3, a: 1}
   baitColor: {r: 0.2, g: 1, b: 0.2, a: 1}
+  keepVisualSyncedWithLogic: 1
   OnBroken:
     m_PersistentCalls:
       m_Calls: []
@@ -2619,7 +2649,7 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 1
+  m_Value: 0.3
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -3088,7 +3118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.19496846, g: 0.19496846, b: 0.19496846, a: 1}
+  m_Color: {r: 0.012578547, g: 0.012578547, b: 0.012578547, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3287,8 +3317,6 @@ MonoBehaviour:
   timeText: {fileID: 0}
   workBossMinThresholdIndicator: {fileID: 0}
   workBossMinIndicatorWidth: 6
-  bossCountdownRoot: {fileID: 19963944}
-  bossCountdownText: {fileID: 945301051}
   gameOverRoot: {fileID: 496400306}
   gameOverTitleText: {fileID: 1013129476}
   gameOverDetailText: {fileID: 1013129476}
@@ -3474,7 +3502,8 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 10
+  baitWeight: 1
+  enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/6
   repairKeyCodeFallback: 54
   requirePlayerInRange: 0
@@ -3482,6 +3511,7 @@ MonoBehaviour:
   player: {fileID: 0}
   brokenColor: {r: 1, g: 0.3, b: 0.3, a: 1}
   baitColor: {r: 0.2, g: 1, b: 0.2, a: 1}
+  keepVisualSyncedWithLogic: 1
   OnBroken:
     m_PersistentCalls:
       m_Calls: []
@@ -4323,7 +4353,8 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 10
+  baitWeight: 15
+  enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/4
   repairKeyCodeFallback: 52
   requirePlayerInRange: 0
@@ -4331,6 +4362,7 @@ MonoBehaviour:
   player: {fileID: 0}
   brokenColor: {r: 1, g: 0.3, b: 0.3, a: 1}
   baitColor: {r: 0.2, g: 1, b: 0.2, a: 1}
+  keepVisualSyncedWithLogic: 1
   OnBroken:
     m_PersistentCalls:
       m_Calls: []
@@ -5260,7 +5292,8 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 10
+  baitWeight: 5
+  enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/5
   repairKeyCodeFallback: 53
   requirePlayerInRange: 0
@@ -5268,6 +5301,7 @@ MonoBehaviour:
   player: {fileID: 0}
   brokenColor: {r: 1, g: 0.2, b: 0.2, a: 1}
   baitColor: {r: 0.2, g: 1, b: 0.2, a: 1}
+  keepVisualSyncedWithLogic: 1
   OnBroken:
     m_PersistentCalls:
       m_Calls: []
@@ -5706,7 +5740,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -410, y: -222}
+  m_AnchoredPosition: {x: -361, y: -222}
   m_SizeDelta: {x: 100, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1295794719
@@ -5993,6 +6027,60 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1b7c83f902228be43a03f1de90e38e69, type: 3}
   m_PrefabInstance: {fileID: 274026233}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1440283417
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1440283418}
+  - component: {fileID: 1440283419}
+  m_Layer: 0
+  m_Name: UI Manger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1440283418
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1440283417}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1583755465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1440283419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1440283417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2dea8746f27eb946987e8e5f846fed0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIManager
+  workSlider: {fileID: 593969689}
+  workNumberText: {fileID: 0}
+  timeText: {fileID: 0}
+  workBossMinThresholdIndicator: {fileID: 1040974412}
+  workBossMinIndicatorWidth: 6
+  gameOverRoot: {fileID: 496400306}
+  gameOverTitleText: {fileID: 0}
+  gameOverDetailText: {fileID: 1013129476}
+  gameWinRoot: {fileID: 650030629}
+  gameWinPerformanceText: {fileID: 206329337}
 --- !u!1001 &1476016883
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6199,6 +6287,81 @@ MonoBehaviour:
   sceneBuildIndex: 0
   resetTimeScaleBeforeLoad: 1
   autoWireButtonOnSameObject: 1
+--- !u!1 &1547515224
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1547515225}
+  - component: {fileID: 1547515227}
+  - component: {fileID: 1547515226}
+  m_Layer: 5
+  m_Name: Front
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1547515225
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547515224}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 63575736}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1547515226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547515224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d88fd2bb2a53b9c48b70a3a374ddaeeb, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1547515227
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1547515224}
+  m_CullTransparentMesh: 1
 --- !u!1 &1566167712
 GameObject:
   m_ObjectHideFlags: 0
@@ -6249,7 +6412,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.54088044, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6284,7 +6447,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1583755465}
   - component: {fileID: 1583755464}
-  - component: {fileID: 1583755466}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -6306,17 +6468,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   work: 0
   maxWork: 100
-  workPunishment: 5
-  workUltraPunishment: 10
+  workPunishment: 4
+  workUltraPunishment: 8
   workMashGain: 0
-  workGainPerSecondPerWorkingItem: 1
-  workLossPerSecondPerBrokenItem: 2
-  bossMinWorkThreshold: 20
-  bossMinArriveInterval: 30
-  bossMaxArriveInterval: 40
-  bossWarningDuration: 5
-  bossStayDuration: 4
-  enableTutorial: 1
+  workGainPerSecondPerWorkingItem: 0.5
+  workLossPerSecondPerBrokenItem: 3
+  bossMinWorkThreshold: 30
+  bossIncomingConfig: {fileID: 1853649707}
+  enableTutorial: 0
   tutorialBreakOrder:
   - {fileID: 363469229}
   - {fileID: 882021887}
@@ -6325,32 +6484,51 @@ MonoBehaviour:
   - {fileID: 983266344}
   - {fileID: 1141977272}
   gamePhases:
-  - phaseName: phase 1
-    maxConcurrentBrokenWorkItems: 2
+  - phaseName: phase 0
+    maxConcurrentBrokenWorkItems: 3
     minBreakIntervalSeconds: 6
     maxBreakIntervalSeconds: 12
     bossMinWorkThreshold: 30
-    workPunishment: 5
-    workUltraPunishment: 10
-    workGainPerSecondPerWorkingItem: 1
-    workLossPerSecondPerBrokenItem: 2.5
-    phaseBaseScore: 1000
-    scoreLossPerSecondPerBrokenItem: 10
-    warningShowDelayAfterBreak: 1.5
+    workPunishment: 4
+    workUltraPunishment: 8
+    workGainPerSecondPerWorkingItem: 0.5
+    workLossPerSecondPerBrokenItem: 3
+    warningShowDelayAfterBreak: 5
     warningMessageFormat: '{0} has been hacked!'
-  - phaseName: Phase 2
-    maxConcurrentBrokenWorkItems: 3
+  - phaseName: Phase 1
+    maxConcurrentBrokenWorkItems: 4
     minBreakIntervalSeconds: 6
     maxBreakIntervalSeconds: 10
-    bossMinWorkThreshold: 35
+    bossMinWorkThreshold: 30
     workPunishment: 5
     workUltraPunishment: 10
-    workGainPerSecondPerWorkingItem: 1
-    workLossPerSecondPerBrokenItem: 2.5
-    phaseBaseScore: 2000
-    scoreLossPerSecondPerBrokenItem: 15
-    warningShowDelayAfterBreak: 3
+    workGainPerSecondPerWorkingItem: 0.75
+    workLossPerSecondPerBrokenItem: 3
+    warningShowDelayAfterBreak: 5
     warningMessageFormat: '{0} has been hacked!'
+  - phaseName: Phase 2
+    maxConcurrentBrokenWorkItems: 5
+    minBreakIntervalSeconds: 5
+    maxBreakIntervalSeconds: 9
+    bossMinWorkThreshold: 30
+    workPunishment: 6
+    workUltraPunishment: 12
+    workGainPerSecondPerWorkingItem: 1
+    workLossPerSecondPerBrokenItem: 3
+    warningShowDelayAfterBreak: 6
+    warningMessageFormat: '{0} has been hacked!'
+  - phaseName: Phase 3
+    maxConcurrentBrokenWorkItems: 6
+    minBreakIntervalSeconds: 4
+    maxBreakIntervalSeconds: 8
+    bossMinWorkThreshold: 30
+    workPunishment: 6
+    workUltraPunishment: 12
+    workGainPerSecondPerWorkingItem: 0.9
+    workLossPerSecondPerBrokenItem: 3
+    warningShowDelayAfterBreak: 7
+    warningMessageFormat: '{0} has been hacked!'
+  victoryCountdownSeconds: 120
   ui: {fileID: 833216427}
   screenTint: {fileID: 1040974415}
   OnBossWarningStarted:
@@ -6366,6 +6544,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   autoFindItemsOnStart: 0
+  debugLogPhaseAndScore: 1
   items:
   - {fileID: 983266344}
   - {fileID: 1141977272}
@@ -6422,32 +6601,10 @@ Transform:
   m_Children:
   - {fileID: 1780784105}
   - {fileID: 293262220}
+  - {fileID: 1440283418}
+  - {fileID: 1853649706}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1583755466
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1583755463}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2dea8746f27eb946987e8e5f846fed0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIManager
-  workSlider: {fileID: 593969689}
-  workNumberText: {fileID: 0}
-  timeText: {fileID: 0}
-  workBossMinThresholdIndicator: {fileID: 1040974412}
-  workBossMinIndicatorWidth: 6
-  bossCountdownRoot: {fileID: 19963944}
-  bossCountdownText: {fileID: 945301051}
-  gameOverRoot: {fileID: 496400306}
-  gameOverTitleText: {fileID: 0}
-  gameOverDetailText: {fileID: 1013129476}
-  gameWinRoot: {fileID: 650030629}
-  gameWinPerformanceText: {fileID: 206329337}
 --- !u!1001 &1585928528
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7044,6 +7201,86 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ad42e0bbbab6a854fa80d652fa288020, type: 3}
   m_PrefabInstance: {fileID: 101021009}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1853649705
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1853649706}
+  - component: {fileID: 1853649707}
+  m_Layer: 0
+  m_Name: Boss Config
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1853649706
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853649705}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1583755465}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1853649707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853649705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28e05e4252bf52b44858ccd5b7ad3b7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossIncomingConfig
+  cooldownDuration: 5
+  randomTriggerMinTime: 10
+  randomTriggerMaxTime: 25
+  enableScoreForceTrigger: 0
+  scoreTriggerThreshold: 0.35
+  bossWarningDurationMin: 4
+  bossWarningDurationMax: 8
+  bossStayDuration: 3
+  enableITGuyWarning: 1
+  itGuyWarningMessage: BOSS is heading your way!
+  enableBossPatrolAnimation: 1
+  patrolAnimationClip: {fileID: 7400000, guid: 63dd142c3c085b143a6d6c7248d4d9e4, type: 2}
+  enableBossPhaseHackLimit: 1
+  maxHackedItemsDuringBoss: 1
+  enablePreArrivalFreeze: 1
+  freezeWindowBeforeArrival: 3
+  phaseScoreSettings:
+  - baseScore: 50
+    scoreDecayPerSecond: 5
+    performancePenaltyIdleWrongHit: 25
+    performancePenaltyBaitWrongHit: 35
+  - baseScore: 100
+    scoreDecayPerSecond: 10
+    performancePenaltyIdleWrongHit: 50
+    performancePenaltyBaitWrongHit: 70
+  - baseScore: 200
+    scoreDecayPerSecond: 20
+    performancePenaltyIdleWrongHit: 100
+    performancePenaltyBaitWrongHit: 150
+  - baseScore: 400
+    scoreDecayPerSecond: 40
+    performancePenaltyIdleWrongHit: 200
+    performancePenaltyBaitWrongHit: 300
+  performanceNormalizedHalfRange: 2000
+  scoreThresholdForNextPhase: 0.5
+  scorePhasePromotionHysteresis: 0.03
 --- !u!224 &1956544210 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1134458481914882787, guid: 2875acd265438cd4c8327e9e60963033, type: 3}
