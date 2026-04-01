@@ -35,10 +35,14 @@ public class IntroController : MonoBehaviour
         public bool showAd;
         public bool adSpamming;
         public GameObject vocalSound;
+        public bool waitsForPlayerInput;
+        public bool showDialogue;
+        public float dialogueWaitTime;
     }
 
     public List<dialoguePack> dialogueList;
 
+    public GameObject dialogueGroup;
     public RawImage dialogueHead;
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI dialogueName;
@@ -52,6 +56,7 @@ public class IntroController : MonoBehaviour
     public int maxAdCount;
     bool canMakeAd = true;
     public float waitAdMake;
+    public bool canAdvance;
 
     public GameObject canvas;
 
@@ -67,15 +72,20 @@ public class IntroController : MonoBehaviour
 
     void Update()
     {
-        if (ms.leftButton.wasPressedThisFrame)
+        //if (ms.leftButton.wasPressedThisFrame)
+        //{
+            //if (dialogueCount < dialogueList.Count - 1)
+            //{
+                //dialogueCount++;
+                //Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+            //}
+        //}
+        if (canAdvance)
         {
-            if (dialogueCount < dialogueList.Count - 1)
-            {
-                dialogueCount++;
-                Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
-            }
+            StartCoroutine(AdvanceText());
         }
 
+        dialogueGroup.SetActive(dialogueList[dialogueCount].showDialogue);
         bossMeeting.SetActive(dialogueList[dialogueCount].showBoss);
         samMeeting.SetActive(dialogueList[dialogueCount].showSam);
         adMeeting.SetActive(dialogueList[dialogueCount].showAd);
@@ -90,6 +100,25 @@ public class IntroController : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            foreach (GameObject ad in adSpam)
+            {
+                ad.gameObject.SetActive(false);
+            }
+        }
+
+        /*if (ms.leftButton.wasPressedThisFrame)
+        {
+            if (dialogueList[dialogueCount].waitsForPlayerInput == true)
+            {
+                StartAdPanic();
+            }
+            else
+            {
+                return;
+            }
+        }*/
 
         dialogueText.text = dialogueList[dialogueCount].dialogueText;
         dialogueName.text = dialogueList[dialogueCount].dialogueName;
@@ -103,5 +132,37 @@ public class IntroController : MonoBehaviour
         adSpamCount++;
         yield return new WaitForSeconds(waitAdMake);
         canMakeAd = true;
+    }
+
+    IEnumerator AdvanceText()
+    {
+        
+        canAdvance = false;
+        yield return new WaitForSeconds(dialogueList[dialogueCount].dialogueWaitTime);
+        if (dialogueCount < dialogueList.Count - 1)
+        {
+            dialogueCount++;
+            if (dialogueList[dialogueCount].vocalSound != null)
+            {
+                Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+            }
+    
+            if (dialogueList[dialogueCount].waitsForPlayerInput == true)
+            {
+                yield break;
+            }
+            else
+            {
+                canAdvance = true;
+            }
+        }
+
+    }
+
+    public void StartAdPanic()
+    {
+        dialogueCount++;
+        canAdvance = true;
+        
     }
 }
