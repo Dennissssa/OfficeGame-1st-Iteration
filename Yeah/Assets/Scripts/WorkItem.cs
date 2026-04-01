@@ -365,13 +365,16 @@ public class WorkItem : MonoBehaviour
             {
                 if (GameManager.Instance != null)
                     GameManager.Instance.UltraPunishment();
-                OnRepairIncorrect?.Invoke();
+                // Punishment 可能本帧触发 Game Over；若再 Invoke，Inspector 里绑定的逻辑可能关掉刚显示的失败面板
+                if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                    OnRepairIncorrect?.Invoke();
                 return;
             }
 
             if (GameManager.Instance != null)
                 GameManager.Instance.Punishment();
-            OnRepairIncorrect?.Invoke();
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
             return;
         }
 

@@ -53,6 +53,10 @@ public class BossIncomingConfig : MonoBehaviour
     [Min(0f)]
     public float bossStayDuration = 6f;
 
+    [Tooltip("检查阶段结束后、触发 OnBossLeft 前的离场表现时长（秒）。此期间 BossIsHere 仍为 true（仍按在场规则判定）。填 0 则与旧版一致立即离场。若使用 Legacy 离开动画，建议 ≥ 片段长度。")]
+    [Min(0f)]
+    public float bossLeaveAnimationDuration = 0f;
+
     [Header("── Warning System ──")]
     [Tooltip("预警开始时通过「物品损坏」同款槽位 UI 显示 Sam 提示")]
     public bool enableITGuyWarning = true;

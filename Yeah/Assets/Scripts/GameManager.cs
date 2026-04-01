@@ -57,6 +57,8 @@ public class GameManager : MonoBehaviour
     [Header("Boss 事件（可选）")]
     public UnityEvent OnBossWarningStarted;
     public UnityEvent OnBossArrived;
+    [Tooltip("在场检查时间结束、开始播放离场动画或表现时触发；之后延迟 bossLeaveAnimationDuration 再 OnBossLeft")]
+    public UnityEvent OnBossLeaveStarted;
     public UnityEvent OnBossLeft;
 
     [Tooltip("因 Boss 检查导致游戏失败时触发")]
@@ -68,6 +70,9 @@ public class GameManager : MonoBehaviour
     [Header("Debug")]
     [Tooltip("勾选后：开局 Console 打印阶段进阶所需分数说明；每次成功修好 Broke 后打印当前表现分")]
     public bool debugLogPhaseAndScore;
+
+    [Tooltip("勾选后：工作压力条涨满并进入 GameOverWorkProgressFull 时，在 Console 打一条日志（含 work、UIManager 是否绑定），用于排查该流程是否执行")]
+    public bool debugLogWorkProgressDeath = true;
 
     public List<WorkItem> items = new List<WorkItem>();
 
@@ -119,6 +124,9 @@ public class GameManager : MonoBehaviour
     public bool BossIsHere { get; private set; } = false;
     public bool BossWarning { get; private set; } = false;
     public float BossWarningTimeLeft { get; private set; } = 0f;
+
+    /// <summary>Boss 在场但「Look→Peek」等到达 UI 未播完时为 true，此时不执行 Broke 即失败判定。</summary>
+    bool _bossBrokeCheckAwaitingArrivalSprites;
 
     int _activeMaxConcurrentBroken = int.MaxValue;
     float _activeWorkPressureInstantOnBroke = 5f;
@@ -187,9 +195,34 @@ public class GameManager : MonoBehaviour
         ShutdownBrokenWarningSystem();
     }
 
+    void WarnIfMultipleUIManagerInScene()
+    {
+        UIManager[] all = FindObjectsOfType<UIManager>(true);
+        if (all == null || all.Length <= 1)
+            return;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine(
+            "[GameManager] 场景中检测到 **多个 UIManager**。GameManager 只会使用 Inspector 里 References → ui 绑定的那一个；");
+        sb.AppendLine(
+            "若「工作压力失败」面板只挂在另一个 Canvas/物体上的 UIManager 里且未绑定到当前 ui，ShowWorkProgressLose 会立刻 return 或显示空引用，Console 里 Awake 的 instanceID 也会与失败时不一致。");
+        for (int i = 0; i < all.Length; i++)
+        {
+            bool isBound = ui != null && all[i] == ui;
+            sb.AppendLine(
+                $"  [{i}] instanceID={all[i].GetInstanceID()} 物体=\"{all[i].gameObject.name}\" " +
+                $"workProgressLoseRoot={(all[i].workProgressLoseRoot != null ? "已赋值" : "未赋值")} " +
+                $"是当前 GameManager.ui: {isBound}");
+        }
+
+        Debug.LogWarning(sb.ToString().TrimEnd(), this);
+    }
+
     void Start()
     {
         work = 0f;
+
+        WarnIfMultipleUIManagerInScene();
 
         if (autoFindItemsOnStart && items.Count == 0)
         {
@@ -209,12 +242,18 @@ public class GameManager : MonoBehaviour
 
         if (ui != null)
         {
+            if (ui.workProgressLoseRoot == null)
+            {
+                Debug.LogError(
+                    "[GameManager] 当前 GameManager.ui 指向的 UIManager 上 **workProgressLoseRoot 未赋值**，工作压力满时无法显示失败面板。" +
+                    $" 该 UIManager 挂在物体「{ui.gameObject.name}」instanceID={ui.GetInstanceID()}。若场景里还有另一个 UIManager，请把三项结算引用都配在同一组件上，或改 ui 引用。",
+                    ui);
+            }
+
             ui.InitWorkSlider(maxWork);
             ui.SetWork(work);
             ui.SetTime(_victoryCountdownRemaining);
-            ui.HideGameOver();
-            ui.HideWorkProgressLose();
-            ui.HideGameWin();
+            ui.HideAllResultPanels();
         }
 
         if (screenTint != null)
@@ -382,11 +421,17 @@ public class GameManager : MonoBehaviour
             _performanceScoreRaw -= broken * ps.scoreDecayPerSecond * Time.deltaTime;
         }
 
-        if (BossIsHere && broken > 0)
+        if (BossIsHere && !_bossBrokeCheckAwaitingArrivalSprites && broken > 0)
+        {
             GameOver("Boss saw hacked items!");
+            return;
+        }
 
         if (work >= maxWork)
+        {
             GameOverWorkProgressFull();
+            return;
+        }
 
         if (ui != null)
         {
@@ -501,6 +546,7 @@ public class GameManager : MonoBehaviour
             if (isGameOver || IsVictory) yield break;
 
             BossIsHere = true;
+            _bossBrokeCheckAwaitingArrivalSprites = false;
             OnBossArrived?.Invoke();
 
             if (screenTint != null)
@@ -513,7 +559,21 @@ public class GameManager : MonoBehaviour
                 yield return null;
             }
 
+            if (isGameOver || IsVictory) yield break;
+
+            OnBossLeaveStarted?.Invoke();
+
+            float leaveHold = cfg != null ? Mathf.Max(0f, cfg.bossLeaveAnimationDuration) : 0f;
+            while (leaveHold > 0f && !isGameOver && !IsVictory)
+            {
+                leaveHold -= Time.deltaTime;
+                yield return null;
+            }
+
+            if (isGameOver || IsVictory) yield break;
+
             BossIsHere = false;
+            _bossBrokeCheckAwaitingArrivalSprites = false;
             OnBossLeft?.Invoke();
 
             if (screenTint != null)
@@ -720,6 +780,12 @@ public class GameManager : MonoBehaviour
         return BossIsHere;
     }
 
+    /// <summary>由 BossArrivalUISprite 调用：配置了第二张到达图时，在切到 Peek 之前设为 true，切换完成后设为 false。</summary>
+    public void SetBossBrokeCheckAwaitingArrivalSprites(bool awaiting)
+    {
+        _bossBrokeCheckAwaitingArrivalSprites = awaiting;
+    }
+
     /// <summary>WorkItem 进入 Hacked（Broke）时调用，按阶段加上 baseScore。</summary>
     public void OnWorkItemEnteredHackedState(WorkItem item)
     {
@@ -784,6 +850,7 @@ public class GameManager : MonoBehaviour
 
         BossWarning = false;
         BossIsHere = false;
+        _bossBrokeCheckAwaitingArrivalSprites = false;
         FreezeFailures = false;
 
         if (screenTint != null)
@@ -792,10 +859,7 @@ public class GameManager : MonoBehaviour
         ShutdownBrokenWarningSystem();
 
         if (ui != null)
-        {
-            ui.HideWorkProgressLose();
             ui.ShowGameWin(TotalPerformanceScore);
-        }
 
         Time.timeScale = 0f;
     }
@@ -859,8 +923,23 @@ public class GameManager : MonoBehaviour
 
     void GameOverWorkProgressFull()
     {
-        if (isGameOver || IsVictory) return;
+        if (isGameOver || IsVictory)
+        {
+            if (debugLogWorkProgressDeath)
+                Debug.Log("[GameManager] GameOverWorkProgressFull 未执行：当前已是 Game Over 或胜利（例如本帧先触发了其它失败）。", this);
+            return;
+        }
+
         isGameOver = true;
+
+        if (debugLogWorkProgressDeath)
+        {
+            Debug.Log(
+                "[GameManager] 工作压力满 → 已触发死亡 (GameOverWorkProgressFull)。 " +
+                $"work={work:F2}/{maxWork:F2}, survive={surviveTime:F1}s, performanceScore={TotalPerformanceScore:F1}, " +
+                $"UIManager={(ui != null ? "已绑定" : "未绑定 null")}",
+                this);
+        }
 
         if (_bossLoopCoroutine != null)
         {
@@ -876,6 +955,7 @@ public class GameManager : MonoBehaviour
 
         BossWarning = false;
         BossIsHere = false;
+        _bossBrokeCheckAwaitingArrivalSprites = false;
         FreezeFailures = false;
 
         if (screenTint != null)
@@ -885,9 +965,19 @@ public class GameManager : MonoBehaviour
 
         if (ui != null)
         {
-            ui.HideGameOver();
+            if (debugLogWorkProgressDeath)
+                Debug.Log(
+                    "[GameManager] GameOverWorkProgressFull → 调用 ShowWorkProgressLose | " +
+                    $"UIManager.instanceID={ui.GetInstanceID()} GameObject=\"{ui.gameObject.name}\" scene={ui.gameObject.scene.name}",
+                    ui);
             ui.ShowWorkProgressLose(surviveTime, work, TotalPerformanceScore, maxWork);
+            if (debugLogWorkProgressDeath)
+                Debug.Log("[GameManager] ShowWorkProgressLose 已返回（未抛异常）", ui);
         }
+#if UNITY_EDITOR
+        else
+            Debug.LogWarning("[GameManager] GameOverWorkProgressFull：UIManager (ui) 未赋值，无法显示工作压力失败面板。", this);
+#endif
 
         Time.timeScale = 0f;
     }
@@ -1290,6 +1380,7 @@ public class GameManager : MonoBehaviour
 
         BossWarning = false;
         BossIsHere = false;
+        _bossBrokeCheckAwaitingArrivalSprites = false;
 
         FreezeFailures = false;
 
@@ -1303,10 +1394,7 @@ public class GameManager : MonoBehaviour
         ShutdownBrokenWarningSystem();
 
         if (ui != null)
-        {
-            ui.HideWorkProgressLose();
             ui.ShowGameOver(surviveTime, work, reason, TotalPerformanceScore);
-        }
 
         Time.timeScale = 0f;
     }
