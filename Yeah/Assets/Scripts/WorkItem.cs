@@ -78,6 +78,7 @@ public class WorkItem : MonoBehaviour
     public GameObject smokeParticles;
 
     public string itemName;
+    public GameObject tutorialBox;
     private static readonly int[] ColorPropIds =
     {
         Shader.PropertyToID("_BaseColor"),
@@ -408,6 +409,10 @@ public class WorkItem : MonoBehaviour
 
         if (GameManager.Instance != null)
         {
+            if (GameManager.Instance.isTutorialing == true)
+            {
+                tutorialBox.SetActive(true);
+            }
             GameManager.Instance.OnWorkItemEnteredHackedState(this);
             GameManager.Instance.ApplyWorkPressureOnItemBroke();
         }
@@ -457,7 +462,11 @@ public class WorkItem : MonoBehaviour
         IsBaiting = false;
 
         if (wasBroken && GameManager.Instance != null)
+        {
             GameManager.Instance.ApplyWorkPressureOnBrokeRepaired();
+            tutorialBox.SetActive(false);
+        }
+            
 
         ClearTintOverride();
         OnFixed?.Invoke();
