@@ -79,6 +79,8 @@ public class WorkItem : MonoBehaviour
 
     public string itemName;
     public GameObject tutorialBox;
+    public bool isLast;
+    public GameObject finalBox;
     private static readonly int[] ColorPropIds =
     {
         Shader.PropertyToID("_BaseColor"),
@@ -468,6 +470,10 @@ public class WorkItem : MonoBehaviour
         {
             GameManager.Instance.ApplyWorkPressureOnBrokeRepaired();
             tutorialBox.SetActive(false);
+            if (isLast)
+            {
+                finalBox.SetActive(true);
+            }
         }
             
 
