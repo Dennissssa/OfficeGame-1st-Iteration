@@ -1451,6 +1451,8 @@ MonoBehaviour:
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Speaker
   tutorialBox: {fileID: 625434838}
+  isLast: 0
+  finalBox: {fileID: 0}
 --- !u!65 &206531937
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2093,6 +2095,8 @@ MonoBehaviour:
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Monitor
   tutorialBox: {fileID: 77799160}
+  isLast: 0
+  finalBox: {fileID: 0}
 --- !u!65 &363469230
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2463,7 +2467,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &410744108
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2990,6 +2994,8 @@ MonoBehaviour:
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Lamp
   tutorialBox: {fileID: 1111375582}
+  isLast: 0
+  finalBox: {fileID: 0}
 --- !u!65 &528905811
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5386,6 +5392,8 @@ MonoBehaviour:
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Printer
   tutorialBox: {fileID: 799686130}
+  isLast: 0
+  finalBox: {fileID: 0}
 --- !u!65 &882021888
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6542,6 +6550,8 @@ MonoBehaviour:
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Skull
   tutorialBox: {fileID: 410744107}
+  isLast: 0
+  finalBox: {fileID: 0}
 --- !u!65 &983266345
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7846,6 +7856,8 @@ MonoBehaviour:
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Phone
   tutorialBox: {fileID: 1066965541}
+  isLast: 0
+  finalBox: {fileID: 0}
 --- !u!65 &1141977273
 BoxCollider:
   m_ObjectHideFlags: 0
