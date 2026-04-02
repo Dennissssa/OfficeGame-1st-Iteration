@@ -19,6 +19,18 @@ public class UIManager : MonoBehaviour
     [Min(1f)]
     public float workBossMinIndicatorWidth = 6f;
 
+    [Header("Work Progress 视觉（归一化 = 当前值 / Slider.maxValue）")]
+    [Tooltip("不填则使用 Slider → Fill Area → Fill 上的 Image")]
+    public Image workSliderFillOverride;
+
+    [Tooltip("至少 2 个阶段可在相邻阈值之间渐变 Fill 颜色；仅 1 个则整条为纯色")]
+    public List<WorkProgressFillColorStage> workProgressFillColorStages = new List<WorkProgressFillColorStage>();
+
+    [Tooltip("同一 Image 可配置多条：进度升高切换、降低自动恢复")]
+    public List<WorkProgressImageSpriteKeyframe> workProgressImageSprites = new List<WorkProgressImageSpriteKeyframe>();
+
+    readonly Dictionary<Image, (float threshold, Sprite sprite)> _workImageSpritePickScratch = new Dictionary<Image, (float, Sprite)>();
+
     [Header("Game Over UI")]
     public GameObject gameOverRoot;
     public TMP_Text gameOverTitleText;
@@ -64,6 +76,7 @@ public class UIManager : MonoBehaviour
         workSlider.maxValue = maxWork;
         workSlider.value = 0f;
         workSlider.interactable = false;
+        RefreshWorkProgressVisuals(workSlider.value);
     }
 
     public void SetWork(float work)
@@ -73,6 +86,93 @@ public class UIManager : MonoBehaviour
 
         if (workNumberText != null)
             workNumberText.text = $"WORK: {work:0}";
+
+        RefreshWorkProgressVisuals(work);
+    }
+
+    /// <summary>按当前 Work 与 Slider.max 更新 Fill 渐变颜色与各 Image 的 Sprite。</summary>
+    public void RefreshWorkProgressVisuals(float currentWork)
+    {
+        float max = workSlider != null ? workSlider.maxValue : 1f;
+        if (max <= 0.0001f)
+            max = 1f;
+        float u = Mathf.Clamp01(currentWork / max);
+        ApplyWorkProgressFillGradient(u);
+        ApplyWorkProgressImageSprites(u);
+    }
+
+    void ApplyWorkProgressFillGradient(float normalizedWork)
+    {
+        Image fill = workSliderFillOverride;
+        if (fill == null && workSlider != null && workSlider.fillRect != null)
+            fill = workSlider.fillRect.GetComponent<Image>();
+        if (fill == null || workProgressFillColorStages == null || workProgressFillColorStages.Count == 0)
+            return;
+
+        var sorted = new List<WorkProgressFillColorStage>(workProgressFillColorStages);
+        sorted.Sort((a, b) => a.normalizedThreshold.CompareTo(b.normalizedThreshold));
+
+        if (sorted.Count == 1)
+        {
+            fill.color = sorted[0].color;
+            return;
+        }
+
+        float u = normalizedWork;
+        if (u <= sorted[0].normalizedThreshold)
+        {
+            fill.color = sorted[0].color;
+            return;
+        }
+
+        float lastT = sorted[sorted.Count - 1].normalizedThreshold;
+        if (u >= lastT)
+        {
+            fill.color = sorted[sorted.Count - 1].color;
+            return;
+        }
+
+        for (int i = 0; i < sorted.Count - 1; i++)
+        {
+            float t0 = sorted[i].normalizedThreshold;
+            float t1 = sorted[i + 1].normalizedThreshold;
+            if (u < t0)
+                continue;
+            if (u > t1)
+                continue;
+
+            float span = t1 - t0;
+            float lerp = span > 1e-6f ? (u - t0) / span : 0f;
+            fill.color = Color.Lerp(sorted[i].color, sorted[i + 1].color, lerp);
+            return;
+        }
+    }
+
+    void ApplyWorkProgressImageSprites(float normalizedWork)
+    {
+        if (workProgressImageSprites == null || workProgressImageSprites.Count == 0)
+            return;
+
+        _workImageSpritePickScratch.Clear();
+        const float eps = 1e-5f;
+
+        for (int i = 0; i < workProgressImageSprites.Count; i++)
+        {
+            WorkProgressImageSpriteKeyframe kf = workProgressImageSprites[i];
+            if (kf.targetImage == null || kf.sprite == null)
+                continue;
+            if (kf.normalizedThreshold > normalizedWork + eps)
+                continue;
+
+            if (!_workImageSpritePickScratch.TryGetValue(kf.targetImage, out var pick)
+                || kf.normalizedThreshold >= pick.threshold)
+            {
+                _workImageSpritePickScratch[kf.targetImage] = (kf.normalizedThreshold, kf.sprite);
+            }
+        }
+
+        foreach (var kv in _workImageSpritePickScratch)
+            kv.Key.sprite = kv.Value.sprite;
     }
 
 
@@ -347,4 +447,28 @@ public class UIManager : MonoBehaviour
     {
         if (gameWinRoot != null) gameWinRoot.SetActive(false);
     }
+}
+
+/// <summary>工作压力条 Fill 在某一归一化进度点的颜色；相邻两点之间线性渐变。</summary>
+[System.Serializable]
+public class WorkProgressFillColorStage
+{
+    [Tooltip("归一化进度 0~1（当前 Work / Slider.maxValue）。达到该点及之后与下一点之间对 Fill 颜色做渐变。")]
+    [Range(0f, 1f)]
+    public float normalizedThreshold;
+
+    public Color color = Color.white;
+}
+
+/// <summary>当进度达到阈值时，将指定 Image 切换为对应 Sprite；进度回退时自动回到较低阈值对应的 Sprite。</summary>
+[System.Serializable]
+public class WorkProgressImageSpriteKeyframe
+{
+    public Image targetImage;
+
+    [Tooltip("归一化进度 0~1。当前进度 ≥ 此值时采用本 Sprite（同图多条目取阈值最高且仍 ≤ 当前进度的那条；同阈值时列表靠后的优先）。")]
+    [Range(0f, 1f)]
+    public float normalizedThreshold;
+
+    public Sprite sprite;
 }

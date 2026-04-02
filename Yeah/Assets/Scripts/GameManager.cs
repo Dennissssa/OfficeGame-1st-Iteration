@@ -151,6 +151,9 @@ public class GameManager : MonoBehaviour
     bool _bossWarningUiInFreezeHide;
     string _bossApproachWarningMessage;
 
+    /// <summary>教程首次损坏起至第一次 Boss 到场前：不恢复损坏预警默认图标（冻结窗内也不还原）。</summary>
+    bool _holdBrokenWarningIconActiveUntilFirstBossArrived;
+
     int _currentPhaseIndex;
     bool _tutorialBreakSequenceDone;
     /// <summary>是否允许 WorkItem 自动 Broke/Bait；关教程时从 Awake 起为 true，开教程时开局 false、第一次 Boss 离开后为 true。</summary>
@@ -401,7 +404,7 @@ public class GameManager : MonoBehaviour
             if (wi.IsBroken)
             {
                 broken++;
-                if (!_itemBrokenWarningDelays.ContainsKey(wi))
+                if (!_itemBrokenWarningDelays.ContainsKey(wi) && !SuppressBrokenItemWarningDuringTutorial())
                     StartBrokenWarningForItem(wi);
             }
             else
@@ -452,6 +455,7 @@ public class GameManager : MonoBehaviour
             ? tutorialBreakOrder
             : items;
 
+        bool appliedPreBossIconHold = false;
         for (int i = 0; i < order.Count; i++)
         {
             WorkItem wi = order[i];
@@ -459,6 +463,12 @@ public class GameManager : MonoBehaviour
 
             while (wi.IsBaiting)
                 yield return null;
+
+            if (!appliedPreBossIconHold)
+            {
+                appliedPreBossIconHold = true;
+                BeginPreFirstBossBrokenWarningIconHold();
+            }
 
             wi.Break();
 
@@ -550,6 +560,7 @@ public class GameManager : MonoBehaviour
             if (isGameOver || IsVictory) yield break;
 
             BossIsHere = true;
+            EndPreFirstBossBrokenWarningIconHold();
             _bossBrokeCheckAwaitingArrivalSprites = false;
             OnBossArrived?.Invoke();
 
@@ -570,7 +581,7 @@ public class GameManager : MonoBehaviour
             float leaveHold = cfg != null ? Mathf.Max(0f, cfg.bossLeaveAnimationDuration) : 0f;
             while (leaveHold > 0f && !isGameOver && !IsVictory)
             {
-                leaveHold -= Time.deltaTime;
+                leaveHold -= Time.unscaledDeltaTime;
                 yield return null;
             }
 
@@ -1007,9 +1018,32 @@ public class GameManager : MonoBehaviour
         return w.name;
     }
 
+    bool SuppressBrokenItemWarningDuringTutorial()
+    {
+        return enableTutorial && !_tutorialBreakSequenceDone;
+    }
+
+    void BeginPreFirstBossBrokenWarningIconHold()
+    {
+        if (brokenWarningIconImage == null || brokenWarningActiveSprite == null)
+            return;
+        _holdBrokenWarningIconActiveUntilFirstBossArrived = true;
+        brokenWarningIconImage.sprite = brokenWarningActiveSprite;
+    }
+
+    void EndPreFirstBossBrokenWarningIconHold()
+    {
+        if (!_holdBrokenWarningIconActiveUntilFirstBossArrived)
+            return;
+        _holdBrokenWarningIconActiveUntilFirstBossArrived = false;
+        RestoreBrokenWarningIconDefault();
+    }
+
     void StartBrokenWarningForItem(WorkItem item)
     {
         if (item == null || brokenWarningPanelRoot == null || brokenWarningText == null)
+            return;
+        if (SuppressBrokenItemWarningDuringTutorial())
             return;
         if (_itemBrokenWarningDelays.ContainsKey(item))
             return;
@@ -1102,6 +1136,8 @@ public class GameManager : MonoBehaviour
 
     void RestoreBrokenWarningIconDefault()
     {
+        if (_holdBrokenWarningIconActiveUntilFirstBossArrived)
+            return;
         if (brokenWarningIconImage != null && _defaultBrokenWarningIconSprite != null)
             brokenWarningIconImage.sprite = _defaultBrokenWarningIconSprite;
     }
@@ -1337,6 +1373,7 @@ public class GameManager : MonoBehaviour
         _resumeBrokenWarningAfterBoss = null;
         _bossWarningUiInFreezeHide = false;
         _bossApproachWarningMessage = null;
+        _holdBrokenWarningIconActiveUntilFirstBossArrived = false;
 
         if (brokenWarningPanelRoot != null)
             brokenWarningPanelRoot.SetActive(false);

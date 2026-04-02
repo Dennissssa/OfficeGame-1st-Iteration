@@ -53,7 +53,7 @@ public class BossIncomingConfig : MonoBehaviour
     [Min(0f)]
     public float bossStayDuration = 6f;
 
-    [Tooltip("检查阶段结束后、触发 OnBossLeft 前的离场表现时长（秒）。此期间 BossIsHere 仍为 true（仍按在场规则判定）。填 0 则与旧版一致立即离场。若使用 Legacy 离开动画，建议 ≥ 片段长度。")]
+    [Tooltip("检查阶段结束后、触发 OnBossLeft 前的离场表现时长（秒）。BossIsHere 仍为 true。使用 Animator 的 Leaving 时建议 ≥ Boss Leaving 片段长度；填 0 会与 OnBossLeft 同帧关掉 UI，需靠 BossArrivalUISprite 的 animatorLeaveHideDelayWhenGameHoldIsZero 补救。")]
     [Min(0f)]
     public float bossLeaveAnimationDuration = 0f;
 

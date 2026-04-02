@@ -30,8 +30,12 @@ namespace JiU
         [Tooltip("用于 Boss 完全离开 UI 时回到默认状态（见 crossFadeToIdleWhenBossLeft），便于下一轮从 Idle 再触发 Coming")]
         public string idleStateName = "Idle";
 
-        [Tooltip("OnBossLeft 时在 Animator 上 CrossFade 回 Idle。关闭则完全交给状态机自己从 Boss Stay / Leaving 回到 Idle")]
+        [Tooltip("仅 Legacy / 无 Animator 时有效。使用 Animator + Leaving 时不要勾选：否则 OnBossLeft 会 CrossFade 到 Idle，打断刚触发的 Leaving。")]
         public bool crossFadeToIdleWhenBossLeft = true;
+
+        [Tooltip("BossIncomingConfig.bossLeaveAnimationDuration 为 0 时，离场后额外等待这么多秒再隐藏 Image（给 Leaving 状态机动画时间）。若已在 Config 里填了离场时长，此处不会叠加等待。")]
+        [Min(0f)]
+        public float animatorLeaveHideDelayWhenGameHoldIsZero = 1.2f;
 
         [Header("预警（靠近）")]
         [Tooltip("预警开始时设为 true；若只想显示空底图可不填下方 Sprite")]
@@ -60,6 +64,7 @@ namespace JiU
 
         Sprite _initialSprite;
         Coroutine _secondSpriteRoutine;
+        Coroutine _bossLeftHideRoutine;
         Animation _patrolAnimation;
         bool _freezeWindowApproachApplied;
 
@@ -79,6 +84,7 @@ namespace JiU
         void OnDestroy()
         {
             StopSecondSpriteRoutine();
+            StopBossLeftHideRoutine();
             if (GameManager.Instance == null) return;
             GameManager.Instance.OnBossWarningStarted.RemoveListener(OnBossWarningStarted);
             GameManager.Instance.OnBossArrived.RemoveListener(OnBossArrived);
@@ -297,17 +303,53 @@ namespace JiU
             anim.Play(stateName);
         }
 
+        void StopBossLeftHideRoutine()
+        {
+            if (_bossLeftHideRoutine != null)
+            {
+                StopCoroutine(_bossLeftHideRoutine);
+                _bossLeftHideRoutine = null;
+            }
+        }
+
         void OnBossLeft()
         {
             _freezeWindowApproachApplied = false;
             TrySetPatrolAnimation(false);
             StopSecondSpriteRoutine();
+            StopBossLeftHideRoutine();
             if (GameManager.Instance != null)
                 GameManager.Instance.SetBossBrokeCheckAwaitingArrivalSprites(false);
-            if (crossFadeToIdleWhenBossLeft)
-                CrossFadeBossAnimatorToIdle();
-            if (targetImage == null) return;
 
+            // Animator + Leaving：CrossFade 到 Idle 会在同一流程里打断刚 SetTrigger 的 Leaving
+            if (crossFadeToIdleWhenBossLeft && !BossAnimatorReady)
+                CrossFadeBossAnimatorToIdle();
+
+            float cfgLeaveHold = 0f;
+            if (GameManager.Instance != null && GameManager.Instance.bossIncomingConfig != null)
+                cfgLeaveHold = Mathf.Max(0f, GameManager.Instance.bossIncomingConfig.bossLeaveAnimationDuration);
+
+            // GameManager 里离场时长为 0 时，OnBossLeft 与 LeaveStarted 同帧，Leaving 来不及播就被关掉
+            if (BossAnimatorReady && cfgLeaveHold < 0.0001f && animatorLeaveHideDelayWhenGameHoldIsZero > 0f)
+            {
+                _bossLeftHideRoutine = StartCoroutine(HideBossImageAfterLeavingDelayRoutine(animatorLeaveHideDelayWhenGameHoldIsZero));
+                return;
+            }
+
+            ApplyBossLeftVisualCleanup();
+        }
+
+        IEnumerator HideBossImageAfterLeavingDelayRoutine(float delaySeconds)
+        {
+            if (delaySeconds > 0f)
+                yield return new WaitForSecondsRealtime(delaySeconds);
+            _bossLeftHideRoutine = null;
+            ApplyBossLeftVisualCleanup();
+        }
+
+        void ApplyBossLeftVisualCleanup()
+        {
+            if (targetImage == null) return;
             targetImage.sprite = spriteWhenBossGone != null ? spriteWhenBossGone : _initialSprite;
             targetImage.gameObject.SetActive(false);
         }
