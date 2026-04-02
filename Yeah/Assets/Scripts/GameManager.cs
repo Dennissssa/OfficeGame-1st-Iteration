@@ -121,6 +121,7 @@ public class GameManager : MonoBehaviour
 
     public ArduinoSerialBridge arduinoBridgeScript;
 
+    public bool isTutorialing;
     public bool BossIsHere { get; private set; } = false;
     public bool BossWarning { get; private set; } = false;
     public float BossWarningTimeLeft { get; private set; } = 0f;
@@ -371,7 +372,10 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         if (isGameOver || IsVictory) return;
-
+        if (_tutorialBreakSequenceDone)
+        {
+            isTutorialing = false;
+        }
         surviveTime += Time.deltaTime;
 
         _victoryCountdownRemaining -= Time.deltaTime;

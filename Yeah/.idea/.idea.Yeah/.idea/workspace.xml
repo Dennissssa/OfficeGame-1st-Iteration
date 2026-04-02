@@ -3,8 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="7408c237-30f7-44a8-9118-3af327a18bfc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Conrad/IntroController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Conrad/IntroController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Conrad/Scenes/Intro Story Scene Refactored.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Conrad/Scenes/Intro Story Scene Refactored.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene 1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene 1.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/WorkItem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/WorkItem.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/UI Assets/sharkcrash-1 SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UI Assets/sharkcrash-1 SDF.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -98,7 +99,7 @@
       <workItem from="1773796252918" duration="2082000" />
       <workItem from="1773799094883" duration="655000" />
       <workItem from="1773799781879" duration="3764000" />
-      <workItem from="1775012097854" duration="3773000" />
+      <workItem from="1775012097854" duration="6314000" />
     </task>
     <servers />
   </component>
