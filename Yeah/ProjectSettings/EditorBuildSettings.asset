@@ -9,14 +9,8 @@ EditorBuildSettings:
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
-    path: Assets/Scenes/Start Scene.unity
-    guid: 0bd6489e0332777468c31d473593bc1e
-  - enabled: 1
-    path: Assets/Scenes/Intro Story Scene.unity
-    guid: 62fe5d2e3a9d26549a4c09fc2e09529e
-  - enabled: 1
-    path: Assets/Scenes/Intro Story Scene 1.unity
-    guid: 2a73c1a6a9c52fa4fb4d71c3c733b76a
+    path: Assets/Conrad/Scenes/Intro Story Scene Refactored.unity
+    guid: c819e801f15b14a409823d0f82a92127
   - enabled: 1
     path: Assets/Scenes/SampleScene 1.unity
     guid: 814bf5b66c2609e4794cebef67781f43

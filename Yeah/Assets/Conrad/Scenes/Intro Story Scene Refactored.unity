@@ -2762,7 +2762,7 @@ MonoBehaviour:
     showSam: 0
     showAd: 0
     adSpamming: 0
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 7
@@ -2774,7 +2774,7 @@ MonoBehaviour:
     showSam: 0
     showAd: 0
     adSpamming: 0
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 7
@@ -2787,7 +2787,7 @@ MonoBehaviour:
     showSam: 0
     showAd: 0
     adSpamming: 0
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 8
@@ -2798,7 +2798,7 @@ MonoBehaviour:
     showSam: 0
     showAd: 0
     adSpamming: 0
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 5
@@ -2846,7 +2846,7 @@ MonoBehaviour:
     showSam: 1
     showAd: 0
     adSpamming: 1
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 7
@@ -2859,7 +2859,7 @@ MonoBehaviour:
     showSam: 1
     showAd: 0
     adSpamming: 1
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 6.5
@@ -2882,7 +2882,7 @@ MonoBehaviour:
     showSam: 1
     showAd: 0
     adSpamming: 0
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 5
@@ -2894,7 +2894,7 @@ MonoBehaviour:
     showSam: 1
     showAd: 0
     adSpamming: 0
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 6
@@ -2905,7 +2905,7 @@ MonoBehaviour:
     showSam: 1
     showAd: 0
     adSpamming: 0
-    vocalSound: {fileID: 0}
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 5
@@ -2927,11 +2927,12 @@ MonoBehaviour:
   - {fileID: 341627678}
   - {fileID: 382675882}
   adSpamCount: 0
-  maxAdCount: 10
+  maxAdCount: 8
   waitAdMake: 0.1
   canAdvance: 1
   canvas: {fileID: 685989572}
   camMain: {fileID: 0}
+  playSceneCount: 1
 --- !u!4 &1536970594
 Transform:
   m_ObjectHideFlags: 0
