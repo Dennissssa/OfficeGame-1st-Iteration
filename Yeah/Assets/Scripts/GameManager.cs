@@ -50,6 +50,24 @@ public class GameManager : MonoBehaviour
     [Min(0.1f)]
     public float victoryCountdownSeconds = 300f;
 
+    [Header("胜利倒计时 · 临近结束提示（可选）")]
+    [Tooltip("当剩余秒数首次进入「小于等于下方阈值」时显示一次；与 Boss 预警类似，建议单独 UI 以免与损坏提示抢同一 TMP")]
+    public bool enableVictoryNearEndWarning = true;
+
+    [Tooltip("剩余时间（秒）≤ 该值时触发；填 0 表示关闭")]
+    [Min(0f)]
+    public float nearEndWarningWhenRemainingSeconds = 30f;
+
+    [TextArea(2, 5)]
+    [Tooltip("提示文案，可在 Inspector 多行编辑")]
+    public string nearEndWarningMessage = "Time is almost up!";
+
+    [Tooltip("提示面板的根物体；可与损坏预警用同一布局，在场景中复制一份后拖到这里")]
+    public GameObject nearEndWarningPanelRoot;
+
+    [Tooltip("提示用 TMP；可与根节点上的组件为同一物体")]
+    public TextMeshProUGUI nearEndWarningText;
+
     [Header("References")]
     public UIManager ui;
     public ScreenVignetteTint screenTint;
@@ -171,6 +189,7 @@ public class GameManager : MonoBehaviour
     float _performanceScoreRawWhenEnteredCurrentPhase;
 
     float _victoryCountdownRemaining;
+    bool _victoryNearEndWarningShown;
     bool _phasePromotionArmed;
     float _timeSinceLastScorePhasePromotion = 1000f;
 
@@ -303,6 +322,8 @@ public class GameManager : MonoBehaviour
             _defaultBrokenWarningIconSprite = brokenWarningIconImage.sprite;
         if (brokenWarningShakeTarget != null)
             _brokenWarningShakeBaseLocalPos = brokenWarningShakeTarget.localPosition;
+
+        HideVictoryNearEndWarning();
     }
 
     void DebugLogPhasePromotionAtGameStart()
@@ -381,9 +402,19 @@ public class GameManager : MonoBehaviour
         }
         surviveTime += Time.deltaTime;
 
+        float remainingBeforeTick = _victoryCountdownRemaining;
         _victoryCountdownRemaining -= Time.deltaTime;
+
+        if (!_victoryNearEndWarningShown && enableVictoryNearEndWarning && nearEndWarningWhenRemainingSeconds > 0f
+            && remainingBeforeTick > 0f && remainingBeforeTick <= nearEndWarningWhenRemainingSeconds
+            && (nearEndWarningPanelRoot != null || nearEndWarningText != null))
+        {
+            TryShowVictoryNearEndWarning();
+        }
+
         if (_victoryCountdownRemaining <= 0f)
         {
+            HideVictoryNearEndWarning();
             TriggerVictory();
             return;
         }
@@ -871,12 +902,41 @@ public class GameManager : MonoBehaviour
         if (screenTint != null)
             screenTint.SetTarget(0f, 0.1f);
 
+        HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
 
         if (ui != null)
             ui.ShowGameWin(TotalPerformanceScore);
 
         Time.timeScale = 0f;
+    }
+
+    void TryShowVictoryNearEndWarning()
+    {
+        if (_victoryNearEndWarningShown) return;
+        if (nearEndWarningPanelRoot == null && nearEndWarningText == null)
+            return;
+
+        _victoryNearEndWarningShown = true;
+        string msg = nearEndWarningMessage != null ? nearEndWarningMessage : "";
+        if (nearEndWarningText != null)
+        {
+            nearEndWarningText.text = msg;
+            nearEndWarningText.ForceMeshUpdate();
+        }
+
+        if (nearEndWarningPanelRoot != null)
+            nearEndWarningPanelRoot.SetActive(true);
+        else if (nearEndWarningText != null)
+            nearEndWarningText.gameObject.SetActive(true);
+    }
+
+    void HideVictoryNearEndWarning()
+    {
+        if (nearEndWarningPanelRoot != null)
+            nearEndWarningPanelRoot.SetActive(false);
+        else if (nearEndWarningText != null)
+            nearEndWarningText.gameObject.SetActive(false);
     }
 
     public void Punishment()
@@ -976,6 +1036,7 @@ public class GameManager : MonoBehaviour
         if (screenTint != null)
             screenTint.SetTarget(0f, 0.1f);
 
+        HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
 
         if (ui != null)
@@ -1432,6 +1493,7 @@ public class GameManager : MonoBehaviour
         if (screenTint != null)
             screenTint.SetTarget(0f, 0.1f);
 
+        HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
 
         if (ui != null)

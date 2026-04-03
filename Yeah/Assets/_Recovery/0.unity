@@ -6587,12 +6587,19 @@ MonoBehaviour:
       m_Calls: []
   - m_PersistentCalls:
       m_Calls: []
-  blockHitKeyCode: 0
+  onPhonePickup:
+    m_PersistentCalls:
+      m_Calls: []
+  onPhonePutdown:
+    m_PersistentCalls:
+      m_Calls: []
   ledBindings:
   - LedIndex: 1
     WorkItem: {fileID: 983266344}
   - LedIndex: 2
     WorkItem: {fileID: 528905810}
+  phoneWorkItem: {fileID: 0}
+  printerWorkItem: {fileID: 0}
 --- !u!4 &1997837122 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 42875ed199d3b494abca5c54c86f6b28, type: 3}

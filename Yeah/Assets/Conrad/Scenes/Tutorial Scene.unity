@@ -7162,20 +7162,6 @@ MonoBehaviour:
         m_CallState: 2
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 206531936}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: TryRepair
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
       - m_Target: {fileID: 882021887}
         m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
         m_MethodName: TryRepair
@@ -7188,12 +7174,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  blockHitKeyCode: 0
+  onPhonePickup:
+    m_PersistentCalls:
+      m_Calls: []
+  onPhonePutdown:
+    m_PersistentCalls:
+      m_Calls: []
   ledBindings:
   - LedIndex: 1
     WorkItem: {fileID: 983266344}
   - LedIndex: 2
     WorkItem: {fileID: 528905810}
+  phoneWorkItem: {fileID: 1141977272}
   printerWorkItem: {fileID: 882021887}
 --- !u!4 &1997837122 stripped
 Transform:

@@ -1,90 +1,111 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.InputSystem;
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Threading;
 
 /// <summary>
-/// Two-way serial bridge between Unity and the Arduino Uno.
+/// Two-way serial bridge between Unity and the Arduino Uno  —  v3
 ///
-/// ── Arduino → Unity  (piezo hits) ────────────────────────────
-///   Arduino sends "HIT_1" … "HIT_6" when a piezo is struck.
-///   Each fires a UnityEvent in the onHit array on the main thread.
-///   Wire onHit[0]…onHit[5] in the Inspector to the same action
-///   your keyboard shortcut already calls to fix/clear an object.
+/// ── Objects ───────────────────────────────────────────────────
+///   1  Skull    (A0)  piezo + LED1
+///   2  Phone    (A1)  piezo + microswitch + DFPlayer  <- special
+///   3  Monitor  (A2)  piezo only
+///   4  Speaker  (A4)  piezo only
+///   5  Printer  (A5)  piezo + L298N motor
 ///
-///   Object 6 (Printer): hitting piezo 6 (A5) stops the printer
-///   and clears its anomaly state.
+/// ── Arduino -> Unity  (piezo / phone hits) ─────────────────────
+///   "HIT_1" ... "HIT_5"   fires onHit[0]...onHit[4] on the main thread.
+///     HIT_2 specifically means the player struck the phone in
+///     ANOMALY state — wire onHit[1] to your phone WorkItem's Fix method.
+///   "PHONE_PICKUP"       fires onPhonePickup  (stop ringtone in Unity)
+///   "PHONE_PUTDOWN"      fires onPhonePutdown (optional bookkeeping)
 ///
-/// ── Unity → Arduino  (LED states) ────────────────────────────
-///   Attach a WorkItem to each LEDBinding entry. The bridge listens
-///   to that WorkItem's existing events and sends the right command:
-///     OnBroken       → LED{n}:ANOMALY   (yellow)
-///     OnBaiting      → LED{n}:BAIT      (white flash)
-///     OnFixed        → LED{n}:NORMAL    (red)
-///     OnBaitingEnded → LED{n}:NORMAL    (red)
+/// ── Unity -> Arduino  (Skull LED) ─────────────────────────────
+///   Attach the Skull WorkItem to the single LEDBinding entry.
+///     OnBroken       -> LED1:ANOMALY   (yellow)
+///     OnBaiting      -> LED1:BAIT      (flashing red)
+///     OnFixed        -> LED1:NORMAL    (red)
+///     OnBaitingEnded -> LED1:NORMAL    (red)
 ///
-/// ── Unity → Arduino  (printer motor) ─────────────────────────
-///   Attach a WorkItem to the PrinterBinding. The bridge listens
-///   to that WorkItem's events and sends:
-///     OnBroken       → PRINTER:ON    (start printing)
-///     OnFixed        → PRINTER:OFF   (stop printing)
-///   The printer has no bait state.
+/// ── Unity -> Arduino  (Phone state) ────────────────────────────
+///   Attach the Phone WorkItem to phoneBinding.
+///     OnBroken       -> PHONE:ANOMALY  (start ringing + anomaly flow)
+///     OnBaiting      -> PHONE:BAIT     (start ringing + bait flow)
+///     OnFixed        -> PHONE:NORMAL   (reset Arduino phone state)
+///     OnBaitingEnded -> PHONE:NORMAL
 ///
-/// ── Setup ─────────────────────────────────────────────────────
+/// ── Unity -> Arduino  (Printer motor) ──────────────────────────
+///   Attach the Printer WorkItem to printerWorkItem.
+///     OnBroken       -> PRINTER:ON
+///     OnFixed        -> PRINTER:OFF
+///
+/// ── Setup ──────────────────────────────────────────────────────
 ///   1. Attach this script to any persistent GameObject.
 ///   2. Set portName to your Arduino's port.
-///   3. Add one LEDBinding per physical LED ring and drag in its WorkItem.
-///   4. Drag the Object 6 WorkItem into the PrinterBinding slot.
-///   5. Wire onHit[0]…onHit[5] to the same method(s) your keyboard input calls.
+///   3. Add one LEDBinding and drag in the Skull WorkItem.
+///   4. Drag the Phone WorkItem into the Phone Binding slot.
+///   5. Drag the Printer WorkItem into the Printer Binding slot.
+///   6. Wire onHit[0]...onHit[4] to the Fix methods of each WorkItem.
+///   7. Wire onPhonePickup to whatever stops the ringtone in Unity.
 /// </summary>
 public class ArduinoSerialBridge : MonoBehaviour
 {
     // ── Configuration ─────────────────────────────────────────
 
     private const string DefaultPortName = "/dev/cu.usbserial-1130"; // Windows: "COM3"
-    private const int DefaultBaudRate = 9600;
-    private const int ReadTimeoutMs = 100;
-    private const int WriteTimeoutMs = 100;
-    private const int NumPiezos = 6;
+    private const int    DefaultBaudRate = 9600;
+    private const int    ReadTimeoutMs   = 100;
+    private const int    WriteTimeoutMs  = 100;
+    private const int    NumObjects      = 5;   // HIT_1 ... HIT_5
 
     // ── Inspector ─────────────────────────────────────────────
 
     [Header("Serial Settings")]
     [Tooltip("Arduino port. Windows: COM3   Mac: /dev/cu.usbserial-...")]
     [SerializeField] private string portName = DefaultPortName;
-    [SerializeField] private int baudRate = DefaultBaudRate;
+    [SerializeField] private int    baudRate = DefaultBaudRate;
 
-    [Header("Piezo Hit Events  (index 0 = Object 1, index 5 = Object 6 / Printer)")]
-    [Tooltip("Wire each slot to the same action your keyboard shortcut calls.")]
-    public UnityEvent[] onHit = new UnityEvent[NumPiezos];
+    [Header("Piezo Hit Events  (index 0 = Skull ... index 4 = Printer)")]
+    [Tooltip("Wire each slot to the Fix/Clear method of its WorkItem.\n" +
+             "index 1 (Phone) fires when the player hits the phone in ANOMALY state.")]
+    public UnityEvent[] onHit = new UnityEvent[NumObjects];
 
-    [Header("Block Hit（按住时所有 onHit 不触发）")]
-    [Tooltip("按住此键期间，所有 Piezo Hit 不触发（不调用 onHit）。设为 None 则不屏蔽")]
-    public KeyCode blockHitKeyCode = KeyCode.None;
+    [Header("Phone Events  (fired by incoming PHONE_PICKUP / PHONE_PUTDOWN)")]
+    [Tooltip("Wire to whatever stops the ringtone in Unity.")]
+    public UnityEvent onPhonePickup;
+    [Tooltip("Optional — fires when the phone is placed back down.")]
+    public UnityEvent onPhonePutdown;
 
-    [Header("LED → WorkItem Bindings")]
-    [Tooltip("One entry per physical LED ring.")]
+    [Header("LED -> WorkItem Bindings  (Skull only in v3)")]
+    [Tooltip("One entry: drag in the Skull WorkItem.")]
     [SerializeField] private LEDBinding[] ledBindings = Array.Empty<LEDBinding>();
 
-    [Header("Printer → WorkItem Binding (Object 6)")]
-    [Tooltip("WorkItem for the printer. OnBroken starts printing, OnFixed stops it.")]
+    [Header("Phone -> WorkItem Binding")]
+    [Tooltip("Drag in the Phone WorkItem. Its events drive PHONE: commands.")]
+    [SerializeField] private WorkItem phoneWorkItem;
+
+    [Header("Printer -> WorkItem Binding")]
+    [Tooltip("Drag in the Printer WorkItem. OnBroken starts motor, OnFixed stops it.")]
     [SerializeField] private WorkItem printerWorkItem;
 
     // ── Private state ─────────────────────────────────────────
 
     private SerialPort _serial;
-    private Thread _readThread;
-    private bool _isRunning;
+    private Thread     _readThread;
+    private bool       _isRunning;
 
-    private readonly bool[] _hitPending = new bool[NumPiezos];
+    // Flags set by background thread, consumed by main-thread Update()
+    // 勿写成 readonly volatile：C# 不允许同字段兼具二者（CS0678）。
+    private volatile bool[] _hitPending = new bool[NumObjects];
+    private volatile bool            _phonePickupPending  = false;
+    private volatile bool            _phonePutdownPending = false;
 
+    // Listener reference lists for clean removal on destroy
     private readonly List<BoundListener> _boundListeners = new List<BoundListener>();
-
-    private UnityAction _printerOnBroken;
-    private UnityAction _printerOnFixed;
+    private UnityAction _printerOnBroken, _printerOnFixed;
+    private UnityAction _phoneOnBroken, _phoneOnBaiting, _phoneOnFixed, _phoneOnBaitingEnded;
 
     // ── Lifecycle ─────────────────────────────────────────────
 
@@ -93,91 +114,47 @@ public class ArduinoSerialBridge : MonoBehaviour
         OpenSerial();
         if (_serial == null || !_serial.IsOpen) return;
 
-        BindWorkItems();
+        BindLEDs();
+        BindPhone();
         BindPrinter();
 
+        // Initialise hardware to a known state
         foreach (var binding in ledBindings)
             SendLED(binding.LedIndex, LedCommand.Normal);
 
+        SendPhone(PhoneCommand.Normal);
         SendPrinter(false);
     }
 
     private void Update()
     {
-        bool blockHits = blockHitKeyCode != KeyCode.None && IsBlockKeyHeld();
+        // All Unity API calls must happen on the main thread.
+        // Background thread only sets volatile flags; Update() acts on them.
 
-        for (int i = 0; i < NumPiezos; i++)
+        for (int i = 0; i < NumObjects; i++)
         {
             if (!_hitPending[i]) continue;
             _hitPending[i] = false;
-            if (blockHits) continue;
             onHit[i]?.Invoke();
         }
-    }
 
-    private bool IsBlockKeyHeld()
-    {
-        if (Keyboard.current == null) return false;
-        var key = KeyCodeToKey(blockHitKeyCode);
-        return key != Key.None && Keyboard.current[key].isPressed;
-    }
-
-    private static Key KeyCodeToKey(KeyCode kc)
-    {
-        switch (kc)
+        if (_phonePickupPending)
         {
-            case KeyCode.Space: return Key.Space;
-            case KeyCode.Return: return Key.Enter;
-            case KeyCode.Escape: return Key.Escape;
-            case KeyCode.Alpha0: return Key.Digit0;
-            case KeyCode.Alpha1: return Key.Digit1;
-            case KeyCode.Alpha2: return Key.Digit2;
-            case KeyCode.Alpha3: return Key.Digit3;
-            case KeyCode.Alpha4: return Key.Digit4;
-            case KeyCode.Alpha5: return Key.Digit5;
-            case KeyCode.Alpha6: return Key.Digit6;
-            case KeyCode.Alpha7: return Key.Digit7;
-            case KeyCode.Alpha8: return Key.Digit8;
-            case KeyCode.Alpha9: return Key.Digit9;
-            case KeyCode.A: return Key.A;
-            case KeyCode.B: return Key.B;
-            case KeyCode.C: return Key.C;
-            case KeyCode.D: return Key.D;
-            case KeyCode.E: return Key.E;
-            case KeyCode.F: return Key.F;
-            case KeyCode.G: return Key.G;
-            case KeyCode.H: return Key.H;
-            case KeyCode.I: return Key.I;
-            case KeyCode.J: return Key.J;
-            case KeyCode.K: return Key.K;
-            case KeyCode.L: return Key.L;
-            case KeyCode.M: return Key.M;
-            case KeyCode.N: return Key.N;
-            case KeyCode.O: return Key.O;
-            case KeyCode.P: return Key.P;
-            case KeyCode.Q: return Key.Q;
-            case KeyCode.R: return Key.R;
-            case KeyCode.S: return Key.S;
-            case KeyCode.T: return Key.T;
-            case KeyCode.U: return Key.U;
-            case KeyCode.V: return Key.V;
-            case KeyCode.W: return Key.W;
-            case KeyCode.X: return Key.X;
-            case KeyCode.Y: return Key.Y;
-            case KeyCode.Z: return Key.Z;
-            case KeyCode.LeftShift: return Key.LeftShift;
-            case KeyCode.RightShift: return Key.RightShift;
-            case KeyCode.LeftControl: return Key.LeftCtrl;
-            case KeyCode.RightControl: return Key.RightCtrl;
-            case KeyCode.LeftAlt: return Key.LeftAlt;
-            case KeyCode.RightAlt: return Key.RightAlt;
-            default: return Key.None;
+            _phonePickupPending = false;
+            onPhonePickup?.Invoke();
+        }
+
+        if (_phonePutdownPending)
+        {
+            _phonePutdownPending = false;
+            onPhonePutdown?.Invoke();
         }
     }
 
     private void OnDestroy()
     {
-        UnbindWorkItems();
+        UnbindLEDs();
+        UnbindPhone();
         UnbindPrinter();
 
         _isRunning = false;
@@ -208,13 +185,13 @@ public class ArduinoSerialBridge : MonoBehaviour
         {
             _serial = new SerialPort(portName, baudRate)
             {
-                ReadTimeout = ReadTimeoutMs,
+                ReadTimeout  = ReadTimeoutMs,
                 WriteTimeout = WriteTimeoutMs,
-                NewLine = "\n"
+                NewLine      = "\n"
             };
             _serial.Open();
 
-            _isRunning = true;
+            _isRunning  = true;
             _readThread = new Thread(ReadLoop) { IsBackground = true };
             _readThread.Start();
 
@@ -228,9 +205,9 @@ public class ArduinoSerialBridge : MonoBehaviour
         }
     }
 
-    // ── WorkItem binding ──────────────────────────────────────
+    // ── LED binding (Skull) ───────────────────────────────────
 
-    private void BindWorkItems()
+    private void BindLEDs()
     {
         foreach (var binding in ledBindings)
         {
@@ -238,9 +215,9 @@ public class ArduinoSerialBridge : MonoBehaviour
 
             int idx = binding.LedIndex;
 
-            UnityAction onBroken = () => SendLED(idx, LedCommand.Anomaly);
-            UnityAction onBaiting = () => SendLED(idx, LedCommand.Bait);
-            UnityAction onFixed = () => SendLED(idx, LedCommand.Normal);
+            UnityAction onBroken       = () => SendLED(idx, LedCommand.Anomaly);
+            UnityAction onBaiting      = () => SendLED(idx, LedCommand.Bait);
+            UnityAction onFixed        = () => SendLED(idx, LedCommand.Normal);
             UnityAction onBaitingEnded = () => SendLED(idx, LedCommand.Normal);
 
             binding.WorkItem.OnBroken.AddListener(onBroken);
@@ -253,7 +230,7 @@ public class ArduinoSerialBridge : MonoBehaviour
         }
     }
 
-    private void UnbindWorkItems()
+    private void UnbindLEDs()
     {
         foreach (var entry in _boundListeners)
         {
@@ -266,6 +243,32 @@ public class ArduinoSerialBridge : MonoBehaviour
         _boundListeners.Clear();
     }
 
+    // ── Phone binding ─────────────────────────────────────────
+
+    private void BindPhone()
+    {
+        if (phoneWorkItem == null) return;
+
+        _phoneOnBroken       = () => SendPhone(PhoneCommand.Anomaly);
+        _phoneOnBaiting      = () => SendPhone(PhoneCommand.Bait);
+        _phoneOnFixed        = () => SendPhone(PhoneCommand.Normal);
+        _phoneOnBaitingEnded = () => SendPhone(PhoneCommand.Normal);
+
+        phoneWorkItem.OnBroken.AddListener(_phoneOnBroken);
+        phoneWorkItem.OnBaiting.AddListener(_phoneOnBaiting);
+        phoneWorkItem.OnFixed.AddListener(_phoneOnFixed);
+        phoneWorkItem.OnBaitingEnded.AddListener(_phoneOnBaitingEnded);
+    }
+
+    private void UnbindPhone()
+    {
+        if (phoneWorkItem == null) return;
+        if (_phoneOnBroken       != null) phoneWorkItem.OnBroken.RemoveListener(_phoneOnBroken);
+        if (_phoneOnBaiting      != null) phoneWorkItem.OnBaiting.RemoveListener(_phoneOnBaiting);
+        if (_phoneOnFixed        != null) phoneWorkItem.OnFixed.RemoveListener(_phoneOnFixed);
+        if (_phoneOnBaitingEnded != null) phoneWorkItem.OnBaitingEnded.RemoveListener(_phoneOnBaitingEnded);
+    }
+
     // ── Printer binding ───────────────────────────────────────
 
     private void BindPrinter()
@@ -273,7 +276,7 @@ public class ArduinoSerialBridge : MonoBehaviour
         if (printerWorkItem == null) return;
 
         _printerOnBroken = () => SendPrinter(true);
-        _printerOnFixed = () => SendPrinter(false);
+        _printerOnFixed  = () => SendPrinter(false);
 
         printerWorkItem.OnBroken.AddListener(_printerOnBroken);
         printerWorkItem.OnFixed.AddListener(_printerOnFixed);
@@ -282,43 +285,33 @@ public class ArduinoSerialBridge : MonoBehaviour
     private void UnbindPrinter()
     {
         if (printerWorkItem == null) return;
-
-        if (_printerOnBroken != null)
-            printerWorkItem.OnBroken.RemoveListener(_printerOnBroken);
-        if (_printerOnFixed != null)
-            printerWorkItem.OnFixed.RemoveListener(_printerOnFixed);
+        if (_printerOnBroken != null) printerWorkItem.OnBroken.RemoveListener(_printerOnBroken);
+        if (_printerOnFixed  != null) printerWorkItem.OnFixed.RemoveListener(_printerOnFixed);
     }
 
-    // ── Public API ────────────────────────────────────────────
+    // ── Public send API ───────────────────────────────────────
 
-    /// <summary>
-    /// Sends an LED state command to the Arduino.
-    /// ledIndex: 1 = pin 2 (Object 1)   2 = pin 3 (Object 4)
-    /// </summary>
+    /// <summary>Send an LED state command to the Arduino (Skull only in v3).</summary>
     public void SendLED(int ledIndex, string command)
     {
-        if (_serial == null || !_serial.IsOpen) return;
-
-        string msg = $"LED{ledIndex}:{command}";
-        try
-        {
-            _serial.WriteLine(msg);
-            Debug.Log($"[ArduinoSerialBridge] Sent: {msg}");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogWarning($"[ArduinoSerialBridge] Write error: {ex.Message}");
-        }
+        SendRaw($"LED{ledIndex}:{command}");
     }
 
-    /// <summary>
-    /// true = PRINTER:ON   false = PRINTER:OFF
-    /// </summary>
+    /// <summary>Send a phone state command: PhoneCommand.Normal / Bait / Anomaly.</summary>
+    public void SendPhone(string command)
+    {
+        SendRaw($"PHONE:{command}");
+    }
+
+    /// <summary>Send a printer motor command. true = ON, false = OFF.</summary>
     public void SendPrinter(bool on)
     {
-        if (_serial == null || !_serial.IsOpen) return;
+        SendRaw(on ? "PRINTER:ON" : "PRINTER:OFF");
+    }
 
-        string msg = on ? "PRINTER:ON" : "PRINTER:OFF";
+    private void SendRaw(string msg)
+    {
+        if (_serial == null || !_serial.IsOpen) return;
         try
         {
             _serial.WriteLine(msg);
@@ -340,12 +333,23 @@ public class ArduinoSerialBridge : MonoBehaviour
             {
                 string line = _serial.ReadLine().Trim();
 
+                // Piezo / phone anomaly hit
                 if (line.StartsWith("HIT_") &&
-                    int.TryParse(line.Substring(4), out int piezoNumber))
+                    int.TryParse(line.Substring(4), out int hitNumber))
                 {
-                    int arrayIndex = piezoNumber - 1;
-                    if (arrayIndex >= 0 && arrayIndex < NumPiezos)
+                    int arrayIndex = hitNumber - 1;   // HIT_1 -> index 0, HIT_2 -> index 1, ...
+                    if (arrayIndex >= 0 && arrayIndex < NumObjects)
                         _hitPending[arrayIndex] = true;
+                }
+                // Phone picked up — Unity should stop the ringtone
+                else if (line == "PHONE_PICKUP")
+                {
+                    _phonePickupPending = true;
+                }
+                // Phone put down — optional bookkeeping
+                else if (line == "PHONE_PUTDOWN")
+                {
+                    _phonePutdownPending = true;
                 }
             }
             catch (TimeoutException) { /* expected during idle */ }
@@ -357,26 +361,41 @@ public class ArduinoSerialBridge : MonoBehaviour
         }
     }
 
+    // ── Command string constants ──────────────────────────────
+
+    /// <summary>LED state strings matching the Arduino protocol.</summary>
     public static class LedCommand
     {
-        public const string Normal = "NORMAL";
+        public const string Normal  = "NORMAL";
         public const string Anomaly = "ANOMALY";
-        public const string Bait = "BAIT";
+        public const string Bait    = "BAIT";
     }
 
+    /// <summary>Phone state strings matching the Arduino protocol.</summary>
+    public static class PhoneCommand
+    {
+        public const string Normal  = "NORMAL";
+        public const string Bait    = "BAIT";
+        public const string Anomaly = "ANOMALY";
+    }
+
+    // ── Data classes ──────────────────────────────────────────
+
+    /// <summary>Binds one NeoPixel LED ring to a WorkItem (Skull in v3).</summary>
     [Serializable]
     public class LEDBinding
     {
-        [Tooltip("1 = LED ring on pin 2 (Object 1)   2 = LED ring on pin 3 (Object 4)")]
+        [Tooltip("1 = LED ring on pin 2 (Skull)")]
         public int LedIndex = 1;
 
-        [Tooltip("WorkItem this LED should follow. Leave null for manual control.")]
+        [Tooltip("WorkItem this LED should follow.")]
         public WorkItem WorkItem;
     }
 
+    /// <summary>Stores listener delegates so they can be cleanly removed on destroy.</summary>
     private class BoundListener
     {
-        public readonly WorkItem WorkItem;
+        public readonly WorkItem    WorkItem;
         public readonly UnityAction OnBroken;
         public readonly UnityAction OnBaiting;
         public readonly UnityAction OnFixed;
@@ -388,10 +407,10 @@ public class ArduinoSerialBridge : MonoBehaviour
                              UnityAction onFixed,
                              UnityAction onBaitingEnded)
         {
-            WorkItem = item;
-            OnBroken = onBroken;
-            OnBaiting = onBaiting;
-            OnFixed = onFixed;
+            WorkItem       = item;
+            OnBroken       = onBroken;
+            OnBaiting      = onBaiting;
+            OnFixed        = onFixed;
             OnBaitingEnded = onBaitingEnded;
         }
     }
