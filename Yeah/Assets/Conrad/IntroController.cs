@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class IntroController : MonoBehaviour
@@ -61,6 +62,7 @@ public class IntroController : MonoBehaviour
     public GameObject canvas;
 
     public Camera camMain;
+    public int playSceneCount;
 
     void Start()
     {
@@ -156,7 +158,10 @@ public class IntroController : MonoBehaviour
                 canAdvance = true;
             }
         }
-
+        else
+        {
+            SceneManager.LoadScene(playSceneCount);
+        }
     }
 
     public void StartAdPanic()
