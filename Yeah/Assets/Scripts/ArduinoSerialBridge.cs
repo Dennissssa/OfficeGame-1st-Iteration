@@ -90,6 +90,10 @@ public class ArduinoSerialBridge : MonoBehaviour
     [Tooltip("Drag in the Printer WorkItem. OnBroken starts motor, OnFixed stops it.")]
     [SerializeField] private WorkItem printerWorkItem;
 
+    [Header("Debug")]
+    [Tooltip("勾选后：串口收到 PHONE_PICKUP / PHONE_PUTDOWN 时在 Console 打印一条日志（主线程 Invoke 前）。")]
+    [SerializeField] private bool debugLogPhonePickupPutdown = true;
+
     // ── Private state ─────────────────────────────────────────
 
     private SerialPort _serial;
@@ -141,12 +145,16 @@ public class ArduinoSerialBridge : MonoBehaviour
         if (_phonePickupPending)
         {
             _phonePickupPending = false;
+            if (debugLogPhonePickupPutdown)
+                Debug.Log("[ArduinoSerialBridge] 电话摘机 PHONE_PICKUP", this);
             onPhonePickup?.Invoke();
         }
 
         if (_phonePutdownPending)
         {
             _phonePutdownPending = false;
+            if (debugLogPhonePickupPutdown)
+                Debug.Log("[ArduinoSerialBridge] 电话挂机 PHONE_PUTDOWN", this);
             onPhonePutdown?.Invoke();
         }
     }

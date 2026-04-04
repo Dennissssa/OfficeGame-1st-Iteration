@@ -1790,7 +1790,7 @@ MonoBehaviour:
   activateOnBossWarning: 1
   spriteDuringApproach: {fileID: 21300000, guid: 9582b1b51e8a63342aede34884e2751b, type: 3}
   spriteWhenBossHere: {fileID: 21300000, guid: 39164dfbdd0de604b9f86a6406cf1a66, type: 3}
-  delaySecondsBeforeSecondSprite: 0
+  delaySecondsBeforeSecondSprite: 1
   spriteAfterDelayWhenBossHere: {fileID: 21300000, guid: 05b6644346aae044393656282899a8bb, type: 3}
   bossLeaveAnimationClip: {fileID: 7400000, guid: 9f4fad411e8567e47b6ddd40feca8c85, type: 2}
   spriteWhenBossGone: {fileID: 21300000, guid: 9582b1b51e8a63342aede34884e2751b, type: 3}
@@ -5855,11 +5855,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!4 &904652917 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-  m_PrefabInstance: {fileID: 1585928528}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &930211666
 GameObject:
   m_ObjectHideFlags: 0
@@ -5952,65 +5947,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 930211666}
   m_CullTransparentMesh: 1
---- !u!1 &939205864
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 939205866}
-  - component: {fileID: 939205865}
-  m_Layer: 0
-  m_Name: Uduino
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &939205865
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939205864}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adb988ec2b730ed4d9fd286679746943, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JiU.UduinoPinToKeyTrigger
-  pinNumber: 12
-  useAnalogRead: 1
-  thresholdValue: 100
-  triggerMode: 0
-  triggerKeyCode: 49
-  cooldownSeconds: 0.3
-  readSlotIndex: 0
-  debugLogs: 0
-  debugLogIntervalFrames: 30
-  onTriggered:
-    m_PersistentCalls:
-      m_Calls: []
-  directRepairTargets:
-  - {fileID: 363469229}
-  simulateKey: 0
---- !u!4 &939205866
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939205864}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.017159998, y: 0, z: 0.13916999}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 904652917}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &945301050
 GameObject:
   m_ObjectHideFlags: 0
@@ -7828,7 +7764,7 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 0
+  baitWeight: 5
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/5
   repairKeyCodeFallback: 53
@@ -9748,7 +9684,7 @@ MonoBehaviour:
     bossMinWorkThreshold: 30
     workPunishment: 4
     workUltraPunishment: 8
-    workGainPerSecondPerWorkingItem: 0.8
+    workGainPerSecondPerWorkingItem: 1.2
     workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 2
@@ -9799,6 +9735,8 @@ MonoBehaviour:
   tutorialWarningShowDelayAfterBreak: 0.5
   tutorialWarningMessageFormat: '{0} has been hacked!'
   arduinoBridgeScript: {fileID: 1987669260}
+  phoneWorkItemForPickupAudioSuppressScope: {fileID: 1141977272}
+  debugLogPhonePickupPlaySoundSkipFlags: 1
   isTutorialing: 1
 --- !u!4 &1583755465
 Transform:
@@ -9817,114 +9755,6 @@ Transform:
   - {fileID: 1853649706}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1585928528
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1169019389771402, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_Name
-      value: Uduino (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 1169019389771402, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.10245
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.35
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.83098
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: ManagerState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.data[0].pinMode
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.data[0].prevPin
-      value: 12
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.data[0].currentPin
-      value: 12
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.data[0].arduinoName
-      value: uduinoBoard
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.data[0].isEditorPin
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.data[0].prevPinMode
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: pins.Array.data[0].lastReadValue
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: presentExtentionsMap.keys.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 114023058375386772, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      propertyPath: presentExtentionsMap.values.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 4720884688345560, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 939205866}
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: bb5e6aea88a650f4a8317e74940b0ea4, type: 3}
 --- !u!1 &1614768616
 GameObject:
   m_ObjectHideFlags: 0
@@ -11184,15 +11014,40 @@ MonoBehaviour:
         m_CallState: 2
   onPhonePickup:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1583755464}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: PhonePickup_SetSuppressNonBaitBrokeSfx
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onPhonePutdown:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1583755464}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: PhonePutdown_ClearSuppressNonBaitBrokeSfx
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   ledBindings:
   - LedIndex: 1
     WorkItem: {fileID: 983266344}
   phoneWorkItem: {fileID: 1141977272}
   printerWorkItem: {fileID: 882021887}
+  debugLogPhonePickupPutdown: 1
 --- !u!4 &1997837122 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 42875ed199d3b494abca5c54c86f6b28, type: 3}
@@ -11936,5 +11791,4 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 951229962}
   - {fileID: 1987669259}
-  - {fileID: 1585928528}
   - {fileID: 1346157740}

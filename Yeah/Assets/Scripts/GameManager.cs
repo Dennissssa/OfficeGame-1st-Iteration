@@ -12,6 +12,28 @@ public class GameManager : MonoBehaviour
 
     public static bool FreezeFailures { get; private set; } = false;
 
+    /// <summary>
+    /// 电话摘机（Arduino <c>PHONE_PICKUP</c>）后为 true。
+    /// 与 <see cref="phoneWorkItemForPickupAudioSuppressScope"/> 配合：仅<strong>禁播损坏与 Bait</strong>相关起音（含 Bait 结束起音）；
+    /// 维修对错、<c>PlayAtIndex</c> 等不受影响。指定 WorkItem 时只作用于该物品；留空则全场。
+    /// </summary>
+    public static bool SuppressNonBaitBrokeItemSfxFromPhonePickup { get; private set; }
+
+    /// <summary>
+    /// 摘机且 <see cref="SuppressNonBaitBrokeItemSfxFromPhonePickup"/> 时，是否对绑定 <paramref name="boundWorkItem"/> 的组件应用「禁播损坏/Bait 音」。
+    /// </summary>
+    public static bool PickupAudioSuppressAppliesToBoundWorkItem(WorkItem boundWorkItem)
+    {
+        if (!SuppressNonBaitBrokeItemSfxFromPhonePickup)
+            return false;
+        if (Instance == null)
+            return false;
+        WorkItem scope = Instance.phoneWorkItemForPickupAudioSuppressScope;
+        if (scope == null)
+            return true;
+        return boundWorkItem != null && boundWorkItem == scope;
+    }
+
     [Header("Work 压力条（0 起计，涨至 maxWork 失败；无阶段时用下列默认）")]
     public float work = 0f;
     public float maxWork = 100f;
@@ -139,6 +161,14 @@ public class GameManager : MonoBehaviour
 
     public ArduinoSerialBridge arduinoBridgeScript;
 
+    [Header("电话摘机 · 音效范围")]
+    [Tooltip("拖入「电话」WorkItem：摘机时仅对与该 WorkItem 绑定的音效<strong>禁播损坏与 Bait 起音</strong>（含 Bait 结束起音）；维修对错、PlayAtIndex 照常。留空则对全场相关物品生效。")]
+    public WorkItem phoneWorkItemForPickupAudioSuppressScope;
+
+    [Header("Debug · 电话摘机与 PlaySoundOnEventAudioManager")]
+    [Tooltip("勾选后：摘机/挂机时在 Console 打印所有 PlaySoundOnEventAudioManager 的 _brokenPlaybackSkippedDueToPhonePickup / _baitingPlaybackSkippedDueToPhonePickup 当前值")]
+    [SerializeField] bool debugLogPhonePickupPlaySoundSkipFlags = true;
+
     public bool isTutorialing;
     public bool BossIsHere { get; private set; } = false;
     public bool BossWarning { get; private set; } = false;
@@ -215,7 +245,27 @@ public class GameManager : MonoBehaviour
 
     void OnDestroy()
     {
+        if (Instance == this)
+            SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
         ShutdownBrokenWarningSystem();
+    }
+
+    /// <summary>供 Arduino <c>onPhonePickup</c> 等 UnityEvent 调用。</summary>
+    public void PhonePickup_SetSuppressNonBaitBrokeSfx()
+    {
+        SuppressNonBaitBrokeItemSfxFromPhonePickup = true;
+        JiU.PlaySoundOnEventAudioManager.StopBrokenBaitPlaybackForPickupScope();
+        JiU.PlaySoundOnEvent.StopForPhonePickupAudioScope();
+        if (debugLogPhonePickupPlaySoundSkipFlags)
+            JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("PHONE_PICKUP（摘机）之后", true);
+    }
+
+    /// <summary>供 Arduino <c>onPhonePutdown</c> 等 UnityEvent 调用。</summary>
+    public void PhonePutdown_ClearSuppressNonBaitBrokeSfx()
+    {
+        SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
+        if (debugLogPhonePickupPlaySoundSkipFlags)
+            JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("PHONE_PUTDOWN（挂机）之后", false);
     }
 
     void WarnIfMultipleUIManagerInScene()
@@ -244,6 +294,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         work = 0f;
+        SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
 
         WarnIfMultipleUIManagerInScene();
 
@@ -882,6 +933,7 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver || IsVictory) return;
         IsVictory = true;
+        SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
 
         if (_bossLoopCoroutine != null)
         {
@@ -1006,6 +1058,7 @@ public class GameManager : MonoBehaviour
         }
 
         isGameOver = true;
+        SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
 
         if (debugLogWorkProgressDeath)
         {
@@ -1468,6 +1521,7 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver || IsVictory) return;
         isGameOver = true;
+        SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
 
         if (_bossLoopCoroutine != null)
         {

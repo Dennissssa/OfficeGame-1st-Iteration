@@ -58,6 +58,18 @@ namespace JiU
         /// <summary>修好瞬间已在本声道播 Win，同帧 OnFixed 不再 Stop，避免把刚播的 Win 掐掉。</summary>
         bool _suppressNextFixedStopForRepairWin;
 
+        /// <summary>摘机禁播时本次未起损坏音，OnFixed 不再 Stop，避免掐维修反馈。</summary>
+        bool _brokenPlaybackSkippedDueToPhonePickup;
+
+        /// <summary>摘机禁播时本次未起 Bait 音，OnFixed 同理。</summary>
+        bool _baitingPlaybackSkippedDueToPhonePickup;
+
+        /// <summary>调试用：OnBroken 因摘机未起损坏音时为 true，直至 OnFixed 消费。</summary>
+        public bool DebugPeekBrokenPlaybackSkippedDueToPhonePickup => _brokenPlaybackSkippedDueToPhonePickup;
+
+        /// <summary>调试用：OnBaiting 因摘机未起 Bait 音时为 true，直至 OnFixed 消费。</summary>
+        public bool DebugPeekBaitingPlaybackSkippedDueToPhonePickup => _baitingPlaybackSkippedDueToPhonePickup;
+
         void Awake()
         {
             EnsureLocalAudioSource();
@@ -99,6 +111,11 @@ namespace JiU
             workItem.OnRepairIncorrect.RemoveListener(OnRepairIncorrect);
         }
 
+        bool PickupSuppressBrokenBaitNow()
+        {
+            return GameManager.PickupAudioSuppressAppliesToBoundWorkItem(workItem);
+        }
+
         void OnRepairCorrect()
         {
             if (repairCorrectEffectIndex < 0) return;
@@ -123,7 +140,13 @@ namespace JiU
         void OnBroken()
         {
             if (skipBrokenAndBaitSounds) return;
+            _brokenPlaybackSkippedDueToPhonePickup = false;
             if (effectIndex < 0) return;
+            if (PickupSuppressBrokenBaitNow())
+            {
+                _brokenPlaybackSkippedDueToPhonePickup = true;
+                return;
+            }
 
             var am = AudioManager.Instance;
             if (am == null || am.EffectsList == null || effectIndex >= am.EffectsList.Count) return;
@@ -154,13 +177,31 @@ namespace JiU
             if (skipBrokenAndBaitSounds)
                 return;
 
+            if (_brokenPlaybackSkippedDueToPhonePickup)
+            {
+                _brokenPlaybackSkippedDueToPhonePickup = false;
+                return;
+            }
+
+            if (_baitingPlaybackSkippedDueToPhonePickup)
+            {
+                _baitingPlaybackSkippedDueToPhonePickup = false;
+                return;
+            }
+
             StopInternal(resetLoop: true);
         }
 
         void OnBaiting()
         {
             if (skipBrokenAndBaitSounds) return;
+            _baitingPlaybackSkippedDueToPhonePickup = false;
             if (baitEffectIndex < 0) return;
+            if (PickupSuppressBrokenBaitNow())
+            {
+                _baitingPlaybackSkippedDueToPhonePickup = true;
+                return;
+            }
 
             var am = AudioManager.Instance;
             if (am == null || am.EffectsList == null || baitEffectIndex >= am.EffectsList.Count) return;
@@ -185,7 +226,8 @@ namespace JiU
             src.loop = false;
             src.Stop();
 
-            if (baitEndedEffectIndex >= 0 && baitEndedEffectIndex < am.EffectsList.Count)
+            bool suppressBaitEndedClip = PickupSuppressBrokenBaitNow();
+            if (baitEndedEffectIndex >= 0 && baitEndedEffectIndex < am.EffectsList.Count && !suppressBaitEndedClip)
             {
                 PlayClipFromEffectsList(baitEndedEffectIndex);
                 _suppressNextFixedStop = true;
@@ -212,6 +254,7 @@ namespace JiU
         {
             if (skipBrokenAndBaitSounds) return;
             if (effectIndex < 0) return;
+            if (PickupSuppressBrokenBaitNow()) return;
 
             var am = AudioManager.Instance;
             if (am == null || am.EffectsList == null || effectIndex >= am.EffectsList.Count) return;
@@ -228,6 +271,7 @@ namespace JiU
         {
             if (skipBrokenAndBaitSounds) return;
             if (baitEffectIndex < 0) return;
+            if (PickupSuppressBrokenBaitNow()) return;
 
             var am = AudioManager.Instance;
             if (am == null || am.EffectsList == null || baitEffectIndex >= am.EffectsList.Count) return;
@@ -267,6 +311,70 @@ namespace JiU
             src.Play();
             onPlayed?.Invoke();
             return true;
+        }
+
+        /// <summary>
+        /// 摘机后：对落在 <see cref="GameManager.PickupAudioSuppressAppliesToBoundWorkItem"/> 内的组件，
+        /// 立刻停止本地声道上正在播的损坏/Bait 循环，并清理相关内部标记。
+        /// 须在 <see cref="GameManager.SuppressNonBaitBrokeItemSfxFromPhonePickup"/> 已设为 true 之后调用。
+        /// </summary>
+        public static void StopBrokenBaitPlaybackForPickupScope()
+        {
+            var arr = Object.FindObjectsOfType<PlaySoundOnEventAudioManager>(true);
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                PlaySoundOnEventAudioManager m = arr[i];
+                if (m.workItem == null) continue;
+                if (!GameManager.PickupAudioSuppressAppliesToBoundWorkItem(m.workItem)) continue;
+                m.StopBrokenBaitPlaybackDueToPhonePickupInternal();
+            }
+        }
+
+        void StopBrokenBaitPlaybackDueToPhonePickupInternal()
+        {
+            if (localSfxSource != null)
+            {
+                localSfxSource.loop = false;
+                localSfxSource.Stop();
+            }
+
+            _brokenPlaybackSkippedDueToPhonePickup = false;
+            _baitingPlaybackSkippedDueToPhonePickup = false;
+            _suppressNextFixedStop = false;
+            _suppressNextFixedStopForRepairWin = false;
+        }
+
+        /// <summary>
+        /// 电话摘机/挂机瞬间由 <see cref="GameManager"/> 调用：打印每个组件上两个「摘机跳过」标记的当前值。
+        /// </summary>
+        public static void DebugLogAllPhonePickupSkipFlags(string momentLabel, bool suppressNonBaitBrokeSfxActive)
+        {
+            var arr = Object.FindObjectsOfType<PlaySoundOnEventAudioManager>(true);
+            if (arr == null || arr.Length == 0)
+            {
+                Debug.Log(
+                    $"[PlaySoundOnEventAudioManager] {momentLabel} | 场景中无组件 | " +
+                    $"SuppressNonBaitBrokeItemSfxFromPhonePickup={suppressNonBaitBrokeSfxActive}");
+                return;
+            }
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine(
+                $"[PlaySoundOnEventAudioManager] {momentLabel} | " +
+                $"SuppressNonBaitBrokeItemSfxFromPhonePickup={suppressNonBaitBrokeSfxActive} | 组件数={arr.Length}");
+            for (int i = 0; i < arr.Length; i++)
+            {
+                PlaySoundOnEventAudioManager m = arr[i];
+                string wi = m.workItem != null ? m.workItem.name : "null";
+                bool inScope = GameManager.PickupAudioSuppressAppliesToBoundWorkItem(m.workItem);
+                sb.AppendLine(
+                    $"  [{i}] \"{m.gameObject.name}\" workItem={wi} inPickupSuppressScope={inScope} " +
+                    $"_brokenPlaybackSkippedDueToPhonePickup={m._brokenPlaybackSkippedDueToPhonePickup} " +
+                    $"_baitingPlaybackSkippedDueToPhonePickup={m._baitingPlaybackSkippedDueToPhonePickup}");
+            }
+
+            Debug.Log(sb.ToString().TrimEnd());
         }
     }
 }
