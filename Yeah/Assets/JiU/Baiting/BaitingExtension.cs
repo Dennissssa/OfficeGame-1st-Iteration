@@ -19,7 +19,7 @@ namespace JiU.Baiting
         public bool autoFindWorkItems = true;
 
         [Header("诱饵持续时间（秒）")]
-        [Tooltip("与 WorkItem 内 BaitSelfFix 的 3 秒保持一致，用于在约 3 秒后触发 OnBaitingEnded；若你改了 WorkItem 请同步改这里")]
+        [Tooltip("普通 Bait 与 WorkItem 内 BaitSelfFix 的 3 秒对齐。电话式 Bait 可能更久：计时后会等到 IsBaiting 为 false 再触发结束事件")]
         public float baitDuration = 3f;
 
         [Header("扩展事件")]
@@ -107,11 +107,10 @@ namespace JiU.Baiting
         private IEnumerator BaitEndTimer(WorkItem item)
         {
             yield return new WaitForSeconds(baitDuration);
+            while (item != null && item.IsBaiting)
+                yield return null;
+
             _baitEndTimers.RemoveAll(c => c == null);
-            if (item != null && item.IsBaiting == false)
-            {
-                // 可能已被 Fix 等提前结束，仅做数量修正
-            }
             _currentBaitingCount = Mathf.Max(0, _currentBaitingCount - 1);
             OnBaitingEnded?.Invoke(item);
             OnAnyBaitingEnded?.Invoke();

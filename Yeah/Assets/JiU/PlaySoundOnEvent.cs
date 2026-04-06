@@ -69,6 +69,19 @@ namespace JiU
             }
         }
 
+        /// <summary>与 <see cref="PlaySoundOnEventAudioManager.ResumeBrokenLoopAfterPhonePutdownForWorkItem"/> 配套，用于仅用本组件播损坏 clip 的场景。</summary>
+        public static void ResumeBrokenClipAfterPhonePutdownForWorkItem(WorkItem wi)
+        {
+            if (wi == null || !wi.IsBroken) return;
+            var arr = Object.FindObjectsOfType<PlaySoundOnEvent>(true);
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i].workItem != wi) continue;
+                arr[i].Play();
+            }
+        }
+
         /// <summary>
         /// 播放损坏音效（修好后会通过 Stop() 立刻结束）。由 WorkItem.OnBroken 等事件绑定调用。
         /// </summary>

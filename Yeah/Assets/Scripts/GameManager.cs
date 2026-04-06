@@ -162,7 +162,8 @@ public class GameManager : MonoBehaviour
     public ArduinoSerialBridge arduinoBridgeScript;
 
     [Header("电话摘机 · 音效范围")]
-    [Tooltip("拖入「电话」WorkItem：摘机时仅对与该 WorkItem 绑定的音效<strong>禁播损坏与 Bait 起音</strong>（含 Bait 结束起音）；维修对错、PlayAtIndex 照常。留空则对全场相关物品生效。")]
+    [Tooltip("拖入「电话」WorkItem：摘机时仅对与该 WorkItem 绑定的音效<strong>禁播损坏与 Bait 起音</strong>（含 Bait 结束起音）；维修对错、PlayAtIndex 照常。留空则对全场相关物品生效。\n" +
+             "若该物体启用了电话规则（TryRepair 依赖摘机状态），会在此 WorkItem 上自动同步摘机/挂机，无需再在 Arduino 上重复绑定 NotifyPhone*。")]
     public WorkItem phoneWorkItemForPickupAudioSuppressScope;
 
     [Header("Debug · 电话摘机与 PlaySoundOnEventAudioManager")]
@@ -256,6 +257,7 @@ public class GameManager : MonoBehaviour
         SuppressNonBaitBrokeItemSfxFromPhonePickup = true;
         JiU.PlaySoundOnEventAudioManager.StopBrokenBaitPlaybackForPickupScope();
         JiU.PlaySoundOnEvent.StopForPhonePickupAudioScope();
+        NotifyPhonePickupHookToWorkItems();
         if (debugLogPhonePickupPlaySoundSkipFlags)
             JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("PHONE_PICKUP（摘机）之后", true);
     }
@@ -264,8 +266,41 @@ public class GameManager : MonoBehaviour
     public void PhonePutdown_ClearSuppressNonBaitBrokeSfx()
     {
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
+        NotifyPhonePutdownHookToWorkItems();
         if (debugLogPhonePickupPlaySoundSkipFlags)
             JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("PHONE_PUTDOWN（挂机）之后", false);
+    }
+
+    void NotifyPhonePickupHookToWorkItems()
+    {
+        if (phoneWorkItemForPickupAudioSuppressScope != null)
+        {
+            phoneWorkItemForPickupAudioSuppressScope.NotifyPhonePickedUpForBaitFlow();
+            return;
+        }
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            WorkItem wi = items[i];
+            if (wi != null && wi.PhoneBaitRulesActive)
+                wi.NotifyPhonePickedUpForBaitFlow();
+        }
+    }
+
+    void NotifyPhonePutdownHookToWorkItems()
+    {
+        if (phoneWorkItemForPickupAudioSuppressScope != null)
+        {
+            phoneWorkItemForPickupAudioSuppressScope.NotifyPhonePutDownForBaitFlow();
+            return;
+        }
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            WorkItem wi = items[i];
+            if (wi != null && wi.PhoneBaitRulesActive)
+                wi.NotifyPhonePutDownForBaitFlow();
+        }
     }
 
     void WarnIfMultipleUIManagerInScene()
@@ -477,6 +512,7 @@ public class GameManager : MonoBehaviour
         int working = 0;
         int broken = 0;
         int baiting = 0;
+        int phoneBaitDecay = 0;
 
         for (int i = 0; i < items.Count; i++)
         {
@@ -493,7 +529,12 @@ public class GameManager : MonoBehaviour
             {
                 if (_itemBrokenWarningDelays.ContainsKey(wi))
                     ClearBrokenWarningForItem(wi);
-                if (wi.IsBaiting) baiting++;
+                if (wi.IsBaiting)
+                {
+                    baiting++;
+                    if (wi.ShouldApplyPhoneBaitPerformanceDecay)
+                        phoneBaitDecay++;
+                }
                 else working++;
             }
         }
@@ -508,6 +549,8 @@ public class GameManager : MonoBehaviour
         {
             BossIncomingConfig.PhaseScoreSettings ps = GetPhaseScoreSettings();
             _performanceScoreRaw -= broken * ps.scoreDecayPerSecond * Time.deltaTime;
+            float phoneBaitDecayPerItemPerSec = ps.scoreDecayPerSecond * Mathf.Max(0f, ps.phoneBaitScoreDecayMultiplier);
+            _performanceScoreRaw -= phoneBaitDecay * phoneBaitDecayPerItemPerSec * Time.deltaTime;
         }
 
         if (BossIsHere && !_bossBrokeCheckAwaitingArrivalSprites && broken > 0)
@@ -901,6 +944,7 @@ public class GameManager : MonoBehaviour
             {
                 baseScore = defBase,
                 scoreDecayPerSecond = defDecay,
+                phoneBaitScoreDecayMultiplier = 1f,
                 performancePenaltyIdleWrongHit = 15f,
                 performancePenaltyBaitWrongHit = 30f
             };

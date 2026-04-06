@@ -12,6 +12,10 @@ public class BossIncomingConfig : MonoBehaviour
         public float baseScore;
         public float scoreDecayPerSecond;
 
+        [Tooltip("电话式 Bait（WorkItem 电话规则）每台每秒扣表现分 = scoreDecayPerSecond × 此倍率。1 = 与 Broke 同速；0 = 不扣；2 = 两倍。")]
+        [Min(0f)]
+        public float phoneBaitScoreDecayMultiplier;
+
         [Tooltip("未损坏且非 Bait 时误击（走 Punishment）额外扣除的原始表现分")]
         [Min(0f)]
         public float performancePenaltyIdleWrongHit;
@@ -87,9 +91,9 @@ public class BossIncomingConfig : MonoBehaviour
     [Tooltip("按阶段：Broke 加分/衰减；误击（Punishment / UltraPunishment）再扣 performancePenalty*")]
     public PhaseScoreSettings[] phaseScoreSettings = new PhaseScoreSettings[]
     {
-        new PhaseScoreSettings { baseScore = 100f, scoreDecayPerSecond = 5f, performancePenaltyIdleWrongHit = 15f, performancePenaltyBaitWrongHit = 30f },
-        new PhaseScoreSettings { baseScore = 80f, scoreDecayPerSecond = 8f, performancePenaltyIdleWrongHit = 20f, performancePenaltyBaitWrongHit = 40f },
-        new PhaseScoreSettings { baseScore = 60f, scoreDecayPerSecond = 12f, performancePenaltyIdleWrongHit = 25f, performancePenaltyBaitWrongHit = 50f },
+        new PhaseScoreSettings { baseScore = 100f, scoreDecayPerSecond = 5f, phoneBaitScoreDecayMultiplier = 0.5f, performancePenaltyIdleWrongHit = 15f, performancePenaltyBaitWrongHit = 30f },
+        new PhaseScoreSettings { baseScore = 80f, scoreDecayPerSecond = 8f, phoneBaitScoreDecayMultiplier = 0.5f, performancePenaltyIdleWrongHit = 20f, performancePenaltyBaitWrongHit = 40f },
+        new PhaseScoreSettings { baseScore = 60f, scoreDecayPerSecond = 12f, phoneBaitScoreDecayMultiplier = 0.5f, performancePenaltyIdleWrongHit = 25f, performancePenaltyBaitWrongHit = 50f },
     };
 
     [Min(1e-4f)]

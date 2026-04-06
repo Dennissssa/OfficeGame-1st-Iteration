@@ -1419,8 +1419,8 @@ MonoBehaviour:
   breakWeight: 25
   baitWeight: 5
   enableHotkeyRepair: 1
-  repairBindingPath: <Keyboard>/3
-  repairKeyCodeFallback: 51
+  repairBindingPath: <Keyboard>/2
+  repairKeyCodeFallback: 50
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -1450,6 +1450,9 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Speaker
+  usePhoneBaitBehavior: 0
+  phoneBaitAutoResolveSecondsAfterPickup: 8
+  phonePutDownTryRepairDebounceSeconds: 0.5
   tutorialBox: {fileID: 625434838}
   isLast: 0
   finalBox: {fileID: 0}
@@ -2094,6 +2097,9 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Monitor
+  usePhoneBaitBehavior: 0
+  phoneBaitAutoResolveSecondsAfterPickup: 8
+  phonePutDownTryRepairDebounceSeconds: 0.5
   tutorialBox: {fileID: 77799160}
   isLast: 0
   finalBox: {fileID: 0}
@@ -2998,6 +3004,9 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Lamp
+  usePhoneBaitBehavior: 0
+  phoneBaitAutoResolveSecondsAfterPickup: 8
+  phonePutDownTryRepairDebounceSeconds: 0.5
   tutorialBox: {fileID: 1111375582}
   isLast: 0
   finalBox: {fileID: 0}
@@ -5366,8 +5375,8 @@ MonoBehaviour:
   breakWeight: 25
   baitWeight: 1
   enableHotkeyRepair: 1
-  repairBindingPath: <Keyboard>/6
-  repairKeyCodeFallback: 54
+  repairBindingPath: <Keyboard>/5
+  repairKeyCodeFallback: 53
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -5397,6 +5406,9 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Printer
+  usePhoneBaitBehavior: 0
+  phoneBaitAutoResolveSecondsAfterPickup: 8
+  phonePutDownTryRepairDebounceSeconds: 0.5
   tutorialBox: {fileID: 799686130}
   isLast: 0
   finalBox: {fileID: 0}
@@ -6460,8 +6472,8 @@ MonoBehaviour:
   breakWeight: 25
   baitWeight: 15
   enableHotkeyRepair: 1
-  repairBindingPath: <Keyboard>/4
-  repairKeyCodeFallback: 52
+  repairBindingPath: <Keyboard>/3
+  repairKeyCodeFallback: 51
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -6491,6 +6503,9 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Skull
+  usePhoneBaitBehavior: 0
+  phoneBaitAutoResolveSecondsAfterPickup: 8
+  phonePutDownTryRepairDebounceSeconds: 0.5
   tutorialBox: {fileID: 410744107}
   isLast: 0
   finalBox: {fileID: 0}
@@ -7766,8 +7781,8 @@ MonoBehaviour:
   breakWeight: 25
   baitWeight: 5
   enableHotkeyRepair: 1
-  repairBindingPath: <Keyboard>/5
-  repairKeyCodeFallback: 53
+  repairBindingPath: <Keyboard>/4
+  repairKeyCodeFallback: 52
   requirePlayerInRange: 0
   interactRange: 2
   player: {fileID: 0}
@@ -7796,7 +7811,10 @@ MonoBehaviour:
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
-  itemName: Phone
+  itemName: phone
+  usePhoneBaitBehavior: 1
+  phoneBaitAutoResolveSecondsAfterPickup: 8
+  phonePutDownTryRepairDebounceSeconds: 0.5
   tutorialBox: {fileID: 1066965541}
   isLast: 0
   finalBox: {fileID: 0}
@@ -9604,7 +9622,7 @@ MonoBehaviour:
   workUltraPunishment: 0
   workMashGain: 0
   workGainPerSecondPerWorkingItem: 0.5
-  workLossPerSecondPerBrokenItem: 3
+  workLossPerSecondPerBrokenItem: 2.2
   workPressureInstantOnBroke: 0
   workPressureInstantOnBrokeRepair: 0
   bossMinWorkThreshold: 30
@@ -9623,7 +9641,7 @@ MonoBehaviour:
     maxBreakIntervalSeconds: 10
     bossMinWorkThreshold: 30
     workPunishment: 2
-    workUltraPunishment: 4
+    workUltraPunishment: 3
     workGainPerSecondPerWorkingItem: 0.5
     workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
@@ -9637,8 +9655,8 @@ MonoBehaviour:
     minBreakIntervalSeconds: 4
     maxBreakIntervalSeconds: 10
     bossMinWorkThreshold: 30
-    workPunishment: 3
-    workUltraPunishment: 6
+    workPunishment: 2
+    workUltraPunishment: 3
     workGainPerSecondPerWorkingItem: 0.5
     workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
@@ -9652,8 +9670,8 @@ MonoBehaviour:
     minBreakIntervalSeconds: 4
     maxBreakIntervalSeconds: 8
     bossMinWorkThreshold: 30
-    workPunishment: 3
-    workUltraPunishment: 6
+    workPunishment: 2
+    workUltraPunishment: 4
     workGainPerSecondPerWorkingItem: 0.8
     workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
@@ -9667,13 +9685,13 @@ MonoBehaviour:
     minBreakIntervalSeconds: 4
     maxBreakIntervalSeconds: 8
     bossMinWorkThreshold: 30
-    workPunishment: 4
-    workUltraPunishment: 8
+    workPunishment: 3
+    workUltraPunishment: 6
     workGainPerSecondPerWorkingItem: 0.8
     workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 1
-    warningShowDelayAfterBreak: 7
+    warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 0.8
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
@@ -9682,19 +9700,19 @@ MonoBehaviour:
     minBreakIntervalSeconds: 4
     maxBreakIntervalSeconds: 8
     bossMinWorkThreshold: 30
-    workPunishment: 4
-    workUltraPunishment: 8
+    workPunishment: 3
+    workUltraPunishment: 6
     workGainPerSecondPerWorkingItem: 1.2
     workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 2
-    warningShowDelayAfterBreak: 7
+    warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 1
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
-  victoryCountdownSeconds: 120
+  victoryCountdownSeconds: 110
   enableVictoryNearEndWarning: 1
-  nearEndWarningWhenRemainingSeconds: 40
+  nearEndWarningWhenRemainingSeconds: 30
   nearEndWarningMessage: It's almost fixed, hang in there!
   nearEndWarningPanelRoot: {fileID: 968065411}
   nearEndWarningText: {fileID: 2085421092}
@@ -10700,13 +10718,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28e05e4252bf52b44858ccd5b7ad3b7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossIncomingConfig
-  cooldownDuration: 5
+  cooldownDuration: 1
   randomTriggerMinTime: 10
   randomTriggerMaxTime: 25
   enableScoreForceTrigger: 0
-  scoreTriggerThreshold: 0.35
-  bossWarningDurationMin: 3.5
-  bossWarningDurationMax: 5.5
+  scoreTriggerThreshold: 0.5
+  bossWarningDurationMin: 3
+  bossWarningDurationMax: 5
   bossStayDuration: 2
   bossLeaveAnimationDuration: 3
   enableITGuyWarning: 1
@@ -10720,22 +10738,27 @@ MonoBehaviour:
   phaseScoreSettings:
   - baseScore: 50
     scoreDecayPerSecond: 5
+    phoneBaitScoreDecayMultiplier: 0
     performancePenaltyIdleWrongHit: 20
     performancePenaltyBaitWrongHit: 30
   - baseScore: 50
     scoreDecayPerSecond: 5
+    phoneBaitScoreDecayMultiplier: 0.2
     performancePenaltyIdleWrongHit: 25
     performancePenaltyBaitWrongHit: 35
   - baseScore: 100
     scoreDecayPerSecond: 10
+    phoneBaitScoreDecayMultiplier: 0.3
     performancePenaltyIdleWrongHit: 50
     performancePenaltyBaitWrongHit: 70
   - baseScore: 200
     scoreDecayPerSecond: 20
+    phoneBaitScoreDecayMultiplier: 0.4
     performancePenaltyIdleWrongHit: 100
     performancePenaltyBaitWrongHit: 150
   - baseScore: 400
     scoreDecayPerSecond: 40
+    phoneBaitScoreDecayMultiplier: 0.5
     performancePenaltyIdleWrongHit: 200
     performancePenaltyBaitWrongHit: 300
   performanceScoreNormalizationDivisor: 3000

@@ -130,8 +130,27 @@ namespace JiU
         void OnRepairIncorrect()
         {
             if (repairWrongEffectIndex < 0) return;
+
+            var am = AudioManager.Instance;
+            if (am == null || am.EffectsList == null || repairWrongEffectIndex >= am.EffectsList.Count) return;
+            var wrongClip = am.EffectsList[repairWrongEffectIndex];
+            if (wrongClip == null) return;
+
             var src = EnsureLocalAudioSource();
             if (src == null) return;
+
+            // 电话挂机且仍 Broke、损坏音在循环：用 OneShot 播错修音，避免替换 clip 掐断循环
+            bool phoneOnHookKeepBrokenLoop = workItem != null
+                && workItem.IsBroken
+                && workItem.PhoneIsOnCradleForSfx
+                && loopBrokenSound;
+
+            if (phoneOnHookKeepBrokenLoop)
+            {
+                src.PlayOneShot(wrongClip);
+                onPlayed?.Invoke();
+                return;
+            }
 
             src.loop = false;
             PlayClipFromEffectsList(repairWrongEffectIndex);
@@ -329,6 +348,39 @@ namespace JiU
                 if (!GameManager.PickupAudioSuppressAppliesToBoundWorkItem(m.workItem)) continue;
                 m.StopBrokenBaitPlaybackDueToPhonePickupInternal();
             }
+        }
+
+        /// <summary>
+        /// 电话挂机且仍处于 Broke、且曾在 Broke 时摘机过（损坏音曾被摘机停掉）时，重新起损坏循环。
+        /// 由 <see cref="WorkItem.NotifyPhonePutDownForBaitFlow"/> 调用。
+        /// </summary>
+        public static void ResumeBrokenLoopAfterPhonePutdownForWorkItem(WorkItem wi)
+        {
+            if (wi == null || !wi.IsBroken) return;
+            var arr = Object.FindObjectsOfType<PlaySoundOnEventAudioManager>(true);
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i].workItem != wi) continue;
+                arr[i].ResumeBrokenLoopAfterPhonePutdownInternal();
+            }
+        }
+
+        void ResumeBrokenLoopAfterPhonePutdownInternal()
+        {
+            if (skipBrokenAndBaitSounds) return;
+            if (workItem == null || !workItem.IsBroken) return;
+            if (effectIndex < 0) return;
+            if (PickupSuppressBrokenBaitNow()) return;
+
+            var am = AudioManager.Instance;
+            if (am == null || am.EffectsList == null || effectIndex >= am.EffectsList.Count) return;
+
+            var src = EnsureLocalAudioSource();
+            if (src == null) return;
+
+            src.loop = loopBrokenSound;
+            PlayClipFromEffectsList(effectIndex);
         }
 
         void StopBrokenBaitPlaybackDueToPhonePickupInternal()

@@ -66,6 +66,17 @@ public class WorkItem : MonoBehaviour
     public bool IsBroken { get; private set; } = false;
     public bool IsBaiting {get; private set;} = false;
 
+    /// <summary>是否按「电话」规则处理 Bait（Inspector 勾选或 itemName 不区分大小写为 phone）。</summary>
+    public bool PhoneBaitRulesActive =>
+        usePhoneBaitBehavior
+        || (!string.IsNullOrWhiteSpace(itemName) && itemName.Trim().Equals("phone", System.StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>供 GameManager：电话式 Bait 期间是否应按秒扣表现分。</summary>
+    public bool ShouldApplyPhoneBaitPerformanceDecay => IsBaiting && PhoneBaitRulesActive;
+
+    /// <summary>供音效：电话规则下是否在挂机位（未摘机）。非电话物体恒为 false。</summary>
+    public bool PhoneIsOnCradleForSfx => PhoneBaitRulesActive && !_phonePhysicallyOffHook;
+
     private Renderer[] allRenderers;
     private MaterialPropertyBlock mpb;
 
@@ -74,10 +85,36 @@ public class WorkItem : MonoBehaviour
     bool _lastEnableHotkeyRepair;
     bool _warnedNoSupportedColorProperty;
 
+    Coroutine _baitSelfFixCoroutine;
+    Coroutine _phoneBaitAfterPickupCoroutine;
+    bool _phoneLiftedDuringCurrentBait;
+
+    /// <summary>由摘机/挂机事件维护：true 表示当前认为听筒已离开挂机位（已摘机）。</summary>
+    bool _phonePhysicallyOffHook;
+
+    /// <summary>挂机后短时间内忽略 TryRepair（防振动误触 piezo）。</summary>
+    float _phoneTryRepairSuppressedUntilTime;
+
+    /// <summary>曾在「仍处于 Broke」时摘机过（损坏音被摘机逻辑停掉）；挂机且未修好时需恢复循环。</summary>
+    bool _hadPhonePickupWhileBroken;
+
     //this doesn't really have a point but it's fun lol
     public GameObject smokeParticles;
 
     public string itemName;
+
+    [Header("Phone · Bait（与普通 Bait 区分）")]
+    [Tooltip("勾选后：Bait 不会 3 秒自愈；玩家不摘机则一直保持 Bait。结束方式：摘机后再挂机，或摘机后等待「摘机后自动结束秒数」。")]
+    public bool usePhoneBaitBehavior;
+
+    [Tooltip("摘机后经过此时长（秒）自动结束 Bait；0 则仅能通过摘机后再挂机结束（一直拿着不挂机则保持 Bait）。")]
+    [Min(0f)]
+    public float phoneBaitAutoResolveSecondsAfterPickup = 8f;
+
+    [Tooltip("挂机后的若干秒内忽略 TryRepair（不惩罚、不修好），减轻放下电话时振动触发 piezo 的误触。")]
+    [Min(0f)]
+    public float phonePutDownTryRepairDebounceSeconds = 0.5f;
+
     public GameObject tutorialBox;
     public bool isLast;
     public GameObject finalBox;
@@ -119,6 +156,8 @@ public class WorkItem : MonoBehaviour
 
     void OnDisable()
     {
+        StopAllBaitCoroutines();
+
         if (repairAction != null)
         {
             repairAction.performed -= OnRepairPerformed;
@@ -247,8 +286,78 @@ public class WorkItem : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.UnregisterItem(this);
 
+        StopAllBaitCoroutines();
+
         repairAction?.Dispose();
         debugBreakAction?.Dispose();
+    }
+
+    void StopAllBaitCoroutines()
+    {
+        if (_baitSelfFixCoroutine != null)
+        {
+            StopCoroutine(_baitSelfFixCoroutine);
+            _baitSelfFixCoroutine = null;
+        }
+
+        if (_phoneBaitAfterPickupCoroutine != null)
+        {
+            StopCoroutine(_phoneBaitAfterPickupCoroutine);
+            _phoneBaitAfterPickupCoroutine = null;
+        }
+    }
+
+    /// <summary>由 Arduino <c>onPhonePickup</c> 等绑定：更新摘机状态，并在处于电话 Bait 时推进 Bait 流程。</summary>
+    public void NotifyPhonePickedUpForBaitFlow()
+    {
+        if (!PhoneBaitRulesActive)
+            return;
+
+        _phonePhysicallyOffHook = true;
+
+        if (IsBroken)
+            _hadPhonePickupWhileBroken = true;
+
+        if (!IsBaiting)
+            return;
+        if (_phoneLiftedDuringCurrentBait)
+            return;
+
+        _phoneLiftedDuringCurrentBait = true;
+
+        if (_phoneBaitAfterPickupCoroutine != null)
+        {
+            StopCoroutine(_phoneBaitAfterPickupCoroutine);
+            _phoneBaitAfterPickupCoroutine = null;
+        }
+
+        if (phoneBaitAutoResolveSecondsAfterPickup > 0f)
+            _phoneBaitAfterPickupCoroutine = StartCoroutine(PhoneBaitAutoResolveAfterPickupRoutine());
+    }
+
+    /// <summary>由 Arduino <c>onPhonePutdown</c> 绑定：更新挂机状态、启动 TryRepair 防抖；若处于电话 Bait 且曾摘机则结束 Bait。</summary>
+    public void NotifyPhonePutDownForBaitFlow()
+    {
+        if (!PhoneBaitRulesActive)
+            return;
+
+        _phonePhysicallyOffHook = false;
+        _phoneTryRepairSuppressedUntilTime = Time.time + Mathf.Max(0f, phonePutDownTryRepairDebounceSeconds);
+
+        if (IsBaiting && _phoneLiftedDuringCurrentBait)
+            ResolveBaitLikeSelfFix();
+
+        if (IsBroken && _hadPhonePickupWhileBroken)
+        {
+            _hadPhonePickupWhileBroken = false;
+            JiU.PlaySoundOnEventAudioManager.ResumeBrokenLoopAfterPhonePutdownForWorkItem(this);
+            JiU.PlaySoundOnEvent.ResumeBrokenClipAfterPhonePutdownForWorkItem(this);
+        }
+    }
+
+    bool ShouldDeferPhoneAutoBreakDuringBossWarning()
+    {
+        return PhoneBaitRulesActive && GameManager.Instance != null && GameManager.Instance.BossWarning;
     }
 
     /*private IEnumerator BaitLoop()
@@ -315,6 +424,8 @@ public class WorkItem : MonoBehaviour
                         }
                         else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
                             continue;
+                        else if (ShouldDeferPhoneAutoBreakDuringBossWarning())
+                            continue;
                         else
                             Break();
                     }
@@ -342,6 +453,8 @@ public class WorkItem : MonoBehaviour
                         }
                         else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
                             continue;
+                        else if (ShouldDeferPhoneAutoBreakDuringBossWarning())
+                            continue;
                         else
                             Break();
                     }
@@ -360,6 +473,20 @@ public class WorkItem : MonoBehaviour
     public void TryRepair()
     {
         //Debug.Log($"I am trying to fix {this.itemName}!");
+
+        // 电话：优先于下方通用逻辑 — 挂机后防抖窗口内完全忽略 TryRepair（不误判惩罚）
+        if (PhoneBaitRulesActive)
+        {
+            if (Time.time < _phoneTryRepairSuppressedUntilTime)
+                return;
+
+            // 未摘机时任意 TryRepair 一律视为错误修复（Bait 走 Ultra，其余走 Punishment）
+            if (!_phonePhysicallyOffHook)
+            {
+                ApplyPhoneTryRepairWhileOnHookPunishment();
+                return;
+            }
+        }
 
         // 仅真正「损坏」且通过距离等校验后才会 Win + Fix；Bait / 空闲乱按只走 Lose 并 return
         if (!IsBroken)
@@ -397,6 +524,23 @@ public class WorkItem : MonoBehaviour
         }
     }
 
+    void ApplyPhoneTryRepairWhileOnHookPunishment()
+    {
+        if (IsBaiting)
+        {
+            if (GameManager.Instance != null)
+                GameManager.Instance.UltraPunishment();
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
+            return;
+        }
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.Punishment();
+        if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+            OnRepairIncorrect?.Invoke();
+    }
+
     private void OnRepairPerformed(InputAction.CallbackContext ctx)
     {
         TryRepair();
@@ -410,6 +554,7 @@ public class WorkItem : MonoBehaviour
     public void Break()
     {
         if (IsBroken) return;
+        _hadPhonePickupWhileBroken = false;
         IsBroken = true;
 
         if (GameManager.Instance != null)
@@ -433,20 +578,52 @@ public class WorkItem : MonoBehaviour
     {
         if (IsBaiting) return;
         IsBaiting = true;
-        
+        _phoneLiftedDuringCurrentBait = false;
+        StopAllBaitCoroutines();
+
         WarnIfTintDidNotApply(ApplyTintOverride(baitColor), "Bait");
         OnBaiting?.Invoke();
 
         if (debugLogs)
             Debug.Log($"[WorkItem] {name} BAIT -> tint applied");
-        StartCoroutine(BaitSelfFix());
+
+        if (PhoneBaitRulesActive)
+        {
+            // 来电 Bait 默认视为在挂机位（避免沿用上一通摘机状态）
+            _phonePhysicallyOffHook = false;
+            // 不启动 3 秒自愈；等待摘机+挂机或摘机后计时
+        }
+        else
+            _baitSelfFixCoroutine = StartCoroutine(BaitSelfFix());
     }
 
     IEnumerator BaitSelfFix()
     {
         yield return new WaitForSeconds(3);
+        _baitSelfFixCoroutine = null;
         if (!IsBaiting)
             yield break;
+
+        ResolveBaitLikeSelfFix();
+    }
+
+    IEnumerator PhoneBaitAutoResolveAfterPickupRoutine()
+    {
+        yield return new WaitForSeconds(phoneBaitAutoResolveSecondsAfterPickup);
+        _phoneBaitAfterPickupCoroutine = null;
+        if (!IsBaiting || !PhoneBaitRulesActive || !_phoneLiftedDuringCurrentBait)
+            yield break;
+
+        ResolveBaitLikeSelfFix();
+    }
+
+    void ResolveBaitLikeSelfFix()
+    {
+        if (!IsBaiting)
+            return;
+
+        StopAllBaitCoroutines();
+        _phoneLiftedDuringCurrentBait = false;
 
         IsBaiting = false;
         ClearTintOverride();
@@ -462,9 +639,14 @@ public class WorkItem : MonoBehaviour
     {
         // 仅当当前处于 Broke 或 Bait 时才执行修好逻辑并触发 OnFixed；正常状态下按键不触发
         if (!IsBroken && !IsBaiting) return;
+        StopAllBaitCoroutines();
+        _phoneLiftedDuringCurrentBait = false;
+
         bool wasBroken = IsBroken;
         IsBroken = false;
         IsBaiting = false;
+        if (wasBroken)
+            _hadPhonePickupWhileBroken = false;
 
         if (wasBroken && GameManager.Instance != null)
         {
