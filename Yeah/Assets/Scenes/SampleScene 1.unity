@@ -1417,7 +1417,7 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 5
+  baitWeight: 0
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/2
   repairKeyCodeFallback: 50
@@ -1521,7 +1521,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.8
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2193,6 +2193,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ccab61a816b89ea3cb6e602bfeea2504, type: 3}
   - {fileID: 8300000, guid: 605994a4c4b583f409d9a7cf88ea3c73, type: 3}
   - {fileID: 8300000, guid: d82e1562bb1d5c74db049e980ac7dd6a, type: 3}
+  - {fileID: 8300000, guid: 6ac678465a088704bae7e24f73750d81, type: 3}
+  - {fileID: 8300000, guid: 7aa4552a05d0a4d44afc13f2c257d480, type: 3}
   MusicList:
   - {fileID: 8300000, guid: ae235624559aa08449eb40198d6308fe, type: 3}
   - {fileID: 8300000, guid: 1fc2b5aa6b61284428103545f5c0cc76, type: 3}
@@ -5582,9 +5584,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JiU.PlaySoundOnEventAudioManager
   localSfxSource: {fileID: 1127083644}
-  skipBrokenAndBaitSounds: 1
-  effectIndex: -1
-  loopBrokenSound: 0
+  skipBrokenAndBaitSounds: 0
+  effectIndex: 13
+  loopBrokenSound: 1
   baitEffectIndex: -1
   loopBaitSound: 0
   baitEndedEffectIndex: -1
@@ -5660,8 +5662,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JiU.PlaySoundOnEventAudioManager
   localSfxSource: {fileID: 983266347}
-  skipBrokenAndBaitSounds: 1
-  effectIndex: -1
+  skipBrokenAndBaitSounds: 0
+  effectIndex: 14
   loopBrokenSound: 0
   baitEffectIndex: -1
   loopBaitSound: 0
@@ -9623,9 +9625,9 @@ MonoBehaviour:
   workMashGain: 0
   workGainPerSecondPerWorkingItem: 0.5
   workLossPerSecondPerBrokenItem: 2.2
-  workPressureInstantOnBroke: 0
-  workPressureInstantOnBrokeRepair: 0
-  bossMinWorkThreshold: 30
+  workPressureInstantOnBroke: 3
+  workPressureInstantOnBrokeRepair: 2
+  bossMinWorkThreshold: 0
   bossIncomingConfig: {fileID: 1853649707}
   enableTutorial: 1
   tutorialBreakOrder:
@@ -9636,44 +9638,44 @@ MonoBehaviour:
   - {fileID: 1141977272}
   gamePhases:
   - phaseName: phase 0
-    maxConcurrentBrokenWorkItems: 2
+    maxConcurrentBrokenWorkItems: 1
     minBreakIntervalSeconds: 4
-    maxBreakIntervalSeconds: 10
-    bossMinWorkThreshold: 30
-    workPunishment: 2
-    workUltraPunishment: 3
+    maxBreakIntervalSeconds: 8
+    bossMinWorkThreshold: 0
+    workPunishment: 1.5
+    workUltraPunishment: 2.5
     workGainPerSecondPerWorkingItem: 0.5
-    workLossPerSecondPerBrokenItem: 3
-    workPressureInstantOnBroke: 0
-    workPressureInstantOnBrokeRepair: 0
+    workLossPerSecondPerBrokenItem: 2.5
+    workPressureInstantOnBroke: 3
+    workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 4
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 0.1
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   - phaseName: Phase 1
-    maxConcurrentBrokenWorkItems: 3
+    maxConcurrentBrokenWorkItems: 2
     minBreakIntervalSeconds: 4
-    maxBreakIntervalSeconds: 10
-    bossMinWorkThreshold: 30
+    maxBreakIntervalSeconds: 8
+    bossMinWorkThreshold: 0
     workPunishment: 2
     workUltraPunishment: 3
     workGainPerSecondPerWorkingItem: 0.5
-    workLossPerSecondPerBrokenItem: 3
+    workLossPerSecondPerBrokenItem: 2.5
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 0
     warningShowDelayAfterBreak: 5
     warningMessageFormat: '{0} has been hacked!'
-    normalizedScoreRequiredForNextPhase: 0.25
+    normalizedScoreRequiredForNextPhase: 0.3
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   - phaseName: Phase 2
-    maxConcurrentBrokenWorkItems: 4
-    minBreakIntervalSeconds: 4
-    maxBreakIntervalSeconds: 8
-    bossMinWorkThreshold: 30
+    maxConcurrentBrokenWorkItems: 3
+    minBreakIntervalSeconds: 3
+    maxBreakIntervalSeconds: 6
+    bossMinWorkThreshold: 0
     workPunishment: 2
     workUltraPunishment: 4
     workGainPerSecondPerWorkingItem: 0.8
-    workLossPerSecondPerBrokenItem: 3
+    workLossPerSecondPerBrokenItem: 2.5
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 0
     warningShowDelayAfterBreak: 6
@@ -9681,36 +9683,36 @@ MonoBehaviour:
     normalizedScoreRequiredForNextPhase: 0.5
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   - phaseName: Phase 3
-    maxConcurrentBrokenWorkItems: 5
-    minBreakIntervalSeconds: 4
-    maxBreakIntervalSeconds: 8
-    bossMinWorkThreshold: 30
-    workPunishment: 3
-    workUltraPunishment: 6
+    maxConcurrentBrokenWorkItems: 4
+    minBreakIntervalSeconds: 3
+    maxBreakIntervalSeconds: 6
+    bossMinWorkThreshold: 0
+    workPunishment: 2
+    workUltraPunishment: 4
     workGainPerSecondPerWorkingItem: 0.8
-    workLossPerSecondPerBrokenItem: 3
+    workLossPerSecondPerBrokenItem: 2.5
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 1
     warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
-    normalizedScoreRequiredForNextPhase: 0.8
+    normalizedScoreRequiredForNextPhase: 0.7
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   - phaseName: Phase 3
-    maxConcurrentBrokenWorkItems: 6
-    minBreakIntervalSeconds: 4
-    maxBreakIntervalSeconds: 8
-    bossMinWorkThreshold: 30
-    workPunishment: 3
-    workUltraPunishment: 6
+    maxConcurrentBrokenWorkItems: 5
+    minBreakIntervalSeconds: 3
+    maxBreakIntervalSeconds: 6
+    bossMinWorkThreshold: 0
+    workPunishment: 2
+    workUltraPunishment: 4
     workGainPerSecondPerWorkingItem: 1.2
-    workLossPerSecondPerBrokenItem: 3
+    workLossPerSecondPerBrokenItem: 2.5
     workPressureInstantOnBroke: 0
-    workPressureInstantOnBrokeRepair: 2
+    workPressureInstantOnBrokeRepair: 1.5
     warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 1
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
-  victoryCountdownSeconds: 110
+  victoryCountdownSeconds: 90
   enableVictoryNearEndWarning: 1
   nearEndWarningWhenRemainingSeconds: 30
   nearEndWarningMessage: It's almost fixed, hang in there!
@@ -11070,7 +11072,7 @@ MonoBehaviour:
     WorkItem: {fileID: 983266344}
   phoneWorkItem: {fileID: 1141977272}
   printerWorkItem: {fileID: 882021887}
-  debugLogPhonePickupPutdown: 1
+  debugLogPhonePickupPutdown: 0
 --- !u!4 &1997837122 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 42875ed199d3b494abca5c54c86f6b28, type: 3}
