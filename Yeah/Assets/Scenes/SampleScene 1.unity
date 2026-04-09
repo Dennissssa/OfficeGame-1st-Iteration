@@ -8292,14 +8292,14 @@ MonoBehaviour:
   OnRepairIncorrect:
     m_PersistentCalls:
       m_Calls: []
-  debugLogs: 0
+  debugLogs: 1
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: phone
   usePhoneBaitBehavior: 1
-  phoneBaitAutoResolveSecondsAfterPickup: 8
-  phonePutDownTryRepairDebounceSeconds: 0.5
+  phoneBaitAutoResolveSecondsAfterPickup: 6
+  phonePutDownTryRepairDebounceSeconds: 1
   tutorialBox: {fileID: 1066965541}
   isLast: 0
   finalBox: {fileID: 0}
@@ -10721,13 +10721,13 @@ MonoBehaviour:
   workPunishment: 0
   workUltraPunishment: 0
   workMashGain: 0
-  workGainPerSecondPerWorkingItem: 0.1
+  workGainPerSecondPerWorkingItem: 0.5
   workLossPerSecondPerBrokenItem: 2
   workPressureInstantOnBroke: 0
   workPressureInstantOnBrokeRepair: 2
   bossMinWorkThreshold: 0
   bossIncomingConfig: {fileID: 1853649707}
-  enableTutorial: 1
+  enableTutorial: 0
   tutorialBreakOrder:
   - {fileID: 363469229}
   - {fileID: 882021887}
@@ -10773,13 +10773,13 @@ MonoBehaviour:
     bossMinWorkThreshold: 0
     workPunishment: 2
     workUltraPunishment: 4
-    workGainPerSecondPerWorkingItem: 0.1
+    workGainPerSecondPerWorkingItem: 0.2
     workLossPerSecondPerBrokenItem: 2
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
-    normalizedScoreRequiredForNextPhase: 0.5
+    normalizedScoreRequiredForNextPhase: 0.6
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   - phaseName: Phase 3
     maxConcurrentBrokenWorkItems: 4
@@ -10788,13 +10788,13 @@ MonoBehaviour:
     bossMinWorkThreshold: 0
     workPunishment: 2
     workUltraPunishment: 5
-    workGainPerSecondPerWorkingItem: 0.1
+    workGainPerSecondPerWorkingItem: 0.3
     workLossPerSecondPerBrokenItem: 2
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
-    normalizedScoreRequiredForNextPhase: 0.7
+    normalizedScoreRequiredForNextPhase: 0.9
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   - phaseName: Phase 3
     maxConcurrentBrokenWorkItems: 5
@@ -10803,7 +10803,7 @@ MonoBehaviour:
     bossMinWorkThreshold: 0
     workPunishment: 3
     workUltraPunishment: 5
-    workGainPerSecondPerWorkingItem: 0.1
+    workGainPerSecondPerWorkingItem: 0.4
     workLossPerSecondPerBrokenItem: 2
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 2
@@ -10813,7 +10813,7 @@ MonoBehaviour:
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   victoryCountdownSeconds: 90
   enableVictoryNearEndWarning: 1
-  nearEndWarningWhenRemainingSeconds: 30
+  nearEndWarningWhenRemainingSeconds: 20
   nearEndWarningMessage: It's almost fixed, hang in there!
   nearEndWarningPanelRoot: {fileID: 968065411}
   nearEndWarningText: {fileID: 2085421092}
@@ -10855,7 +10855,7 @@ MonoBehaviour:
   tutorialWarningMessageFormat: '{0} has been hacked!'
   arduinoBridgeScript: {fileID: 1987669260}
   phoneWorkItemForPickupAudioSuppressScope: {fileID: 1141977272}
-  debugLogPhonePickupPlaySoundSkipFlags: 1
+  debugLogPhonePickupPlaySoundSkipFlags: 0
   isTutorialing: 1
 --- !u!4 &1583755465
 Transform:
@@ -12087,12 +12087,12 @@ MonoBehaviour:
   enablePreArrivalFreeze: 1
   freezeWindowBeforeArrival: 3
   phaseScoreSettings:
-  - baseScore: 50
+  - baseScore: 100
     scoreDecayPerSecond: 5
     phoneBaitScoreDecayMultiplier: 0
     performancePenaltyIdleWrongHit: 20
     performancePenaltyBaitWrongHit: 30
-  - baseScore: 50
+  - baseScore: 100
     scoreDecayPerSecond: 5
     phoneBaitScoreDecayMultiplier: 0.2
     performancePenaltyIdleWrongHit: 25
@@ -12112,7 +12112,7 @@ MonoBehaviour:
     phoneBaitScoreDecayMultiplier: 0.5
     performancePenaltyIdleWrongHit: 200
     performancePenaltyBaitWrongHit: 300
-  performanceScoreNormalizationDivisor: 3000
+  performanceScoreNormalizationDivisor: 5000
   scoreThresholdForNextPhase: 0
   scorePhasePromotionHysteresis: 0.05
   defaultMinPerformanceScoreGainPerPhaseForSaturatedPromotion: 10

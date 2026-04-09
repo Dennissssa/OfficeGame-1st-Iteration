@@ -317,6 +317,12 @@ public class ArduinoSerialBridge : MonoBehaviour
         SendRaw(on ? "PRINTER:ON" : "PRINTER:OFF");
     }
 
+    /// <summary>Send a system reset command to return all hardware components to their default state.</summary>
+    public void ResetSystem()
+    {
+        SendRaw("SYSTEM:RESET");
+    }
+
     private void SendRaw(string msg)
     {
         if (_serial == null || !_serial.IsOpen) return;

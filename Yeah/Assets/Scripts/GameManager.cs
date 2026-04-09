@@ -310,6 +310,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>对局结束（任意结局）时通知 Arduino 将全部外设恢复默认；<see cref="arduinoBridgeScript"/> 未绑定则忽略。</summary>
+    void NotifyArduinoSystemResetOnMatchEnd()
+    {
+        if (arduinoBridgeScript != null)
+            arduinoBridgeScript.ResetSystem();
+    }
+
     void WarnIfMultipleUIManagerInScene()
     {
         UIManager[] all = FindObjectsOfType<UIManager>(true);
@@ -772,37 +779,49 @@ public class GameManager : MonoBehaviour
             return;
         if (!_normalPerformanceScoringActive)
             return;
-        if (_currentPhaseIndex >= gamePhases.Count - 1)
-            return;
-
-        float thr = GetPromotionThresholdForLeavingPhase(_currentPhaseIndex);
-        float h = GetScorePhasePromotionHysteresis();
-        float norm = NormalizedPerformanceScore;
 
         _timeSinceLastScorePhasePromotion += Time.deltaTime;
 
-        if (norm < thr - h)
+        // 同一帧可连升多阶（避免：升阶后 norm 已超过下一档门槛却因滞回未 armed 而永久卡住）
+        while (_currentPhaseIndex < gamePhases.Count - 1)
+        {
+            float thr = GetPromotionThresholdForLeavingPhase(_currentPhaseIndex);
+            float h = GetScorePhasePromotionHysteresis();
+            float norm = NormalizedPerformanceScore;
+            float lowerBound = thr - h;
+
+            // 阈值很小且 ≤ 滞回时 thr−h≤0，norm < lowerBound 永假 → 原先会永远无法 armed；退化为准入仅看 norm≥thr
+            if (lowerBound > 1e-4f)
+            {
+                if (norm < lowerBound)
+                    _phasePromotionArmed = true;
+            }
+            else
+                _phasePromotionArmed = true;
+
+            const float normSaturated = 0.998f;
+            bool saturated = norm >= normSaturated;
+
+            bool promoteByHysteresis = lowerBound > 1e-4f
+                ? _phasePromotionArmed && norm >= thr
+                : norm >= thr;
+
+            float minPerfGainForSaturated = GetMinPerformanceScoreGainThisPhaseForSaturatedPromotion(_currentPhaseIndex);
+            float perfSinceEnteredPhase = TotalPerformanceScore - _performanceScoreRawWhenEnteredCurrentPhase;
+            bool promoteBySaturatedInterval = saturated && norm >= thr
+                && minPerfGainForSaturated > 0.0001f
+                && perfSinceEnteredPhase >= minPerfGainForSaturated
+                && _timeSinceLastScorePhasePromotion >= MinSecondsBetweenScorePhasePromotionsWhenSaturated;
+
+            if (!promoteByHysteresis && !promoteBySaturatedInterval)
+                break;
+
+            _currentPhaseIndex++;
+            ApplyPhaseConfig(gamePhases[_currentPhaseIndex]);
+            // 新阶段：允许直接跨下一档门槛，不要求分数先跌回「阈值−滞回」以下（多档递增阈值时否则会永久卡死）
             _phasePromotionArmed = true;
-
-        const float normSaturated = 0.998f;
-        bool saturated = norm >= normSaturated;
-
-        bool promoteByHysteresis = _phasePromotionArmed && norm >= thr;
-
-        float minPerfGainForSaturated = GetMinPerformanceScoreGainThisPhaseForSaturatedPromotion(_currentPhaseIndex);
-        float perfSinceEnteredPhase = TotalPerformanceScore - _performanceScoreRawWhenEnteredCurrentPhase;
-        bool promoteBySaturatedInterval = saturated && norm >= thr
-            && minPerfGainForSaturated > 0.0001f
-            && perfSinceEnteredPhase >= minPerfGainForSaturated
-            && _timeSinceLastScorePhasePromotion >= MinSecondsBetweenScorePhasePromotionsWhenSaturated;
-
-        if (!promoteByHysteresis && !promoteBySaturatedInterval)
-            return;
-
-        _currentPhaseIndex++;
-        ApplyPhaseConfig(gamePhases[_currentPhaseIndex]);
-        _phasePromotionArmed = false;
-        _timeSinceLastScorePhasePromotion = 0f;
+            _timeSinceLastScorePhasePromotion = 0f;
+        }
     }
 
     /// <summary>Normalized score threshold to leave gamePhases[phaseIndex] for the next phase.</summary>
@@ -866,7 +885,11 @@ public class GameManager : MonoBehaviour
 
         float thr = GetPromotionThresholdForLeavingPhase(_currentPhaseIndex);
         float h = GetScorePhasePromotionHysteresis();
-        _phasePromotionArmed = NormalizedPerformanceScore < thr - h;
+        float lowerBound = thr - h;
+        if (lowerBound <= 1e-4f)
+            _phasePromotionArmed = true;
+        else
+            _phasePromotionArmed = NormalizedPerformanceScore < lowerBound;
     }
 
     float GetScorePhasePromotionHysteresis()
@@ -1003,6 +1026,7 @@ public class GameManager : MonoBehaviour
         if (isGameOver || IsVictory) return;
         IsVictory = true;
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
+        NotifyArduinoSystemResetOnMatchEnd();
 
         if (_bossLoopCoroutine != null)
         {
@@ -1128,6 +1152,7 @@ public class GameManager : MonoBehaviour
 
         isGameOver = true;
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
+        NotifyArduinoSystemResetOnMatchEnd();
 
         if (debugLogWorkProgressDeath)
         {
@@ -1591,6 +1616,7 @@ public class GameManager : MonoBehaviour
         if (isGameOver || IsVictory) return;
         isGameOver = true;
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
+        NotifyArduinoSystemResetOnMatchEnd();
 
         if (_bossLoopCoroutine != null)
         {

@@ -355,9 +355,13 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    bool ShouldDeferPhoneAutoBreakDuringBossWarning()
+    /// <summary>电话物体：Boss 预警或 Boss 在场期间不进行随机的 Broke / Bait（含原为兜底而转 Bait 的分支）。</summary>
+    bool ShouldBlockPhoneRandomBrokeOrBaitForBoss()
     {
-        return PhoneBaitRulesActive && GameManager.Instance != null && GameManager.Instance.BossWarning;
+        if (!PhoneBaitRulesActive || GameManager.Instance == null)
+            return false;
+        GameManager gm = GameManager.Instance;
+        return gm.BossWarning || gm.BossIsHere;
     }
 
     /*private IEnumerator BaitLoop()
@@ -410,27 +414,31 @@ public class WorkItem : MonoBehaviour
                     {
                         if (GameManager.Instance != null && GameManager.Instance.BlockNewHackEventsNow())
                         {
-                            if (baitWeight > 0f)
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
                                 Bait();
                             else
                                 continue;
                         }
                         else if (GameManager.Instance != null && GameManager.Instance.BlockNewBrokeDuringBossStay())
                         {
-                            if (baitWeight > 0f)
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
                                 Bait();
                             else
                                 continue;
                         }
                         else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
                             continue;
-                        else if (ShouldDeferPhoneAutoBreakDuringBossWarning())
+                        else if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
                             continue;
                         else
                             Break();
                     }
                     else
+                    {
+                        if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                            continue;
                         Bait();
+                    }
                 }
                 else
                 {
@@ -439,27 +447,31 @@ public class WorkItem : MonoBehaviour
                     {
                         if (GameManager.Instance != null && GameManager.Instance.BlockNewHackEventsNow())
                         {
-                            if (baitWeight > 0f)
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
                                 Bait();
                             else
                                 continue;
                         }
                         else if (GameManager.Instance != null && GameManager.Instance.BlockNewBrokeDuringBossStay())
                         {
-                            if (baitWeight > 0f)
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
                                 Bait();
                             else
                                 continue;
                         }
                         else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
                             continue;
-                        else if (ShouldDeferPhoneAutoBreakDuringBossWarning())
+                        else if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
                             continue;
                         else
                             Break();
                     }
                     else
+                    {
+                        if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                            continue;
                         Bait();
+                    }
                 }
             }
             else
