@@ -35,9 +35,11 @@ public class IntroController : MonoBehaviour
         public bool showBoss;
         public bool showSam;
         public bool showAd;
+        public bool showTracker;
         public bool adSpamming;
         public GameObject vocalSound;
         public bool waitsForPlayerInput;
+        public bool initiatesWaitingPeriod;
         public bool showDialogue;
         public float dialogueWaitTime;
     }
@@ -53,6 +55,7 @@ public class IntroController : MonoBehaviour
     public GameObject bossMeeting;
     public GameObject samMeeting;
     public GameObject adMeeting;
+    public GameObject trackerWindow;
 
     public List<GameObject> adSpam;
     public int adSpamCount;
@@ -84,15 +87,57 @@ public class IntroController : MonoBehaviour
                 //Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
             //}
         //}
-        if (canAdvance)
+        /*if (canAdvance)
         {
             StartCoroutine(AdvanceText());
+        }*/
+
+        //if (dialogueList[dialogueCount].initiatesWaitingPeriod)
+       // {
+            if (canAdvance)
+            {
+                StartCoroutine(AdvanceText());
+            }
+       // }
+        
+
+        if (ms.leftButton.wasPressedThisFrame)
+        {
+            if ((dialogueList[dialogueCount].waitsForPlayerInput == true) || (dialogueList[dialogueCount].initiatesWaitingPeriod == true))
+            {
+                return;
+            }
+            
+            else if (dialogueCount < dialogueList.Count - 1)
+            {
+                StopAllCoroutines();
+                dialogueCount++;
+                if (dialogueList[dialogueCount].vocalSound != null)
+                {
+                    Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                }
+    
+                if (dialogueList[dialogueCount].waitsForPlayerInput == true)
+                {
+                    return;
+                }
+                else
+                {
+                    canAdvance = true;
+                }
+            }
+            else
+            {
+                StopAllCoroutines();
+                SceneManager.LoadScene(playSceneCount);
+            }
         }
 
         dialogueGroup.SetActive(dialogueList[dialogueCount].showDialogue);
         bossMeeting.SetActive(dialogueList[dialogueCount].showBoss);
         samMeeting.SetActive(dialogueList[dialogueCount].showSam);
         adMeeting.SetActive(dialogueList[dialogueCount].showAd);
+        trackerWindow.SetActive(dialogueList[dialogueCount].showTracker);
 
         if (dialogueList[dialogueCount].adSpamming)
         {

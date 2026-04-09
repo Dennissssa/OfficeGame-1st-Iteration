@@ -5,6 +5,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Conrad/IntroController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Conrad/IntroController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/Intro Story Scene Refactored.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Intro Story Scene Refactored.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene 1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene 1.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/UI Assets/sharkcrash-1 SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UI Assets/sharkcrash-1 SDF.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -104,7 +105,7 @@
       <workItem from="1773799781879" duration="3764000" />
       <workItem from="1775012097854" duration="6718000" />
       <workItem from="1775099918108" duration="1421000" />
-      <workItem from="1775692755760" duration="733000" />
+      <workItem from="1775692755760" duration="3015000" />
     </task>
     <servers />
   </component>

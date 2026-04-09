@@ -640,6 +640,7 @@ RectTransform:
   - {fileID: 978573039}
   - {fileID: 1877581888}
   - {fileID: 429690926}
+  - {fileID: 1349697413}
   m_Father: {fileID: 685989573}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2623,6 +2624,116 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1001 &1349697412
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 374526754}
+    m_Modifications:
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 2240
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 1180
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -291
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -194
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036262805653233275, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036262805653233275, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8337021681373684425, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      propertyPath: m_Name
+      value: Work Progress
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+--- !u!224 &1349697413 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7371462954272381817, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+  m_PrefabInstance: {fileID: 1349697412}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1393763993
 GameObject:
   m_ObjectHideFlags: 0
@@ -2951,9 +3062,11 @@ MonoBehaviour:
     showBoss: 1
     showSam: 0
     showAd: 0
+    showTracker: 0
     adSpamming: 0
     vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 7
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
@@ -2964,9 +3077,11 @@ MonoBehaviour:
     showBoss: 1
     showSam: 0
     showAd: 0
+    showTracker: 0
     adSpamming: 0
     vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 7
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
@@ -2978,9 +3093,11 @@ MonoBehaviour:
     showBoss: 1
     showSam: 0
     showAd: 0
+    showTracker: 0
     adSpamming: 0
     vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 8
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
@@ -2990,9 +3107,11 @@ MonoBehaviour:
     showBoss: 1
     showSam: 0
     showAd: 0
+    showTracker: 0
     adSpamming: 0
     vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 5
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
@@ -3002,9 +3121,11 @@ MonoBehaviour:
     showBoss: 0
     showSam: 0
     showAd: 0
+    showTracker: 0
     adSpamming: 0
     vocalSound: {fileID: 0}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 1
     showDialogue: 0
     dialogueWaitTime: 3
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
@@ -3015,9 +3136,11 @@ MonoBehaviour:
     showBoss: 0
     showSam: 0
     showAd: 1
+    showTracker: 0
     adSpamming: 0
     vocalSound: {fileID: 0}
     waitsForPlayerInput: 1
+    initiatesWaitingPeriod: 0
     showDialogue: 0
     dialogueWaitTime: 0
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
@@ -3028,11 +3151,13 @@ MonoBehaviour:
     showBoss: 0
     showSam: 0
     showAd: 0
+    showTracker: 0
     adSpamming: 1
     vocalSound: {fileID: 0}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 1
     showDialogue: 0
-    dialogueWaitTime: 4
+    dialogueWaitTime: 3
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: "Hey. It\u2019s Sam. I\u2019m guessing you\u2019re the latest sucker
@@ -3042,9 +3167,11 @@ MonoBehaviour:
     showBoss: 0
     showSam: 1
     showAd: 0
+    showTracker: 0
     adSpamming: 1
     vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 7
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
@@ -3056,9 +3183,11 @@ MonoBehaviour:
     showBoss: 0
     showSam: 1
     showAd: 0
+    showTracker: 0
     adSpamming: 1
     vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 6.5
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
@@ -3068,11 +3197,13 @@ MonoBehaviour:
     showBoss: 0
     showSam: 1
     showAd: 0
+    showTracker: 1
     adSpamming: 0
     vocalSound: {fileID: 0}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 1
     showDialogue: 0
-    dialogueWaitTime: 3
+    dialogueWaitTime: 2
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: There. I've set up a hex that'll purge the virus from affected
@@ -3081,9 +3212,11 @@ MonoBehaviour:
     showBoss: 0
     showSam: 1
     showAd: 0
+    showTracker: 1
     adSpamming: 0
     vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 5
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
@@ -3094,9 +3227,11 @@ MonoBehaviour:
     showBoss: 0
     showSam: 1
     showAd: 0
+    showTracker: 1
     adSpamming: 0
     vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 6
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
@@ -3106,9 +3241,11 @@ MonoBehaviour:
     showBoss: 0
     showSam: 1
     showAd: 0
+    showTracker: 1
     adSpamming: 0
     vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
     waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 5
   dialogueGroup: {fileID: 429690925}
@@ -3120,6 +3257,7 @@ MonoBehaviour:
   bossMeeting: {fileID: 909564421}
   samMeeting: {fileID: 955641281}
   adMeeting: {fileID: 978573036}
+  trackerWindow: {fileID: 1997931423}
   adSpam:
   - {fileID: 534550121}
   - {fileID: 530514417}
@@ -4267,6 +4405,11 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &1997931423 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8337021681373684425, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+  m_PrefabInstance: {fileID: 1349697412}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2136852648
 GameObject:
   m_ObjectHideFlags: 0
