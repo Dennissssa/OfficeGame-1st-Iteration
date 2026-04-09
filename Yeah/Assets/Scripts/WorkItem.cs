@@ -227,7 +227,7 @@ public class WorkItem : MonoBehaviour
     {
         while (true)
         {
-            if (!IsBroken || !IsBaiting)
+            if (!IsBroken && !IsBaiting)
             {
                 float t = Random.Range(minTimeToBreak, maxTimeToBreak);
                 yield return new WaitForSeconds(t);
@@ -314,7 +314,7 @@ public class WorkItem : MonoBehaviour
 
     public void Break()
     {
-        if (IsBroken) return;
+        if (IsBroken || IsBaiting) return;
         IsBroken = true;
         instantiatedAudio = Instantiate(audioGameobjects[0], transform.position, Quaternion.identity);
 
@@ -327,7 +327,7 @@ public class WorkItem : MonoBehaviour
 
     public void Bait()
     {
-        if (IsBaiting) return;
+        if (IsBaiting || IsBroken) return;
         IsBaiting = true;
         Instantiate(audioGameobjects[1], transform.position, Quaternion.identity);
 
