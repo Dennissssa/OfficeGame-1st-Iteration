@@ -385,7 +385,7 @@ public class WorkItem : MonoBehaviour
     {
         while (true)
         {
-            if (!IsBroken || !IsBaiting)
+            if (!IsBroken && !IsBaiting)
             {
                 if (!enableAutoBreak)
                 {
@@ -565,7 +565,7 @@ public class WorkItem : MonoBehaviour
 
     public void Break()
     {
-        if (IsBroken) return;
+        if (IsBroken || IsBaiting) return;
         _hadPhonePickupWhileBroken = false;
         IsBroken = true;
 
@@ -588,7 +588,7 @@ public class WorkItem : MonoBehaviour
 
     public void Bait()
     {
-        if (IsBaiting) return;
+        if (IsBaiting || IsBroken) return;
         IsBaiting = true;
         _phoneLiftedDuringCurrentBait = false;
         StopAllBaitCoroutines();
