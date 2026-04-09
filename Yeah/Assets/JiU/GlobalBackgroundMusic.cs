@@ -3,16 +3,16 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// 全局背景音乐：独立 <see cref="AudioSource"/>，<see cref="DontDestroyOnLoad"/>，与项目内 AudioManager 无关。
-    /// 场景中放一个带本脚本的物体即可；重复进入场景时只保留第一个实例。
+    /// Global BGM: dedicated <see cref="AudioSource"/>, <see cref="DontDestroyOnLoad"/>, separate from project AudioManager.
+    /// One object with this script in the scene; only the first instance survives scene reloads.
     /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class GlobalBackgroundMusic : MonoBehaviour
     {
         public static GlobalBackgroundMusic Instance { get; private set; }
 
-        [Header("可选：首场景自动播")]
-        [Tooltip("进入游戏后自动播放（仅当当前没有在播）")]
+        [Header("Optional: play on first scene")]
+        [Tooltip("Auto-play after entering play mode if nothing is playing yet")]
         public AudioClip playOnStart;
 
         [Range(0f, 1f)]
@@ -48,7 +48,7 @@ namespace JiU
                 Instance = null;
         }
 
-        /// <summary>切换 BGM；与当前为同一 Clip 且已在播则不变。</summary>
+        /// <summary>Switch BGM; no-op if same clip already playing.</summary>
         public void Play(AudioClip clip, float volume = 1f)
         {
             if (clip == null || _source == null) return;

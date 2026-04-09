@@ -28,40 +28,40 @@ namespace JiU
 
         public AudioClip lineAudio;
 
-        [Tooltip("与语音时长取较大值后再进入下一段（秒）。无音频时仅按此时间等待")]
+        [Tooltip("Wait max(this, voice length) seconds before next line. No audio: wait this only")]
         [Min(0f)]
         public float advanceDelaySeconds = 2f;
 
-        [Tooltip("本句结束（进入下一句之前）执行的立绘/UI 换图")]
+        [Tooltip("Portrait/UI sprite swaps when this line ends (before next line)")]
         public List<DialogueSpriteSwap> spriteSwapsWhenLineEnds = new List<DialogueSpriteSwap>();
     }
 
     /// <summary>
-    /// 对话：逐句 TMP、配音、等待时间、换图；结束后关闭 UI 或加载场景。
-    /// 建议在对话打开时把 Time.timeScale=0，本脚本用非缩放时间等待。
+    /// Dialogue: TMP per line, voice, wait, sprite swaps; end hides UI or loads a scene.
+    /// With Time.timeScale=0 during dialogue, this script waits using realtime.
     /// </summary>
     public class DialogueController : MonoBehaviour
     {
         [Header("UI")]
-        [Tooltip("整段对话根节点，Hide 时关闭")]
+        [Tooltip("Root for whole dialogue; hidden on end action Hide")]
         public GameObject dialogueRoot;
 
         public TMP_Text dialogueText;
 
-        [Header("对话内容")]
+        [Header("Lines")]
         public List<DialogueLine> lines = new List<DialogueLine>();
 
-        [Header("配音")]
-        [Tooltip("留空则自动在本物体上添加 AudioSource")]
+        [Header("Voice")]
+        [Tooltip("If unset, adds AudioSource on this object")]
         public AudioSource voiceSource;
 
-        [Header("结束后")]
+        [Header("When finished")]
         public DialogueEndAction endAction = DialogueEndAction.HideDialogueUI;
 
-        [Tooltip("endAction 为 LoadSceneByBuildIndex 时使用（Build Settings 顺序）")]
+        [Tooltip("Used when endAction is LoadSceneByBuildIndex (Build Settings order)")]
         public int sceneBuildIndexToLoad;
 
-        [Tooltip("对话期间暂停游戏（Time.timeScale=0），结束时恢复为 1")]
+        [Tooltip("Pause game during dialogue (Time.timeScale=0); restore to previous on end")]
         public bool pauseGameWhileDialogue = true;
 
         Coroutine _playRoutine;
@@ -76,7 +76,7 @@ namespace JiU
             voiceSource.playOnAwake = false;
         }
 
-        /// <summary>开始从第一句播放；若已在播则先停止再重来。</summary>
+        /// <summary>Play from first line; if already playing, stop and restart.</summary>
         public void StartDialogue()
         {
             if (_playRoutine != null)
@@ -148,7 +148,7 @@ namespace JiU
                         SceneManager.LoadScene(sceneBuildIndexToLoad);
                     else
                         Debug.LogWarning(
-                            $"{nameof(DialogueController)}: 无效场景索引 {sceneBuildIndexToLoad}",
+                            $"{nameof(DialogueController)}: invalid scene build index {sceneBuildIndexToLoad}",
                             this);
                     break;
             }

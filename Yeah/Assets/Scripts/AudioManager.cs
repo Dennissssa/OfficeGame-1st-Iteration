@@ -46,9 +46,9 @@ public class AudioManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 播放 EffectsList[index]。优先使用 EffectsSource（与 PlaySoundOnEventAudioManager、JiUGameManagerBossAudio 一致）；
-    /// 若未分配 EffectsSource，则回退到 EffectsSourceList 中与 index 对应的条目。
-    /// 下标无效时静默忽略，避免 InputSystem 等回调里抛异常。
+    /// Plays EffectsList[index]. Prefers EffectsSource (same as PlaySoundOnEventAudioManager, JiUGameManagerBossAudio).
+    /// If EffectsSource is unset, falls back to the EffectsSourceList entry for that index.
+    /// Invalid indices are ignored silently to avoid exceptions inside Input System callbacks.
     /// </summary>
     public void PlaySound(int index)
     {

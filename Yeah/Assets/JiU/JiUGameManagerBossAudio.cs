@@ -3,37 +3,37 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// 将 GameManager 的 Boss 事件接到 AudioManager（仅使用 PlaySound / PlayMusic 与公开的 EffectsSource）。
-    /// 在 Inspector 里填好「AudioManager.EffectsList / MusicList 的下标」；列表顺序由你在 AudioManager 上自行排列。
-    /// 下标为 -1 表示该步不播放。
+    /// Wires GameManager Boss events to AudioManager (PlaySound / PlayMusic and public EffectsSource only).
+    /// Set indices for AudioManager.EffectsList / MusicList in Inspector; list order is yours on AudioManager.
+    /// Index -1 skips that step.
     /// </summary>
     public class JiUGameManagerBossAudio : MonoBehaviour
     {
-        [Header("EffectsList 下标")]
-        [Tooltip("预警阶段循环播放，直到 Boss 到达")]
+        [Header("EffectsList indices")]
+        [Tooltip("Loop during warning until Boss arrives")]
         public int bossWarningSfxIndex = 0;
 
-        [Tooltip("Boss 实际到达时播放一次（会先停掉预警音）")]
+        [Tooltip("One-shot when Boss arrives (stops warning loop first)")]
         public int bossArrivedSfxIndex = 1;
 
-        [Tooltip("Boss 离开场景时可选播放一次")]
+        [Tooltip("Optional one-shot when Boss leaves")]
         public int bossLeftSfxIndex = -1;
 
-        [Tooltip("因 Boss 检查失败时播放一次（在暂停前触发）")]
+        [Tooltip("One-shot on Boss-check game over (before pause)")]
         public int bossGameOverAngerSfxIndex = 2;
 
-        [Header("MusicList 下标（可选）")]
-        [Tooltip("Boss 在场检查期间背景音乐；-1 不换曲")]
+        [Header("MusicList indices (optional)")]
+        [Tooltip("BGM during Boss stay check; -1 = no change")]
         public int musicDuringBossStayIndex = -1;
 
-        [Tooltip("Boss 离开后恢复的音乐；-1 不换曲")]
+        [Tooltip("BGM after Boss leaves; -1 = no change")]
         public int musicAfterBossLeavesIndex = -1;
 
         void Start()
         {
             if (GameManager.Instance == null)
             {
-                Debug.LogWarning("[JiUGameManagerBossAudio] GameManager.Instance 为空，事件未绑定。", this);
+                Debug.LogWarning("[JiUGameManagerBossAudio] GameManager.Instance is null; events not bound.", this);
                 return;
             }
 
@@ -75,12 +75,12 @@ namespace JiU
                 AudioClip clip = am.EffectsList[bossArrivedSfxIndex];
                 if (clip != null)
                 {
-                    // 同一帧 Stop 后立刻 Play() 在部分情况下会被忽略；PlayOneShot 不依赖 clip 槽位，更稳
+                    // Play() right after Stop same frame can be ignored; PlayOneShot avoids relying on clip slot
                     am.EffectsSource.PlayOneShot(clip);
                 }
 #if UNITY_EDITOR
                 else
-                    Debug.LogWarning($"[JiUGameManagerBossAudio] EffectsList[{bossArrivedSfxIndex}] 为空，Boss 到达音未播放。", this);
+                    Debug.LogWarning($"[JiUGameManagerBossAudio] EffectsList[{bossArrivedSfxIndex}] is null; Boss arrived SFX skipped.", this);
 #endif
             }
 

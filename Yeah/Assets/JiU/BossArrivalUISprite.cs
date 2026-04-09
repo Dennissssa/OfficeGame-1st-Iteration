@@ -5,61 +5,61 @@ using UnityEngine.UI;
 namespace JiU
 {
     /// <summary>
-    /// Boss 预警：将 Image 显示、换「靠近」图、巡逻动画。
-    /// 若 BossIncomingConfig 开启 enablePreArrivalFreeze 且 freezeWindowBeforeArrival &gt; 0，
-    /// 则 Image 与巡逻动画推迟到该「到达前冻结窗口」内再出现（与 BlockNewHackEventsNow 一致）。
-    /// Boss 刚到：换第一张图；延迟后可换第二张。若配置了第二张图，GameManager 的 Broke 失败判定会延迟到切到第二张图之后。
-    /// 动画：推荐挂 Animator + Trigger「Coming」（预警靠近）与「Leaving」（离场）；未挂 Animator 时仍可用 BossIncomingConfig 的 Legacy 巡逻片段与 bossLeaveAnimationClip。
+    /// Boss warning: show Image, approach sprite, patrol animation.
+    /// If BossIncomingConfig enablePreArrivalFreeze and freezeWindowBeforeArrival &gt; 0,
+    /// Image and patrol defer until that pre-arrival freeze window (aligned with BlockNewHackEventsNow).
+    /// On Boss arrive: first sprite; optional delay then second. If second sprite is set, GameManager Broke-fail check waits until after the swap.
+    /// Animation: prefer Animator + Coming (approach) and Leaving triggers; without Animator, use BossIncomingConfig Legacy patrol clip and bossLeaveAnimationClip.
     /// </summary>
     public class BossArrivalUISprite : MonoBehaviour
     {
         [Header("UI Image")]
-        [Tooltip("要更换 Sprite 的 Image 组件（其 GameObject 会在预警时显示、Boss 离开后隐藏）")]
+        [Tooltip("Image whose sprite changes (shown on warning, hidden after Boss leaves)")]
         public Image targetImage;
 
-        [Header("Animator（推荐：Boss.controller + Trigger）")]
-        [Tooltip("指定 Boss 的 Animator（可与 Image 同物体或子物体）。赋值后优先用 Trigger，不再用下方 Legacy 片段。")]
+        [Header("Animator (recommended: Boss.controller + triggers)")]
+        [Tooltip("Boss Animator (same object as Image or child). When set, triggers win over Legacy clips below.")]
         public Animator bossAnimator;
 
-        [Tooltip("与 Animator 窗口 Parameters 里名称一致")]
+        [Tooltip("Must match Animator Parameters name")]
         public string comingTriggerParameter = "Coming";
 
-        [Tooltip("与 Animator 窗口 Parameters 里名称一致")]
+        [Tooltip("Must match Animator Parameters name")]
         public string leavingTriggerParameter = "Leaving";
 
-        [Tooltip("用于 Boss 完全离开 UI 时回到默认状态（见 crossFadeToIdleWhenBossLeft），便于下一轮从 Idle 再触发 Coming")]
+        [Tooltip("State to return to when Boss fully leaves UI (see crossFadeToIdleWhenBossLeft); next round can fire Coming from Idle")]
         public string idleStateName = "Idle";
 
-        [Tooltip("仅 Legacy / 无 Animator 时有效。使用 Animator + Leaving 时不要勾选：否则 OnBossLeft 会 CrossFade 到 Idle，打断刚触发的 Leaving。")]
+        [Tooltip("Legacy / no Animator only. Do not enable with Animator Leaving: OnBossLeft CrossFade to Idle would interrupt Leaving.")]
         public bool crossFadeToIdleWhenBossLeft = true;
 
-        [Tooltip("BossIncomingConfig.bossLeaveAnimationDuration 为 0 时，离场后额外等待这么多秒再隐藏 Image（给 Leaving 状态机动画时间）。若已在 Config 里填了离场时长，此处不会叠加等待。")]
+        [Tooltip("When BossIncomingConfig.bossLeaveAnimationDuration is 0, wait this many seconds after leave before hiding Image (time for Leaving state). If Config leave duration &gt; 0, this does not add on top.")]
         [Min(0f)]
         public float animatorLeaveHideDelayWhenGameHoldIsZero = 1.2f;
 
-        [Header("预警（靠近）")]
-        [Tooltip("预警开始时设为 true；若只想显示空底图可不填下方 Sprite")]
+        [Header("Warning (approach)")]
+        [Tooltip("Set active on warning start; leave sprite empty for blank base only")]
         public bool activateOnBossWarning = true;
 
-        [Tooltip("可选：预警阶段显示的 Sprite（不填则只 Active，不改图）")]
+        [Tooltip("Optional sprite during warning (omit to only activate, no sprite change)")]
         public Sprite spriteDuringApproach;
 
-        [Header("Boss 刚到 → 延迟后")]
-        [Tooltip("Boss 到达瞬间切换的 Sprite")]
+        [Header("Boss arrived -> after delay")]
+        [Tooltip("Sprite when Boss arrives")]
         public Sprite spriteWhenBossHere;
 
         [Min(0f)]
-        [Tooltip("从第一张切到第二张前等待的秒数（真实时间）")]
+        [Tooltip("Realtime seconds before switching from first to second sprite")]
         public float delaySecondsBeforeSecondSprite = 0.5f;
 
-        [Tooltip("延迟结束后切换的 Sprite；不填则保持第一张")]
+        [Tooltip("Sprite after delay; unset keeps first sprite")]
         public Sprite spriteAfterDelayWhenBossHere;
 
-        [Header("Boss 离开（仅未使用 Animator 时）")]
-        [Tooltip("Legacy 片段；已挂 bossAnimator 时改由 Leaving Trigger 驱动")]
+        [Header("Boss leave (no Animator only)")]
+        [Tooltip("Legacy clip; with bossAnimator use Leaving trigger instead")]
         public AnimationClip bossLeaveAnimationClip;
 
-        [Tooltip("离开后恢复的 Sprite；不填则用 Start 时记录的初始 Sprite")]
+        [Tooltip("Sprite after leave; unset restores initial sprite captured at Start")]
         public Sprite spriteWhenBossGone;
 
         Sprite _initialSprite;
@@ -203,7 +203,7 @@ namespace JiU
                     bossAnimator.ResetTrigger(leavingTriggerParameter);
                     bossAnimator.SetTrigger(comingTriggerParameter);
                 }
-                // 不在「Boss 到达」时强制 Idle：否则会立刻打断 Boss Coming → Boss Stay 等连线
+                // Do not force Idle on Boss arrive: would break Coming -> Boss Stay transitions
                 return;
             }
 
@@ -269,8 +269,8 @@ namespace JiU
         }
 
         /// <summary>
-        /// Legacy Animation 必须把片段加入列表后再按「状态名」Play。状态名用 InstanceID，避免与 clip.name 不一致、空格、重名导致 Play(clip.name) 找不到。
-        /// 片段必须勾选 Legacy，否则 AddClip 后也可能没有可播状态。
+        /// Legacy Animation: add clip to the component then Play by state name. State name uses InstanceID to avoid clip.name mismatches/spaces/duplicates.
+        /// Clip must be Legacy or AddClip may not create a playable state.
         /// </summary>
         static void PlayLegacyAnimationClip(Animation anim, AnimationClip clip, WrapMode wrapMode)
         {
@@ -280,7 +280,7 @@ namespace JiU
             if (!clip.legacy)
             {
                 Debug.LogWarning(
-                    "[BossArrivalUISprite] 动画片段不是 Legacy，Legacy 的 Animation 组件无法播放。请在 Project 中选中该 .anim → Inspector 右上角 ⋮ → Debug → 勾选 Legacy。片段：" + clip.name,
+                    "[BossArrivalUISprite] Clip is not Legacy; Legacy Animation cannot play it. In Project select the .anim, Inspector menu > Debug > enable Legacy. Clip: " + clip.name,
                     clip);
                 return;
             }
@@ -294,7 +294,7 @@ namespace JiU
             if (state == null)
             {
                 Debug.LogWarning(
-                    "[BossArrivalUISprite] AddClip 后仍无法创建动画状态（片段：" + clip.name + "）。请确认曲线绑定在带 Image 的物体或其子物体上，且与 Legacy Animation 兼容。",
+                    "[BossArrivalUISprite] Could not create animation state after AddClip (clip: " + clip.name + "). Ensure curves target the Image object or children and are Legacy-compatible.",
                     clip);
                 return;
             }
@@ -321,7 +321,7 @@ namespace JiU
             if (GameManager.Instance != null)
                 GameManager.Instance.SetBossBrokeCheckAwaitingArrivalSprites(false);
 
-            // Animator + Leaving：CrossFade 到 Idle 会在同一流程里打断刚 SetTrigger 的 Leaving
+            // Animator + Leaving: CrossFade to Idle in same flow would interrupt Leaving just triggered
             if (crossFadeToIdleWhenBossLeft && !BossAnimatorReady)
                 CrossFadeBossAnimatorToIdle();
 
@@ -329,7 +329,7 @@ namespace JiU
             if (GameManager.Instance != null && GameManager.Instance.bossIncomingConfig != null)
                 cfgLeaveHold = Mathf.Max(0f, GameManager.Instance.bossIncomingConfig.bossLeaveAnimationDuration);
 
-            // GameManager 里离场时长为 0 时，OnBossLeft 与 LeaveStarted 同帧，Leaving 来不及播就被关掉
+            // When GameManager leave hold is 0, OnBossLeft and LeaveStarted same frame; Leaving never gets time to play
             if (BossAnimatorReady && cfgLeaveHold < 0.0001f && animatorLeaveHideDelayWhenGameHoldIsZero > 0f)
             {
                 _bossLeftHideRoutine = StartCoroutine(HideBossImageAfterLeavingDelayRoutine(animatorLeaveHideDelayWhenGameHoldIsZero));
@@ -354,13 +354,13 @@ namespace JiU
             targetImage.gameObject.SetActive(false);
         }
 
-        /// <summary>兼容旧事件绑定：等同 Boss 到达第一张图逻辑（不启动延迟协程，仅供 Inspector 手动调用）</summary>
+        /// <summary>Legacy hook: same as first Boss-arrived sprite (no delay coroutine; manual Inspector use)</summary>
         public void SetBossSprite()
         {
             OnBossArrived();
         }
 
-        /// <summary>兼容旧事件绑定：等同 Boss 离开</summary>
+        /// <summary>Legacy hook: same as Boss left</summary>
         public void SetNormalSprite()
         {
             OnBossLeft();

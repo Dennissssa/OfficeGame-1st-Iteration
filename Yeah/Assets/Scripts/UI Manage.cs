@@ -12,21 +12,21 @@ public class UIManager : MonoBehaviour
     public TMP_Text workNumberText;
     public TMP_Text timeText;
 
-    [Tooltip("Boss ?????????? Work ?? Slider ????????????????? Slider ?? Fill Area ?????????Image ??????")]
+    [Tooltip("Optional marker on the work Slider for Boss minimum work threshold (same track as Fill).")]
     public RectTransform workBossMinThresholdIndicator;
 
     [Tooltip("wrok min indicator width")]
     [Min(1f)]
     public float workBossMinIndicatorWidth = 6f;
 
-    [Header("Work Progress 视觉（归一化 = 当前值 / Slider.maxValue）")]
-    [Tooltip("不填则使用 Slider → Fill Area → Fill 上的 Image")]
+    [Header("Work Progress visuals (normalized = value / Slider.maxValue)")]
+    [Tooltip("If unset, uses the Image on Slider > Fill Area > Fill")]
     public Image workSliderFillOverride;
 
-    [Tooltip("至少 2 个阶段可在相邻阈值之间渐变 Fill 颜色；仅 1 个则整条为纯色")]
+    [Tooltip("With 2+ stages, Fill color lerps between adjacent thresholds; with 1 stage, solid color")]
     public List<WorkProgressFillColorStage> workProgressFillColorStages = new List<WorkProgressFillColorStage>();
 
-    [Tooltip("同一 Image 可配置多条：进度升高切换、降低自动恢复")]
+    [Tooltip("Multiple entries per Image: sprite swaps as progress rises; reverts when progress falls")]
     public List<WorkProgressImageSpriteKeyframe> workProgressImageSprites = new List<WorkProgressImageSpriteKeyframe>();
 
     readonly Dictionary<Image, (float threshold, Sprite sprite)> _workImageSpritePickScratch = new Dictionary<Image, (float, Sprite)>();
@@ -36,8 +36,8 @@ public class UIManager : MonoBehaviour
     public TMP_Text gameOverTitleText;
     public TMP_Text gameOverDetailText;
 
-    [Header("Work Progress 失败面板（Virus Die）")]
-    [Tooltip("与 Game Over、Game Win 同级（Sibling）；开局关闭，仅当 Work 进度涨满时打开，并在本面板上显示结算文案（不打开 Game Over）。")]
+    [Header("Work Progress lose panel (Virus Die)")]
+    [Tooltip("Sibling to Game Over / Game Win; starts hidden; opens when work bar fills; shows outcome text here (does not open Game Over).")]
     public GameObject workProgressLoseRoot;
     public TMP_Text workProgressLoseTitleText;
     public TMP_Text workProgressLoseDetailText;
@@ -46,8 +46,8 @@ public class UIManager : MonoBehaviour
     public GameObject gameWinRoot;
     public TMP_Text gameWinPerformanceText;
 
-    [Header("Debug（工作压力失败面板）")]
-    [Tooltip("勾选后：Show/Hide WorkProgressLose 时打印 active 链、CanvasGroup，Hide 时带调用栈；帧末再打印一次以排查本帧内被关掉。")]
+    [Header("Debug (work pressure lose panel)")]
+    [Tooltip("When enabled, logs active chain and CanvasGroups on Show/Hide WorkProgressLose; Hide includes stack trace; end-of-frame log to catch same-frame deactivation.")]
     public bool debugLogWorkProgressLoseFlow;
 
     Coroutine _debugWplEndOfFrameRoutine;
@@ -55,11 +55,11 @@ public class UIManager : MonoBehaviour
     void Awake()
     {
         if (debugLogWorkProgressLoseFlow)
-            Debug.Log($"[UIManager/WPL] Awake → HideAllResultPanels（instanceID={GetInstanceID()}）", this);
+            Debug.Log($"[UIManager/WPL] Awake -> HideAllResultPanels (instanceID={GetInstanceID()})", this);
         HideAllResultPanels();
     }
 
-    /// <summary>开局与切场景时：关闭 Game Over、工作压力失败、胜利三块根节点（与 Inspector 里默认是否勾选无关）。</summary>
+    /// <summary>On start / scene load: hide Game Over, work-pressure lose, and win roots (regardless of default active state in Inspector).</summary>
     public void HideAllResultPanels()
     {
         if (debugLogWorkProgressLoseFlow)
@@ -90,7 +90,7 @@ public class UIManager : MonoBehaviour
         RefreshWorkProgressVisuals(work);
     }
 
-    /// <summary>按当前 Work 与 Slider.max 更新 Fill 渐变颜色与各 Image 的 Sprite。</summary>
+    /// <summary>Updates Fill gradient colors and per-Image sprites from current work and Slider.max.</summary>
     public void RefreshWorkProgressVisuals(float currentWork)
     {
         float max = workSlider != null ? workSlider.maxValue : 1f;
@@ -198,7 +198,7 @@ public class UIManager : MonoBehaviour
     public void SetTime(float t)
     {
         if (timeText != null)
-            timeText.text = $"??: {Mathf.Max(0f, t):0.0}s";
+            timeText.text = $"TIME: {Mathf.Max(0f, t):0.0}s";
     }
 
     public void ShowGameOver(float surviveTime, float finalWork, string reason, float performanceScore)
@@ -288,11 +288,11 @@ public class UIManager : MonoBehaviour
         _debugWplEndOfFrameRoutine = null;
         if (workProgressLoseRoot == null)
             yield break;
-        DebugDumpWorkProgressLoseHierarchy("同一帧 WaitForEndOfFrame 之后（排查本帧内是否被 SetActive false）");
+        DebugDumpWorkProgressLoseHierarchy("After WaitForEndOfFrame same frame (check if SetActive false this frame)");
     }
 
     /// <summary>
-    /// 从场景根向下面板方向，依次激活未激活的父节点；否则仅 SetActive(子) 时父物体仍关闭，界面不会出现。
+    /// Activates inactive parents from root toward the panel; otherwise activating only the child leaves parents off and UI stays hidden.
     /// </summary>
     static void EnsureObjectAndAncestorsActive(GameObject leaf)
     {
@@ -314,7 +314,7 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 父物体 active 但 Canvas 组件被关掉时，UI 同样不可见。
+    /// If a parent is active but its Canvas is disabled, UI under it is still invisible.
     /// </summary>
     static void EnsureCanvasEnabledInAncestors(GameObject leaf)
     {
@@ -330,8 +330,8 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 从本物体沿父链向上：凡带有 CanvasGroup 且 alpha≈0（开局隐藏）的节点一律拉满可见。
-    /// 仅处理根节点时，父物体上的 CanvasGroup 仍会把整条分支挡掉。
+    /// Walk parents: any CanvasGroup with alpha ~0 (startup-hidden) is forced visible.
+    /// Fixing only the leaf leaves parent CanvasGroups blocking the whole branch.
     /// </summary>
     static void EnsureCanvasGroupVisibleForResultPanel(GameObject leaf)
     {
@@ -351,21 +351,21 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 工作压力条涨满时的唯一结算入口：只显示本面板（与 Game Over 同级），不在此流程中打开 Game Over。
+    /// Sole resolution when work bar fills: show this panel only (sibling to Game Over); does not open Game Over.
     /// </summary>
     public void ShowWorkProgressLose(float surviveTime, float finalWorkProgress, float performanceScore, float maxWorkProgress)
     {
-        // 无条件一行：便于与 GameManager 日志里的 instanceID 对照（多 UIManager 时常出现 Awake 与结算不是同一个组件）
+        // Always log one line: match instanceID with GameManager logs (multiple UIManagers may differ between Awake and settle)
         Debug.Log(
-            $"[UIManager] ShowWorkProgressLose 入口 | 物体=\"{gameObject.name}\" instanceID={GetInstanceID()} " +
+            $"[UIManager] ShowWorkProgressLose entry | object=\"{gameObject.name}\" instanceID={GetInstanceID()} " +
             $"workProgressLoseRoot={(workProgressLoseRoot != null ? "\"" + workProgressLoseRoot.name + "\"" : "NULL")}",
             this);
 
         if (workProgressLoseRoot == null)
         {
             Debug.LogError(
-                "[UIManager] ShowWorkProgressLose：workProgressLoseRoot 未赋值，无法显示面板。" +
-                " 请在本 UIManager 上拖入失败面板根物体，或把 GameManager.ui 改成已配好三项结算引用的那个 UIManager。",
+                "[UIManager] ShowWorkProgressLose: workProgressLoseRoot is not assigned; cannot show panel. " +
+                "Assign the lose panel root on this UIManager, or point GameManager.ui at the UIManager that has all three outcome references.",
                 this);
             return;
         }
@@ -373,12 +373,12 @@ public class UIManager : MonoBehaviour
         if (debugLogWorkProgressLoseFlow)
         {
             Debug.Log(
-                $"[UIManager/WPL] ShowWorkProgressLose 开始 | instanceID={GetInstanceID()} timeScale={Time.timeScale:F2}",
+                $"[UIManager/WPL] ShowWorkProgressLose start | instanceID={GetInstanceID()} timeScale={Time.timeScale:F2}",
                 this);
-            DebugDumpWorkProgressLoseHierarchy("Show 开始前（调用 Ensure 之前）");
+            DebugDumpWorkProgressLoseHierarchy("Before Show (before Ensure calls)");
         }
 
-        // 若 Virus Die 挂在 Game Over 下面，先 HideGameOver 会关掉父物体，子级永远无法显示
+        // If Virus Die is under Game Over, HideGameOver first would disable the parent and the child never shows
         bool loseUnderGameOver = workProgressLoseRoot != null && gameOverRoot != null
             && workProgressLoseRoot.transform.IsChildOf(gameOverRoot.transform);
         if (debugLogWorkProgressLoseFlow)
@@ -386,7 +386,7 @@ public class UIManager : MonoBehaviour
             Debug.Log(
                 $"[UIManager/WPL] loseUnderGameOver={loseUnderGameOver} " +
                 $"(gameOverRoot={(gameOverRoot != null ? gameOverRoot.name : "null")}) → " +
-                $"{(loseUnderGameOver ? "跳过 HideGameOver" : "将调用 HideGameOver")}",
+                $"{(loseUnderGameOver ? "skip HideGameOver" : "will call HideGameOver")}",
                 this);
         }
 
@@ -395,7 +395,7 @@ public class UIManager : MonoBehaviour
         HideGameWin();
 
         if (debugLogWorkProgressLoseFlow)
-            DebugDumpWorkProgressLoseHierarchy("HideGameOver/HideGameWin 之后、Ensure 之前");
+            DebugDumpWorkProgressLoseHierarchy("After HideGameOver/HideGameWin, before Ensure");
 
         EnsureObjectAndAncestorsActive(workProgressLoseRoot);
         EnsureCanvasEnabledInAncestors(workProgressLoseRoot);
@@ -405,7 +405,7 @@ public class UIManager : MonoBehaviour
 
         if (debugLogWorkProgressLoseFlow)
         {
-            DebugDumpWorkProgressLoseHierarchy("Show 全部步骤完成之后");
+            DebugDumpWorkProgressLoseHierarchy("After Show steps complete");
             if (_debugWplEndOfFrameRoutine != null)
             {
                 StopCoroutine(_debugWplEndOfFrameRoutine);
@@ -428,7 +428,7 @@ public class UIManager : MonoBehaviour
         if (debugLogWorkProgressLoseFlow)
         {
             Debug.LogWarning(
-                $"[UIManager/WPL] HideWorkProgressLose() → SetActive(false) on \"{(workProgressLoseRoot != null ? workProgressLoseRoot.name : "null")}\"（见下方调用栈）",
+                $"[UIManager/WPL] HideWorkProgressLose() -> SetActive(false) on \"{(workProgressLoseRoot != null ? workProgressLoseRoot.name : "null")}\" (see stack below)",
                 this);
         }
         if (workProgressLoseRoot != null) workProgressLoseRoot.SetActive(false);
@@ -449,24 +449,24 @@ public class UIManager : MonoBehaviour
     }
 }
 
-/// <summary>工作压力条 Fill 在某一归一化进度点的颜色；相邻两点之间线性渐变。</summary>
+/// <summary>Fill color at one normalized work point; linear blend between adjacent points.</summary>
 [System.Serializable]
 public class WorkProgressFillColorStage
 {
-    [Tooltip("归一化进度 0~1（当前 Work / Slider.maxValue）。达到该点及之后与下一点之间对 Fill 颜色做渐变。")]
+    [Tooltip("Normalized progress 0~1 (work / Slider.maxValue). Between this threshold and the next, Fill color lerps.")]
     [Range(0f, 1f)]
     public float normalizedThreshold;
 
     public Color color = Color.white;
 }
 
-/// <summary>当进度达到阈值时，将指定 Image 切换为对应 Sprite；进度回退时自动回到较低阈值对应的 Sprite。</summary>
+/// <summary>When progress crosses a threshold, swap the Image sprite; falling progress restores the lower-threshold sprite.</summary>
 [System.Serializable]
 public class WorkProgressImageSpriteKeyframe
 {
     public Image targetImage;
 
-    [Tooltip("归一化进度 0~1。当前进度 ≥ 此值时采用本 Sprite（同图多条目取阈值最高且仍 ≤ 当前进度的那条；同阈值时列表靠后的优先）。")]
+    [Tooltip("Normalized 0~1. At progress >= threshold use this sprite (per Image: highest threshold still <= progress wins; ties favor later list entries).")]
     [Range(0f, 1f)]
     public float normalizedThreshold;
 

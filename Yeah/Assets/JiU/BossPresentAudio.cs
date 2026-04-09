@@ -3,16 +3,16 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// Boss 实际到达时播放一次指定的“在场”音效。
-    /// 依赖 GameManager 的 OnBossArrived 事件。
+    /// One-shot "present" SFX when Boss actually arrives.
+    /// Uses GameManager.OnBossArrived.
     /// </summary>
     public class BossPresentAudio : MonoBehaviour
     {
-        [Header("音频")]
-        [Tooltip("Boss 在场时播放一次的 Clip")]
+        [Header("Audio")]
+        [Tooltip("One-shot clip when Boss is present / arrives")]
         public AudioClip bossPresentClip;
 
-        [Tooltip("不填则使用本物体上的 AudioSource，没有则自动添加")]
+        [Tooltip("If unset, uses or adds AudioSource on this object")]
         public AudioSource audioSource;
 
         [Range(0f, 1f)]
@@ -38,7 +38,7 @@ namespace JiU
             GameManager.Instance.OnBossArrived.RemoveListener(PlayOnce);
         }
 
-        /// <summary> Boss 到达时播放一次（由事件调用） </summary>
+        /// <summary>Play once when Boss arrives (event).</summary>
         public void PlayOnce()
         {
             if (bossPresentClip == null || audioSource == null) return;

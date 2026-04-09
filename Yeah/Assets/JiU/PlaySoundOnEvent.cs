@@ -3,27 +3,27 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// 当收到“触发”时播放指定音频；修复时会立即停止播放。
-    /// 若填写了“指定 WorkItem”，会在损坏时播放、修好时自动停止，无需再拖事件。
+    /// Plays the assigned clip on trigger; stops immediately when repaired.
+    /// If a WorkItem is assigned, plays on break and stops on fix without wiring events manually.
     /// </summary>
     public class PlaySoundOnEvent : MonoBehaviour
     {
-        [Header("指定物件（可选）")]
-        [Tooltip("若指定，则在该物件损坏时自动播放，无需再绑 OnBroken")]
+        [Header("Target object (optional)")]
+        [Tooltip("If set, auto-plays when that item breaks; no need to bind OnBroken")]
         public WorkItem workItem;
 
-        [Header("音频")]
-        [Tooltip("要播放的音频片段")]
+        [Header("Audio")]
+        [Tooltip("Clip to play")]
         public AudioClip clip;
 
-        [Tooltip("不填则使用本物体上的 AudioSource，没有则自动添加一个")]
+        [Tooltip("If unset, uses AudioSource on this object, or adds one")]
         public AudioSource audioSource;
 
-        [Tooltip("是否随机音调（0=不随机，例如 0.9~1.1 可避免重复感）")]
+        [Tooltip("Random pitch (0 = off; e.g. 0.9~1.1 reduces repetition)")]
         [Range(0f, 0.5f)]
         public float pitchRandomRange = 0f;
 
-        [Tooltip("音量 0~1")]
+        [Tooltip("Volume 0~1")]
         [Range(0f, 1f)]
         public float volumeScale = 1f;
 
@@ -40,12 +40,12 @@ namespace JiU
             if (workItem != null)
             {
                 workItem.OnBroken.AddListener(Play);
-                workItem.OnFixed.AddListener(Stop);  // 修好时立刻结束正在播放的损坏音效
+                workItem.OnFixed.AddListener(Stop); // Stop broken SFX immediately on fix
             }
         }
 
         /// <summary>
-        /// 立刻停止当前播放的损坏音效。由 WorkItem.OnFixed 自动调用（若已指定 workItem），也可手动绑定。
+        /// Stops the broken SFX immediately. Auto-called from WorkItem.OnFixed when workItem is set; can bind manually.
         /// </summary>
         public void Stop()
         {
@@ -54,7 +54,7 @@ namespace JiU
         }
 
         /// <summary>
-        /// 电话摘机后由 <see cref="GameManager"/> 调用：停止作用域内绑定 WorkItem 的损坏 clip 播放。
+        /// After phone pickup, <see cref="GameManager"/> stops broken-clip playback for WorkItems in suppress scope.
         /// </summary>
         public static void StopForPhonePickupAudioScope()
         {
@@ -69,7 +69,7 @@ namespace JiU
             }
         }
 
-        /// <summary>与 <see cref="PlaySoundOnEventAudioManager.ResumeBrokenLoopAfterPhonePutdownForWorkItem"/> 配套，用于仅用本组件播损坏 clip 的场景。</summary>
+        /// <summary>Pairs with <see cref="PlaySoundOnEventAudioManager.ResumeBrokenLoopAfterPhonePutdownForWorkItem"/> when only this component plays the broken clip.</summary>
         public static void ResumeBrokenClipAfterPhonePutdownForWorkItem(WorkItem wi)
         {
             if (wi == null || !wi.IsBroken) return;
@@ -83,11 +83,11 @@ namespace JiU
         }
 
         /// <summary>
-        /// 播放损坏音效（修好后会通过 Stop() 立刻结束）。由 WorkItem.OnBroken 等事件绑定调用。
+        /// Plays broken SFX (Stop() ends it on fix). Bind from WorkItem.OnBroken etc.
         /// </summary>
         public void Play()
         {
-            // 摘机时仅禁「损坏」起音（本组件即损坏 clip）；维修等不走此入口
+            // Pickup suppress only blocks starting broken SFX (this component is the broken clip); repairs use other paths
             if (workItem != null && GameManager.PickupAudioSuppressAppliesToBoundWorkItem(workItem))
                 return;
             if (clip == null || audioSource == null) return;
