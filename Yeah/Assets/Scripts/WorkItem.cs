@@ -10,71 +10,71 @@ public class WorkItem : MonoBehaviour
     public float minTimeToBreak = 4f;
     public float maxTimeToBreak = 10f;
 
-    [Tooltip("关闭后 BreakLoop 不会自动进入 Broke/Bait（教程或脚本控制时用）")]
+    [Tooltip("When off, BreakLoop will not auto enter Broke/Bait (tutorial or script control)")]
     public bool enableAutoBreak = true;
 
-    [Header("Broke / Bait 触发概率")]
-    [Tooltip("下一次故障时触发 Broke 的权重，与 Bait 权重共同决定概率。例如 8 和 2 表示约 80% Broke、20% Bait")]
+    [Header("Broke / Bait roll weights")]
+    [Tooltip("Weight for Broke on next failure roll; combined with baitWeight for odds (e.g. 8 and 2 ≈ 80% Broke, 20% Bait)")]
     [Min(0f)]
     public float breakWeight = 5f;
-    [Tooltip("下一次故障时触发 Bait 的权重")]
+    [Tooltip("Weight for Bait on next failure roll")]
     [Min(0f)]
     public float baitWeight = 1f;
 
     [Header("Hotkey Repair (Input System)")]
-    [Tooltip("关闭后：本物体的 Input System 绑定与键盘轮询都不会调用 TryRepair()；Uduino / Inspector 仍可显式调用 TryRepair")]
+    [Tooltip("When off: this object's Input System binding and key polling never call TryRepair(); Uduino / Inspector can still invoke TryRepair")]
     public bool enableHotkeyRepair = true;
 
     [Tooltip("Examples: <Keyboard>/1  <Keyboard>/2  <Keyboard>/numpad1  <Keyboard>/q")]
     public string repairBindingPath = "<Keyboard>/1";
-    [Tooltip("与上面按键一致，用于 Uduino/模拟按键时的备用轮询；若使用 UduinoPinToKeyTrigger 建议同时把该脚本的「直接修好目标」指向本物体")]
+    [Tooltip("Matches binding above; fallback poll for Uduino/simulated keys. With UduinoPinToKeyTrigger, point its direct-repair target at this object")]
     public KeyCode repairKeyCodeFallback = KeyCode.Alpha1;
 
     [Header("Optional Distance Requirement")]
     public bool requirePlayerInRange = false;
     public float interactRange = 2.0f;
-    public Transform player; // 不填会自动找 Tag=Player
+    public Transform player; // If unset, auto-find Tag=Player
 
     [Header("Colors")]
     public Color brokenColor = new Color(1f, 0.2f, 0.2f, 1f);
     public Color baitColor = new Color(0.2f, 1f, 0.2f, 1f);
 
-    [Header("外观与逻辑同步")]
-    [Tooltip("勾选时：每帧在 Broke/Bait 状态下重新写入 MaterialPropertyBlock，避免其它脚本、Animator 或材质实例化盖掉着色，造成「看起来像已修好但逻辑仍损坏」。")]
+    [Header("Visual sync with logic")]
+    [Tooltip("When on: each frame in Broke/Bait rewrites MaterialPropertyBlock so other scripts/Animator/material instancing cannot override tint (looks fixed but logic still broken).")]
     public bool keepVisualSyncedWithLogic = true;
 
-    [Header("Uduino / 外部输出（可选）")]
-    [Tooltip("故障发生时触发，可连到 Uduino 输出等")]
+    [Header("Uduino / external outputs (optional)")]
+    [Tooltip("Invoked on failure; wire to Uduino outputs etc.")]
     public UnityEvent OnBroken;
     [Tooltip("I'm scared")] 
     public UnityEvent OnBaiting;
-    [Tooltip("恢复为正常态时触发：玩家修好 Broke（Fix）、或 Bait 倒计时自然结束（与 OnBaitingEnded 同帧稍后）；可连材质还原 / LED / 停损坏音等")]
+    [Tooltip("When returning to normal: player fixed Broke (Fix), or Bait timer ended naturally (OnBaitingEnded fires same frame, slightly earlier); materials / LED / stop broken SFX")]
     public UnityEvent OnFixed;
-    [Tooltip("Bait 时间到自行结束时触发（玩家未击打），可连到 LED 恢复等")]
+    [Tooltip("When Bait expires without player hit; LED restore etc.")]
     public UnityEvent OnBaitingEnded;
 
-    [Tooltip("击打判定为「修好」时触发（在 Fix 之前）；可接 PlaySoundOnEventAudioManager 的维修正确音")]
+    [Tooltip("When hit counts as correct repair (before Fix); wire correct-repair SFX on PlaySoundOnEventAudioManager")]
     public UnityEvent OnRepairCorrect;
-    [Tooltip("击打判定为「错误」（Bait 上乱按或未故障惩罚）时触发；可接 PlaySoundOnEventAudioManager 的维修错误音")]
+    [Tooltip("When hit counts as wrong (spam on Bait or idle wrong hit); wire wrong-repair SFX")]
     public UnityEvent OnRepairIncorrect;
 
     [Header("Debug")]
     public bool debugLogs = false;
-    public KeyCode debugBreakKeyOldInput = KeyCode.None; // 旧Input不用（留空）
-    public string debugBreakBindingPath = "<Keyboard>/b"; // 新Input：按B强制故障（排查用）
+    public KeyCode debugBreakKeyOldInput = KeyCode.None; // Legacy input unused (leave None)
+    public string debugBreakBindingPath = "<Keyboard>/b"; // New Input: B forces break (debug)
 
     public bool IsBroken { get; private set; } = false;
     public bool IsBaiting {get; private set;} = false;
 
-    /// <summary>是否按「电话」规则处理 Bait（Inspector 勾选或 itemName 不区分大小写为 phone）。</summary>
+    /// <summary>Whether Bait uses phone rules (Inspector toggle or itemName equals "phone", case-insensitive).</summary>
     public bool PhoneBaitRulesActive =>
         usePhoneBaitBehavior
         || (!string.IsNullOrWhiteSpace(itemName) && itemName.Trim().Equals("phone", System.StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>供 GameManager：电话式 Bait 期间是否应按秒扣表现分。</summary>
+    /// <summary>For GameManager: whether phone-style Bait should decay performance score per second.</summary>
     public bool ShouldApplyPhoneBaitPerformanceDecay => IsBaiting && PhoneBaitRulesActive;
 
-    /// <summary>供音效：电话规则下是否在挂机位（未摘机）。非电话物体恒为 false。</summary>
+    /// <summary>For audio: under phone rules, whether handset is on cradle (not off-hook). Always false for non-phone items.</summary>
     public bool PhoneIsOnCradleForSfx => PhoneBaitRulesActive && !_phonePhysicallyOffHook;
 
     private Renderer[] allRenderers;
@@ -89,13 +89,13 @@ public class WorkItem : MonoBehaviour
     Coroutine _phoneBaitAfterPickupCoroutine;
     bool _phoneLiftedDuringCurrentBait;
 
-    /// <summary>由摘机/挂机事件维护：true 表示当前认为听筒已离开挂机位（已摘机）。</summary>
+    /// <summary>Maintained by pickup/hang-up events: true when handset is considered off-hook.</summary>
     bool _phonePhysicallyOffHook;
 
-    /// <summary>挂机后短时间内忽略 TryRepair（防振动误触 piezo）。</summary>
+    /// <summary>Ignore TryRepair briefly after hang-up (reduce piezo vibration false triggers).</summary>
     float _phoneTryRepairSuppressedUntilTime;
 
-    /// <summary>曾在「仍处于 Broke」时摘机过（损坏音被摘机逻辑停掉）；挂机且未修好时需恢复循环。</summary>
+    /// <summary>Had off-hook while still Broke (broken loop stopped by pickup logic); on hang-up while still broken, resume loop.</summary>
     bool _hadPhonePickupWhileBroken;
 
     //this doesn't really have a point but it's fun lol
@@ -103,15 +103,15 @@ public class WorkItem : MonoBehaviour
 
     public string itemName;
 
-    [Header("Phone · Bait（与普通 Bait 区分）")]
-    [Tooltip("勾选后：Bait 不会 3 秒自愈；玩家不摘机则一直保持 Bait。结束方式：摘机后再挂机，或摘机后等待「摘机后自动结束秒数」。")]
+    [Header("Phone · Bait (distinct from normal Bait)")]
+    [Tooltip("When on: no 3s self-fix; without off-hook, Bait persists. End: off-hook then hang-up, or wait phoneBaitAutoResolveSecondsAfterPickup after pickup.")]
     public bool usePhoneBaitBehavior;
 
-    [Tooltip("摘机后经过此时长（秒）自动结束 Bait；0 则仅能通过摘机后再挂机结束（一直拿着不挂机则保持 Bait）。")]
+    [Tooltip("Seconds after off-hook to auto-resolve Bait; 0 = only hang-up after pickup ends it (holding without hang-up keeps Bait).")]
     [Min(0f)]
     public float phoneBaitAutoResolveSecondsAfterPickup = 8f;
 
-    [Tooltip("挂机后的若干秒内忽略 TryRepair（不惩罚、不修好），减轻放下电话时振动触发 piezo 的误触。")]
+    [Tooltip("Seconds after hang-up to ignore TryRepair (no punish, no fix); reduces piezo false triggers when setting phone down.")]
     [Min(0f)]
     public float phonePutDownTryRepairDebounceSeconds = 0.5f;
 
@@ -192,7 +192,7 @@ public class WorkItem : MonoBehaviour
                 ConfigureHotkeyRepairInput();
         }
 
-        // 备用：Uduino/模拟按键有时不会触发 InputAction.performed，在 Broke/Bait 时轮询键盘（受 enableHotkeyRepair 控制）
+        // Fallback: Uduino/simulated keys may not fire InputAction.performed; poll keyboard in Broke/Bait when enableHotkeyRepair
         if (!enableHotkeyRepair)
             return;
 
@@ -307,7 +307,7 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    /// <summary>由 Arduino <c>onPhonePickup</c> 等绑定：更新摘机状态，并在处于电话 Bait 时推进 Bait 流程。</summary>
+    /// <summary>Bind from Arduino <c>onPhonePickup</c>: updates off-hook state and advances phone Bait flow when applicable.</summary>
     public void NotifyPhonePickedUpForBaitFlow()
     {
         if (!PhoneBaitRulesActive)
@@ -335,7 +335,7 @@ public class WorkItem : MonoBehaviour
             _phoneBaitAfterPickupCoroutine = StartCoroutine(PhoneBaitAutoResolveAfterPickupRoutine());
     }
 
-    /// <summary>由 Arduino <c>onPhonePutdown</c> 绑定：更新挂机状态、启动 TryRepair 防抖；若处于电话 Bait 且曾摘机则结束 Bait。</summary>
+    /// <summary>Bind from Arduino <c>onPhonePutdown</c>: on-hook state, TryRepair debounce; ends phone Bait if was lifted this Bait.</summary>
     public void NotifyPhonePutDownForBaitFlow()
     {
         if (!PhoneBaitRulesActive)
@@ -469,18 +469,18 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    /// <summary>尝试修好（按键或 Uduino 触发）。可从 Inspector 中 UduinoPinToKeyTrigger 的 onTriggered 或「直接修好目标」调用。</summary>
+    /// <summary>Try repair (hotkey or Uduino). Call from UduinoPinToKeyTrigger onTriggered or direct-repair target in Inspector.</summary>
     public void TryRepair()
     {
         //Debug.Log($"I am trying to fix {this.itemName}!");
 
-        // 电话：优先于下方通用逻辑 — 挂机后防抖窗口内完全忽略 TryRepair（不误判惩罚）
+        // Phone: before generic logic — ignore TryRepair entirely during post-hang-up debounce (no false punish)
         if (PhoneBaitRulesActive)
         {
             if (Time.time < _phoneTryRepairSuppressedUntilTime)
                 return;
 
-            // 未摘机时任意 TryRepair 一律视为错误修复（Bait 走 Ultra，其余走 Punishment）
+            // On-hook: any TryRepair counts as wrong repair (Ultra on Bait, else Punishment)
             if (!_phonePhysicallyOffHook)
             {
                 ApplyPhoneTryRepairWhileOnHookPunishment();
@@ -488,14 +488,14 @@ public class WorkItem : MonoBehaviour
             }
         }
 
-        // 仅真正「损坏」且通过距离等校验后才会 Win + Fix；Bait / 空闲乱按只走 Lose 并 return
+        // Only real Broke after range checks does win + Fix; Bait / idle spam only lose and return
         if (!IsBroken)
         {
             if (IsBaiting)
             {
                 if (GameManager.Instance != null)
                     GameManager.Instance.UltraPunishment();
-                // Punishment 可能本帧触发 Game Over；若再 Invoke，Inspector 里绑定的逻辑可能关掉刚显示的失败面板
+                // Punishment may game-over this frame; invoking again may run Inspector hooks that hide the fail panel
                 if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
                     OnRepairIncorrect?.Invoke();
                 return;
@@ -589,9 +589,9 @@ public class WorkItem : MonoBehaviour
 
         if (PhoneBaitRulesActive)
         {
-            // 来电 Bait 默认视为在挂机位（避免沿用上一通摘机状态）
+            // Incoming Bait assumes on-hook (do not inherit previous call off-hook state)
             _phonePhysicallyOffHook = false;
-            // 不启动 3 秒自愈；等待摘机+挂机或摘机后计时
+            // No 3s self-fix; wait for pickup+hang-up or post-pickup timer
         }
         else
             _baitSelfFixCoroutine = StartCoroutine(BaitSelfFix());
@@ -629,15 +629,15 @@ public class WorkItem : MonoBehaviour
         ClearTintOverride();
         OnBaitingEnded?.Invoke();
 
-        // 纯 Bait 结束时原先调用 Fix() 会因「已非 Broke/Bait」直接 return，导致 OnFixed 不触发；
-        // 若在 Inspector 里用 OnFixed 换回「正常材质」，会出现外观已像修好、事件链却缺一步，与击打修好不同步。
+        // Pure Bait end: Fix() would return early (no longer Broke/Bait) and skip OnFixed;
+        // if OnFixed restores normal materials in Inspector, visuals could look fixed without the same event chain as hit-to-fix.
         if (!IsBroken)
             OnFixed?.Invoke();
     }
 
     public void Fix()
     {
-        // 仅当当前处于 Broke 或 Bait 时才执行修好逻辑并触发 OnFixed；正常状态下按键不触发
+        // Run fix logic and OnFixed only from Broke or Bait; idle keypress does nothing
         if (!IsBroken && !IsBaiting) return;
         StopAllBaitCoroutines();
         _phoneLiftedDuringCurrentBait = false;
@@ -673,12 +673,12 @@ public class WorkItem : MonoBehaviour
 
         _warnedNoSupportedColorProperty = true;
         Debug.LogWarning(
-            $"[WorkItem] 「{name}」进入 {context} 时未能在任何 Renderer 材质上写入颜色属性（需含 _BaseColor / _Color / _TintColor / _UnlitColor / _MainColor 之一）。" +
-            "逻辑上仍会损坏，但外观可能不变，易与击打修好时的反馈混淆。请换用支持上述属性的 Shader，或用 OnBroken 自行换材质。",
+            $"[WorkItem] \"{name}\" entering {context}: could not write a color property on any Renderer material (need one of _BaseColor / _Color / _TintColor / _UnlitColor / _MainColor)." +
+            "Logic still breaks but visuals may not change, confusing hit-to-fix feedback. Use a shader with those properties or swap materials on OnBroken.",
             this);
     }
 
-    /// <returns>是否至少对一个材质槽写入了颜色</returns>
+    /// <returns>True if at least one material slot received a color write.</returns>
     bool ApplyTintOverride(Color c)
     {
         bool anySlot = false;

@@ -13,14 +13,14 @@ public class GameManager : MonoBehaviour
     public static bool FreezeFailures { get; private set; } = false;
 
     /// <summary>
-    /// 电话摘机（Arduino <c>PHONE_PICKUP</c>）后为 true。
-    /// 与 <see cref="phoneWorkItemForPickupAudioSuppressScope"/> 配合：仅<strong>禁播损坏与 Bait</strong>相关起音（含 Bait 结束起音）；
-    /// 维修对错、<c>PlayAtIndex</c> 等不受影响。指定 WorkItem 时只作用于该物品；留空则全场。
+    /// True after phone off-hook (Arduino <c>PHONE_PICKUP</c>).
+    /// Works with <see cref="phoneWorkItemForPickupAudioSuppressScope"/>: only suppresses <strong>broken and Bait</strong> start SFX (including Bait end start);
+    /// repair correct/wrong, <c>PlayAtIndex</c>, etc. are unaffected. If a WorkItem is set, scope is that item only; if null, applies globally.
     /// </summary>
     public static bool SuppressNonBaitBrokeItemSfxFromPhonePickup { get; private set; }
 
     /// <summary>
-    /// 摘机且 <see cref="SuppressNonBaitBrokeItemSfxFromPhonePickup"/> 时，是否对绑定 <paramref name="boundWorkItem"/> 的组件应用「禁播损坏/Bait 音」。
+    /// When off-hook and <see cref="SuppressNonBaitBrokeItemSfxFromPhonePickup"/> is true, whether suppress-broken/Bait audio applies to components bound to <paramref name="boundWorkItem"/>.
     /// </summary>
     public static bool PickupAudioSuppressAppliesToBoundWorkItem(WorkItem boundWorkItem)
     {
@@ -34,125 +34,129 @@ public class GameManager : MonoBehaviour
         return boundWorkItem != null && boundWorkItem == scope;
     }
 
-    [Header("Work 压力条（0 起计，涨至 maxWork 失败；无阶段时用下列默认）")]
+    [Header("Work pressure (from 0; reaching maxWork fails; defaults below when no phases)")]
     public float work = 0f;
     public float maxWork = 100f;
     public float workPunishment;
     public float workUltraPunishment;
-    [Tooltip("Reward() 调用时降低的压力条（向 0）")]
+    [Tooltip("Work pressure reduced toward 0 when Reward() is called")]
     public float workMashGain;
-    [Tooltip("每台正常运作物品每秒降低的压力")]
+    [Tooltip("Work pressure reduced per second per working item")]
     public float workGainPerSecondPerWorkingItem = 1f;
-    [Tooltip("每台 Broke 每秒增加的压力")]
+    [Tooltip("Work pressure added per second per Broke item")]
     public float workLossPerSecondPerBrokenItem = 3f;
-    [Tooltip("无 gamePhases 时：Broke 瞬间加压")]
+    [Tooltip("When no gamePhases: instant work pressure spike on Broke")]
     public float workPressureInstantOnBroke = 5f;
-    [Tooltip("无 gamePhases 时：修好 Broke 瞬间减压")]
+    [Tooltip("When no gamePhases: instant work pressure relief when Broke is repaired")]
     public float workPressureInstantOnBrokeRepair = 8f;
-    [Tooltip("Boss 不再校验工作量，仅保留兼容")]
+    [Tooltip("Boss no longer validates work amount; kept for compatibility")]
     public float bossMinWorkThreshold = 20f;
 
-    [Header("Boss 来袭（参数见 BossIncomingConfig 组件）")]
-    [Tooltip("可与 GameManager 同物体；留空则在 Awake 时 GetComponent")]
+    [Header("Boss incoming (see BossIncomingConfig component)")]
+    [Tooltip("Can live on same GameObject as GameManager; if empty, GetComponent in Awake")]
     public BossIncomingConfig bossIncomingConfig;
 
-    [Header("教程")]
-    [Tooltip("开启后：按顺序逐个 Broke WorkItem，全部修好后立即开始第一次 Boss（不等待 Boss 到来间隔）；Boss 离开后进入正常阶段流程")]
+    [Header("Tutorial")]
+    [Tooltip("When enabled: Broke WorkItems in order; after all repaired, first Boss starts immediately (no random wait); after Boss leaves, normal phase flow")]
     public bool enableTutorial = true;
 
-    [Tooltip("教程 Broke 顺序；留空则使用下方 Items 列表顺序")]
+    [Tooltip("Tutorial Broke order; if empty, uses Items list order below")]
     public List<WorkItem> tutorialBreakOrder = new List<WorkItem>();
 
-    [Header("正常流程阶段")]
-    [Tooltip("开局应用第 0 项；阶段进阶由规范化表现分（TotalPerformanceScore/分母）达到各阶段阈值触发（与 Boss 无关）。无列表则保持 Inspector 默认")]
+    [Tooltip("Tutorial: after player repairs current broken item, wait this many seconds before next break; no wait after last item. 0 = break next immediately")]
+    [Min(0f)]
+    public float tutorialDelayAfterRepairBeforeNextBreak = 1f;
+
+    [Header("Normal phase flow")]
+    [Tooltip("Apply index 0 at start; phase advance when normalized performance score (TotalPerformanceScore/divisor) hits thresholds (independent of Boss). Empty list keeps Inspector defaults")]
     public List<GamePhaseConfig> gamePhases = new List<GamePhaseConfig>();
 
-    [Header("胜利条件")]
-    [Tooltip("本局倒计时（秒），到 0 自动胜利（不再根据「打完所有阶段」判定）")]
+    [Header("Victory condition")]
+    [Tooltip("Match countdown (seconds); at 0 auto victory (no longer based on clearing all phases)")]
     [Min(0.1f)]
     public float victoryCountdownSeconds = 300f;
 
-    [Header("胜利倒计时 · 临近结束提示（可选）")]
-    [Tooltip("当剩余秒数首次进入「小于等于下方阈值」时显示一次；与 Boss 预警类似，建议单独 UI 以免与损坏提示抢同一 TMP")]
+    [Header("Victory countdown · near-end warning (optional)")]
+    [Tooltip("Show once when remaining seconds first drop to or below threshold; like Boss warning, prefer separate UI so it does not fight broken-item TMP")]
     public bool enableVictoryNearEndWarning = true;
 
-    [Tooltip("剩余时间（秒）≤ 该值时触发；填 0 表示关闭")]
+    [Tooltip("Trigger when remaining seconds ≤ this value; 0 disables")]
     [Min(0f)]
     public float nearEndWarningWhenRemainingSeconds = 30f;
 
     [TextArea(2, 5)]
-    [Tooltip("提示文案，可在 Inspector 多行编辑")]
+    [Tooltip("Warning message text; multi-line in Inspector")]
     public string nearEndWarningMessage = "Time is almost up!";
 
-    [Tooltip("提示面板的根物体；可与损坏预警用同一布局，在场景中复制一份后拖到这里")]
+    [Tooltip("Root GameObject for warning panel; can duplicate broken-warning layout in scene and assign here")]
     public GameObject nearEndWarningPanelRoot;
 
-    [Tooltip("提示用 TMP；可与根节点上的组件为同一物体")]
+    [Tooltip("TMP for warning; can be on same object as root")]
     public TextMeshProUGUI nearEndWarningText;
 
     [Header("References")]
     public UIManager ui;
     public ScreenVignetteTint screenTint;
 
-    [Header("Boss 事件（可选）")]
+    [Header("Boss events (optional)")]
     public UnityEvent OnBossWarningStarted;
     public UnityEvent OnBossArrived;
-    [Tooltip("在场检查时间结束、开始播放离场动画或表现时触发；之后延迟 bossLeaveAnimationDuration 再 OnBossLeft")]
+    [Tooltip("Invoked when stay check ends and leave animation/behavior starts; OnBossLeft fires after bossLeaveAnimationDuration")]
     public UnityEvent OnBossLeaveStarted;
     public UnityEvent OnBossLeft;
 
-    [Tooltip("因 Boss 检查导致游戏失败时触发")]
+    [Tooltip("Invoked when game over is caused by Boss check")]
     public UnityEvent OnGameOverBossCaused;
 
     [Header("Optional")]
     public bool autoFindItemsOnStart = true;
 
     [Header("Debug")]
-    [Tooltip("勾选后：开局 Console 打印阶段进阶所需分数说明；每次成功修好 Broke 后打印当前表现分")]
+    [Tooltip("When enabled: log phase promotion score info at start; log current performance after each successful Broke repair")]
     public bool debugLogPhaseAndScore;
 
-    [Tooltip("勾选后：工作压力条涨满并进入 GameOverWorkProgressFull 时，在 Console 打一条日志（含 work、UIManager 是否绑定），用于排查该流程是否执行")]
+    [Tooltip("When enabled: log when work bar fills and GameOverWorkProgressFull runs (work, UIManager bound), for debugging that path")]
     public bool debugLogWorkProgressDeath = true;
 
     public List<WorkItem> items = new List<WorkItem>();
 
-    [Header("损坏 / Boss 预警 UI（单面板，无 Prefab）")]
-    [Tooltip("需要显示任意提示时设为 true，无提示时 false")]
+    [Header("Broken / Boss warning UI (single panel, no prefab)")]
+    [Tooltip("Set active when any warning should show; inactive when none")]
     public GameObject brokenWarningPanelRoot;
 
-    [Tooltip("损坏文案与 Boss 预警文案共用此 TMP")]
+    [Tooltip("TMP shared by broken-item text and Boss warning text")]
     public TextMeshProUGUI brokenWarningText;
 
-    [Tooltip("可选：提示时切换为 brokenWarningActiveSprite，无下一则提示或进入 Boss 冻结窗时恢复默认")]
+    [Tooltip("Optional: use brokenWarningActiveSprite while warning shows; restore default when no next warning or Boss freeze window")]
     public Image brokenWarningIconImage;
 
-    [Tooltip("进入「新一轮」物品提示时使用的图标（连续提示下一个损坏物时不改图）")]
+    [Tooltip("Icon when starting a new warning chain for an item (unchanged when chaining to next broken item)")]
     public Sprite brokenWarningActiveSprite;
 
-    [Tooltip("可选：Boss 预警前半段（非冻结窗）对此 RectTransform 做晃动；冻结窗内停止")]
+    [Tooltip("Optional: shake this RectTransform during early Boss warning (not in freeze window); stops in freeze")]
     public RectTransform brokenWarningShakeTarget;
 
-    [Tooltip("Boss 预警晃动幅度（本地像素量级）")]
+    [Tooltip("Boss warning shake amplitude (local pixels scale)")]
     public float brokenWarningBossShakeAmplitude = 10f;
 
-    [Tooltip("Boss 预警晃动频率")]
+    [Tooltip("Boss warning shake frequency")]
     public float brokenWarningBossShakeFrequency = 14f;
 
-    [Tooltip("修好当前提示物后若还有排队中的提示：先关面板再等待此时长再显示下一则（类似对话停顿）")]
+    [Tooltip("After fixing warned item, if queue has more: hide panel, wait this long, then show next (dialog pause)")]
     [Min(0f)]
     public float interBrokenWarningPauseSeconds = 0.35f;
 
-    [Header("损坏提示（教程 / 尚无阶段配置时）")]
+    [Header("Broken warnings (tutorial / no phase config yet)")]
     [Min(0f)]
     public float tutorialWarningShowDelayAfterBreak = 0.5f;
 
-    [Tooltip("文案模板；{0} = 物品显示名")]
+    [Tooltip("Message format; {0} = item display name")]
     public string tutorialWarningMessageFormat = "{0} is broken!";
 
-    /// <summary>Hack 事件驱动的累计表现分（可为负）；教程段与未启用阶段计分前不变。</summary>
+    /// <summary>Cumulative performance score from hack events (can be negative); unchanged during tutorial until phase scoring is active.</summary>
     public float TotalPerformanceScore => _performanceScoreRaw;
 
-    /// <summary>0~1，为 TotalPerformanceScore / performanceScoreNormalizationDivisor（Clamp01），用于分数强触 Boss 与阶段进阶。</summary>
+    /// <summary>0–1: TotalPerformanceScore / performanceScoreNormalizationDivisor (Clamp01); used for score-forced Boss and phase promotion.</summary>
     public float NormalizedPerformanceScore => ComputeNormalizedPerformanceScore();
 
     public bool IsVictory { get; private set; }
@@ -161,13 +165,13 @@ public class GameManager : MonoBehaviour
 
     public ArduinoSerialBridge arduinoBridgeScript;
 
-    [Header("电话摘机 · 音效范围")]
-    [Tooltip("拖入「电话」WorkItem：摘机时仅对与该 WorkItem 绑定的音效<strong>禁播损坏与 Bait 起音</strong>（含 Bait 结束起音）；维修对错、PlayAtIndex 照常。留空则对全场相关物品生效。\n" +
-             "若该物体启用了电话规则（TryRepair 依赖摘机状态），会在此 WorkItem 上自动同步摘机/挂机，无需再在 Arduino 上重复绑定 NotifyPhone*。")]
+    [Header("Phone pickup · SFX scope")]
+    [Tooltip("Assign the phone WorkItem: off-hook only suppresses <strong>broken and Bait start SFX</strong> (incl. Bait end start) for audio bound to that item; repair sounds and PlayAtIndex unchanged. Empty = global.\n" +
+             "If phone rules are enabled (TryRepair uses hook state), hook state syncs on this WorkItem; no need to duplicate NotifyPhone* on Arduino.")]
     public WorkItem phoneWorkItemForPickupAudioSuppressScope;
 
-    [Header("Debug · 电话摘机与 PlaySoundOnEventAudioManager")]
-    [Tooltip("勾选后：摘机/挂机时在 Console 打印所有 PlaySoundOnEventAudioManager 的 _brokenPlaybackSkippedDueToPhonePickup / _baitingPlaybackSkippedDueToPhonePickup 当前值")]
+    [Header("Debug · phone pickup and PlaySoundOnEventAudioManager")]
+    [Tooltip("When enabled: on pickup/hang-up, log all PlaySoundOnEventAudioManager _brokenPlaybackSkippedDueToPhonePickup / _baitingPlaybackSkippedDueToPhonePickup values")]
     [SerializeField] bool debugLogPhonePickupPlaySoundSkipFlags = true;
 
     public bool isTutorialing;
@@ -175,7 +179,7 @@ public class GameManager : MonoBehaviour
     public bool BossWarning { get; private set; } = false;
     public float BossWarningTimeLeft { get; private set; } = 0f;
 
-    /// <summary>Boss 在场但「Look→Peek」等到达 UI 未播完时为 true，此时不执行 Broke 即失败判定。</summary>
+    /// <summary>True while Boss is present but arrival UI (e.g. Look→Peek) is not finished; Broke instant-fail is not evaluated yet.</summary>
     bool _bossBrokeCheckAwaitingArrivalSprites;
 
     int _activeMaxConcurrentBroken = int.MaxValue;
@@ -200,20 +204,20 @@ public class GameManager : MonoBehaviour
     bool _bossWarningUiInFreezeHide;
     string _bossApproachWarningMessage;
 
-    /// <summary>教程首次损坏起至第一次 Boss 到场前：不恢复损坏预警默认图标（冻结窗内也不还原）。</summary>
+    /// <summary>From first tutorial break until first Boss arrives: do not restore default broken-warning icon (including in freeze window).</summary>
     bool _holdBrokenWarningIconActiveUntilFirstBossArrived;
 
     int _currentPhaseIndex;
     bool _tutorialBreakSequenceDone;
-    /// <summary>是否允许 WorkItem 自动 Broke/Bait；关教程时从 Awake 起为 true，开教程时开局 false、第一次 Boss 离开后为 true。</summary>
+    /// <summary>Whether WorkItems may auto Broke/Bait; true from Awake when tutorial off, false at start when tutorial on until first Boss leaves.</summary>
     bool _allowRandomWorkItemFailures;
     bool _firstBossLeaveHandled;
     bool _normalPerformanceScoringActive;
 
-    /// <summary>教程最后一个 WorkItem 修好后的第一次 Boss：跳过随机等待与冷却。</summary>
+    /// <summary>First Boss after last tutorial WorkItem is repaired: skip random wait and cooldown.</summary>
     bool _immediateBossAfterTutorial;
 
-    /// <summary>已有至少一次 Boss 完整流程后，下一次等待 Boss 前需要经过冷却。</summary>
+    /// <summary>After at least one full Boss cycle, apply cooldown before the next Boss wait.</summary>
     bool _applyCooldownBeforeNextBossWait;
 
     float _performanceScoreRaw;
@@ -224,13 +228,16 @@ public class GameManager : MonoBehaviour
     bool _phasePromotionArmed;
     float _timeSinceLastScorePhasePromotion = 1000f;
 
-    /// <summary>规范化分顶到 ~1 后无法回落触发滞回，用该间隔允许再次分数升阶（秒）。</summary>
+    /// <summary>When normalized score stays near 1, hysteresis cannot re-arm; min seconds between saturated score-based promotions.</summary>
     const float MinSecondsBetweenScorePhasePromotionsWhenSaturated = 0.35f;
 
     float surviveTime;
     bool isGameOver;
     Coroutine _bossLoopCoroutine;
     Coroutine _tutorialCoroutine;
+
+    /// <summary>When tutorial is on and tutorial break sequence not done: victory countdown paused; ticks after tutorial ends.</summary>
+    bool VictoryCountdownPausedForTutorial => enableTutorial && !_tutorialBreakSequenceDone;
 
     void Awake()
     {
@@ -240,7 +247,7 @@ public class GameManager : MonoBehaviour
         if (bossIncomingConfig == null)
             bossIncomingConfig = GetComponent<BossIncomingConfig>();
 
-        // 在任意 Start 之前确定，避免 WorkItem.Start 早于 GameManager.Start 时 RegisterItem 把 enableAutoBreak 锁成 false
+        // Set before any Start so WorkItem.Start before GameManager.Start does not lock enableAutoBreak false via RegisterItem
         _allowRandomWorkItemFailures = !enableTutorial;
     }
 
@@ -251,7 +258,7 @@ public class GameManager : MonoBehaviour
         ShutdownBrokenWarningSystem();
     }
 
-    /// <summary>供 Arduino <c>onPhonePickup</c> 等 UnityEvent 调用。</summary>
+    /// <summary>Call from Arduino <c>onPhonePickup</c> or other UnityEvents.</summary>
     public void PhonePickup_SetSuppressNonBaitBrokeSfx()
     {
         SuppressNonBaitBrokeItemSfxFromPhonePickup = true;
@@ -259,16 +266,16 @@ public class GameManager : MonoBehaviour
         JiU.PlaySoundOnEvent.StopForPhonePickupAudioScope();
         NotifyPhonePickupHookToWorkItems();
         if (debugLogPhonePickupPlaySoundSkipFlags)
-            JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("PHONE_PICKUP（摘机）之后", true);
+            JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("after PHONE_PICKUP (off-hook)", true);
     }
 
-    /// <summary>供 Arduino <c>onPhonePutdown</c> 等 UnityEvent 调用。</summary>
+    /// <summary>Call from Arduino <c>onPhonePutdown</c> or other UnityEvents.</summary>
     public void PhonePutdown_ClearSuppressNonBaitBrokeSfx()
     {
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
         NotifyPhonePutdownHookToWorkItems();
         if (debugLogPhonePickupPlaySoundSkipFlags)
-            JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("PHONE_PUTDOWN（挂机）之后", false);
+            JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("after PHONE_PUTDOWN (on-hook)", false);
     }
 
     void NotifyPhonePickupHookToWorkItems()
@@ -311,16 +318,16 @@ public class GameManager : MonoBehaviour
 
         var sb = new System.Text.StringBuilder();
         sb.AppendLine(
-            "[GameManager] 场景中检测到 **多个 UIManager**。GameManager 只会使用 Inspector 里 References → ui 绑定的那一个；");
+            "[GameManager] **Multiple UIManager** instances in scene. GameManager only uses the one assigned under References → ui in Inspector;");
         sb.AppendLine(
-            "若「工作压力失败」面板只挂在另一个 Canvas/物体上的 UIManager 里且未绑定到当前 ui，ShowWorkProgressLose 会立刻 return 或显示空引用，Console 里 Awake 的 instanceID 也会与失败时不一致。");
+            "if the work-pressure lose panel lives on another Canvas/object's UIManager and is not assigned to this ui, ShowWorkProgressLose may return immediately or hit null refs; Awake instanceID in Console may differ from the one used on fail.");
         for (int i = 0; i < all.Length; i++)
         {
             bool isBound = ui != null && all[i] == ui;
             sb.AppendLine(
-                $"  [{i}] instanceID={all[i].GetInstanceID()} 物体=\"{all[i].gameObject.name}\" " +
-                $"workProgressLoseRoot={(all[i].workProgressLoseRoot != null ? "已赋值" : "未赋值")} " +
-                $"是当前 GameManager.ui: {isBound}");
+                $"  [{i}] instanceID={all[i].GetInstanceID()} object=\"{all[i].gameObject.name}\" " +
+                $"workProgressLoseRoot={(all[i].workProgressLoseRoot != null ? "assigned" : "null")} " +
+                $"is this GameManager.ui: {isBound}");
         }
 
         Debug.LogWarning(sb.ToString().TrimEnd(), this);
@@ -349,13 +356,15 @@ public class GameManager : MonoBehaviour
             ? "{0} is broken!"
             : tutorialWarningMessageFormat;
 
+        _victoryCountdownRemaining = Mathf.Max(0.1f, victoryCountdownSeconds);
+
         if (ui != null)
         {
             if (ui.workProgressLoseRoot == null)
             {
                 Debug.LogError(
-                    "[GameManager] 当前 GameManager.ui 指向的 UIManager 上 **workProgressLoseRoot 未赋值**，工作压力满时无法显示失败面板。" +
-                    $" 该 UIManager 挂在物体「{ui.gameObject.name}」instanceID={ui.GetInstanceID()}。若场景里还有另一个 UIManager，请把三项结算引用都配在同一组件上，或改 ui 引用。",
+                    "[GameManager] **workProgressLoseRoot** on the UIManager referenced by GameManager.ui is **not assigned**; work-pressure full cannot show lose panel." +
+                    $" That UIManager is on \"{ui.gameObject.name}\" instanceID={ui.GetInstanceID()}. If another UIManager exists in scene, assign all three result refs on one component or change ui reference.",
                     ui);
             }
 
@@ -369,8 +378,6 @@ public class GameManager : MonoBehaviour
             screenTint.SetTarget(0f, 0.01f);
 
         FreezeFailures = false;
-
-        _victoryCountdownRemaining = Mathf.Max(0.1f, victoryCountdownSeconds);
 
         if (gamePhases != null && gamePhases.Count > 0)
         {
@@ -397,7 +404,7 @@ public class GameManager : MonoBehaviour
             _allowRandomWorkItemFailures = true;
         }
 
-        // 与列表中所有 WorkItem 同步（覆盖先于本 Start 注册的物体、以及 autoFind 仅加入列表未走 RegisterItem 的情况）
+        // Sync all WorkItems in list (covers objects registered before this Start and autoFind without RegisterItem)
         SetAllWorkItemsAutoBreak(_allowRandomWorkItemFailures);
 
         _bossLoopCoroutine = StartCoroutine(BossLoop());
@@ -424,26 +431,26 @@ public class GameManager : MonoBehaviour
 
         string phaseBlock;
         if (gamePhases == null || gamePhases.Count == 0)
-            phaseBlock = "未配置 gamePhases → 无阶段配置、无分数升阶。";
+            phaseBlock = "No gamePhases configured → no phase config, no score promotion.";
         else if (gamePhases.Count <= 1)
-            phaseBlock = $"gamePhases 仅 1 条 → 不会因分数升阶。当前阶段索引={_currentPhaseIndex}。";
+            phaseBlock = $"gamePhases has only 1 entry → no score promotion. Current phase index={_currentPhaseIndex}.";
         else
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"阶段数={gamePhases.Count}，当前阶段索引={_currentPhaseIndex}（0 起）。");
-            sb.AppendLine("各阶升阶（离开当前索引 → 下一索引）规范化门槛与滞回（norm = TotalPerformanceScore / 分母）：");
+            sb.AppendLine($"Phase count={gamePhases.Count}, current phase index={_currentPhaseIndex} (0-based).");
+            sb.AppendLine("Promotion thresholds and hysteresis per step (leave index → next; norm = TotalPerformanceScore / divisor):");
             for (int i = 0; i < gamePhases.Count - 1; i++)
             {
                 float t = GetPromotionThresholdForLeavingPhase(i);
                 sb.AppendLine(
-                    $"  索引 {i}→{i + 1}：norm ≥ {t:F3}（约原始分 ≥ {t * div:F1} / {div:F1}）；滞回需先低于 {t - hyst:F3} 再升破 {t:F3}。");
+                    $"  index {i}→{i + 1}: norm ≥ {t:F3} (~raw score ≥ {t * div:F1} / {div:F1}); hysteresis: drop below {t - hyst:F3} then rise past {t:F3}.");
             }
 
             float defSat = bossIncomingConfig != null
                 ? bossIncomingConfig.defaultMinPerformanceScoreGainPerPhaseForSaturatedPromotion
                 : 0f;
             sb.AppendLine(
-                $"若 norm 顶满且无法用滞回升阶：每阶需「进入该阶后原始分净增」≥ 该阶配置（0 则用 Boss 默认 {defSat:F1}）；且间隔 ≥{MinSecondsBetweenScorePhasePromotionsWhenSaturated:F2}s 才升一阶。Boss 默认填 0 则关闭饱和定时连升。");
+                $"If norm is saturated and hysteresis cannot promote: each phase needs raw score gain since entering phase ≥ per-phase config (0 uses Boss default {defSat:F1}); and ≥{MinSecondsBetweenScorePhasePromotionsWhenSaturated:F2}s between steps. Boss default 0 disables saturated timed chain promotion.");
             phaseBlock = sb.ToString().TrimEnd();
         }
 
@@ -453,17 +460,17 @@ public class GameManager : MonoBehaviour
         float rawAtThr0 = thr0 * div;
 
         Debug.Log(
-            "[GameManager/PhaseScore] ========== 开局：阶段进阶与分数 ==========\n" +
+            "[GameManager/PhaseScore] ========== start: phase promotion & score ==========\n" +
             phaseBlock + "\n" +
-            $"归一化：norm = Clamp01(TotalPerformanceScore / 分母)；分母={div:F1}，当前原始分={TotalPerformanceScore:F2}，norm={NormalizedPerformanceScore:F3}。\n" +
-            $"第 0 阶升阶阈值 norm≥{thr0:F3} 约等于原始分≥{rawAtThr0:F1}。\n" +
-            $"当前计分开关 _normalPerformanceScoringActive = {_normalPerformanceScoringActive}" +
-            (enableTutorial ? "（开教程时教程结束前为 false）" : "") + "\n" +
+            $"Normalize: norm = Clamp01(TotalPerformanceScore / divisor); divisor={div:F1}, raw={TotalPerformanceScore:F2}, norm={NormalizedPerformanceScore:F3}.\n" +
+            $"Phase 0 promotion threshold norm≥{thr0:F3} ≈ raw≥{rawAtThr0:F1}.\n" +
+            $"Scoring active _normalPerformanceScoringActive = {_normalPerformanceScoringActive}" +
+            (enableTutorial ? " (false until tutorial ends when tutorial on)" : "") + "\n" +
             "==========================================",
             this);
     }
 
-    /// <summary>玩家成功修好 Broke 后由 WorkItem 调用，用于调试输出当前分数。</summary>
+    /// <summary>Called by WorkItem after successful Broke repair; logs current score for debugging.</summary>
     public void DebugLogPerformanceAfterSuccessfulRepair(string repairedItemDisplayName)
     {
         if (!debugLogPhaseAndScore)
@@ -471,11 +478,11 @@ public class GameManager : MonoBehaviour
 
         int phaseCount = gamePhases != null ? gamePhases.Count : 0;
         string phaseStr = phaseCount > 0
-            ? $"阶段 {_currentPhaseIndex + 1}/{phaseCount}（内部索引 {_currentPhaseIndex}，末档为 {phaseCount - 1}）"
-            : "无阶段列表";
+            ? $"phase {_currentPhaseIndex + 1}/{phaseCount} (index {_currentPhaseIndex}, last={phaseCount - 1})"
+            : "no phase list";
         Debug.Log(
-            $"[GameManager/Score] 修好「{repairedItemDisplayName}」→ " +
-            $"原始分={TotalPerformanceScore:F2} | 规范化={NormalizedPerformanceScore:F3} | {phaseStr}",
+            $"[GameManager/Score] repaired \"{repairedItemDisplayName}\" → " +
+            $"raw={TotalPerformanceScore:F2} | norm={NormalizedPerformanceScore:F3} | {phaseStr}",
             this);
     }
 
@@ -489,9 +496,11 @@ public class GameManager : MonoBehaviour
         surviveTime += Time.deltaTime;
 
         float remainingBeforeTick = _victoryCountdownRemaining;
-        _victoryCountdownRemaining -= Time.deltaTime;
+        if (!VictoryCountdownPausedForTutorial)
+            _victoryCountdownRemaining -= Time.deltaTime;
 
         if (!_victoryNearEndWarningShown && enableVictoryNearEndWarning && nearEndWarningWhenRemainingSeconds > 0f
+            && !VictoryCountdownPausedForTutorial
             && remainingBeforeTick > 0f && remainingBeforeTick <= nearEndWarningWhenRemainingSeconds
             && (nearEndWarningPanelRoot != null || nearEndWarningText != null))
         {
@@ -572,6 +581,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    static bool HasNextNonNullTutorialWorkItem(List<WorkItem> order, int currentIndex)
+    {
+        if (order == null)
+            return false;
+        for (int j = currentIndex + 1; j < order.Count; j++)
+        {
+            if (order[j] != null)
+                return true;
+        }
+        return false;
+    }
+
     IEnumerator TutorialBreakSequenceCoroutine()
     {
         yield return null;
@@ -598,6 +619,10 @@ public class GameManager : MonoBehaviour
             wi.Break();
 
             yield return new WaitUntil(() => !wi.IsBroken && !wi.IsBaiting);
+
+            float gap = Mathf.Max(0f, tutorialDelayAfterRepairBeforeNextBreak);
+            if (gap > 0f && HasNextNonNullTutorialWorkItem(order, i))
+                yield return new WaitForSeconds(gap);
         }
 
         _immediateBossAfterTutorial = true;
@@ -780,7 +805,7 @@ public class GameManager : MonoBehaviour
         _timeSinceLastScorePhasePromotion = 0f;
     }
 
-    /// <summary>离开 gamePhases[phaseIndex] 进入下一阶段所需的规范化分阈值。</summary>
+    /// <summary>Normalized score threshold to leave gamePhases[phaseIndex] for the next phase.</summary>
     float GetPromotionThresholdForLeavingPhase(int phaseIndex)
     {
         if (gamePhases == null || phaseIndex < 0 || phaseIndex >= gamePhases.Count)
@@ -822,8 +847,8 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 滞回「武装」与当前阶阈值对齐：仅当 norm 低于（阈值−滞回）后才允许再次升破该阶阈值。
-    /// 避免开局 norm 与阈值关系异常时误升阶；教程结束开启计分时同步一次。
+    /// Align hysteresis "armed" state with current threshold: norm must drop below (threshold − hysteresis) before it can promote past threshold again.
+    /// Avoids mistaken promotion when norm vs threshold is odd at start; call when tutorial ends and scoring turns on.
     /// </summary>
     void SyncPhasePromotionArmedToCurrentThreshold()
     {
@@ -876,7 +901,7 @@ public class GameManager : MonoBehaviour
 
     }
 
-    /// <summary>为 true 时 WorkItem 自动故障间隔使用阶段配置，否则使用各 WorkItem 自身 Inspector 数值。</summary>
+    /// <summary>When true, WorkItem auto-break intervals use phase config; otherwise each WorkItem's Inspector values.</summary>
     public bool UsePhaseBreakTiming()
     {
         if (gamePhases == null || gamePhases.Count == 0)
@@ -886,7 +911,7 @@ public class GameManager : MonoBehaviour
         return _tutorialBreakSequenceDone;
     }
 
-    /// <summary>供 WorkItem 自动故障：当前是否还能新增一个 Broke（不含 Bait）。</summary>
+    /// <summary>For WorkItem auto-failures: whether another Broke (not Bait) may start.</summary>
     public bool CanStartNewBrokeState()
     {
         if (isGameOver || IsVictory) return false;
@@ -904,7 +929,7 @@ public class GameManager : MonoBehaviour
         return broken < _activeMaxConcurrentBroken;
     }
 
-    /// <summary>Boss 到达前冻结窗口内禁止产生新的 Hack（Broke）。</summary>
+    /// <summary>No new Hack (Broke) during pre-arrival freeze window before Boss.</summary>
     public bool BlockNewHackEventsNow()
     {
         if (bossIncomingConfig == null || !bossIncomingConfig.enablePreArrivalFreeze || !BossWarning)
@@ -913,20 +938,20 @@ public class GameManager : MonoBehaviour
         return BossWarningTimeLeft <= w;
     }
 
-    /// <summary>Boss 在场检查（Stay）期间不允许新增 Broke；Bait 仍可由 WorkItem 概率触发。</summary>
+    /// <summary>No new Broke during Boss stay check; Bait may still roll from WorkItems.</summary>
     public bool BlockNewBrokeDuringBossStay()
     {
         if (isGameOver || IsVictory) return false;
         return BossIsHere;
     }
 
-    /// <summary>由 BossArrivalUISprite 调用：配置了第二张到达图时，在切到 Peek 之前设为 true，切换完成后设为 false。</summary>
+    /// <summary>BossArrivalUISprite: set true before switching to Peek when second arrival sprite is configured; false after transition.</summary>
     public void SetBossBrokeCheckAwaitingArrivalSprites(bool awaiting)
     {
         _bossBrokeCheckAwaitingArrivalSprites = awaiting;
     }
 
-    /// <summary>WorkItem 进入 Hacked（Broke）时调用，按阶段加上 baseScore。</summary>
+    /// <summary>When WorkItem enters Hacked (Broke); adds phase baseScore.</summary>
     public void OnWorkItemEnteredHackedState(WorkItem item)
     {
         if (!_normalPerformanceScoringActive || item == null) return;
@@ -1068,7 +1093,7 @@ public class GameManager : MonoBehaviour
         work = Mathf.Max(0f, work);
     }
 
-    /// <summary>WorkItem 进入 Broke 时调用，瞬时增加压力条。</summary>
+    /// <summary>When WorkItem enters Broke; instant work bar spike.</summary>
     public void ApplyWorkPressureOnItemBroke()
     {
         if (isGameOver || IsVictory) return;
@@ -1076,7 +1101,7 @@ public class GameManager : MonoBehaviour
         ClampWorkProgressAndMaybeLose();
     }
 
-    /// <summary>玩家修好 Broke 时由 WorkItem 调用，瞬时降低压力条。</summary>
+    /// <summary>When player repairs Broke; called from WorkItem, instant work bar relief.</summary>
     public void ApplyWorkPressureOnBrokeRepaired()
     {
         if (isGameOver || IsVictory) return;
@@ -1097,7 +1122,7 @@ public class GameManager : MonoBehaviour
         if (isGameOver || IsVictory)
         {
             if (debugLogWorkProgressDeath)
-                Debug.Log("[GameManager] GameOverWorkProgressFull 未执行：当前已是 Game Over 或胜利（例如本帧先触发了其它失败）。", this);
+                Debug.Log("[GameManager] GameOverWorkProgressFull skipped: already game over or victory (e.g. another fail this frame).", this);
             return;
         }
 
@@ -1107,9 +1132,9 @@ public class GameManager : MonoBehaviour
         if (debugLogWorkProgressDeath)
         {
             Debug.Log(
-                "[GameManager] 工作压力满 → 已触发死亡 (GameOverWorkProgressFull)。 " +
+                "[GameManager] Work bar full → death (GameOverWorkProgressFull). " +
                 $"work={work:F2}/{maxWork:F2}, survive={surviveTime:F1}s, performanceScore={TotalPerformanceScore:F1}, " +
-                $"UIManager={(ui != null ? "已绑定" : "未绑定 null")}",
+                $"UIManager={(ui != null ? "bound" : "null")}",
                 this);
         }
 
@@ -1140,16 +1165,16 @@ public class GameManager : MonoBehaviour
         {
             if (debugLogWorkProgressDeath)
                 Debug.Log(
-                    "[GameManager] GameOverWorkProgressFull → 调用 ShowWorkProgressLose | " +
+                    "[GameManager] GameOverWorkProgressFull → calling ShowWorkProgressLose | " +
                     $"UIManager.instanceID={ui.GetInstanceID()} GameObject=\"{ui.gameObject.name}\" scene={ui.gameObject.scene.name}",
                     ui);
             ui.ShowWorkProgressLose(surviveTime, work, TotalPerformanceScore, maxWork);
             if (debugLogWorkProgressDeath)
-                Debug.Log("[GameManager] ShowWorkProgressLose 已返回（未抛异常）", ui);
+                Debug.Log("[GameManager] ShowWorkProgressLose returned (no exception)", ui);
         }
 #if UNITY_EDITOR
         else
-            Debug.LogWarning("[GameManager] GameOverWorkProgressFull：UIManager (ui) 未赋值，无法显示工作压力失败面板。", this);
+            Debug.LogWarning("[GameManager] GameOverWorkProgressFull: UIManager (ui) not assigned; cannot show work-pressure lose panel.", this);
 #endif
 
         Time.timeScale = 0f;
