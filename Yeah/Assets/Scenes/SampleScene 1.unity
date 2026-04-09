@@ -10727,7 +10727,7 @@ MonoBehaviour:
   workPressureInstantOnBrokeRepair: 2
   bossMinWorkThreshold: 0
   bossIncomingConfig: {fileID: 1853649707}
-  enableTutorial: 0
+  enableTutorial: 1
   tutorialBreakOrder:
   - {fileID: 363469229}
   - {fileID: 882021887}
@@ -10794,7 +10794,7 @@ MonoBehaviour:
     workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
-    normalizedScoreRequiredForNextPhase: 0.9
+    normalizedScoreRequiredForNextPhase: 0.8
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
   - phaseName: Phase 3
     maxConcurrentBrokenWorkItems: 5
@@ -10835,7 +10835,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   autoFindItemsOnStart: 0
-  debugLogPhaseAndScore: 0
+  debugLogPhaseAndScore: 1
   debugLogWorkProgressDeath: 0
   items:
   - {fileID: 983266344}
@@ -12112,7 +12112,7 @@ MonoBehaviour:
     phoneBaitScoreDecayMultiplier: 0.5
     performancePenaltyIdleWrongHit: 200
     performancePenaltyBaitWrongHit: 300
-  performanceScoreNormalizationDivisor: 5000
+  performanceScoreNormalizationDivisor: 3000
   scoreThresholdForNextPhase: 0
   scorePhasePromotionHysteresis: 0.05
   defaultMinPerformanceScoreGainPerPhaseForSaturatedPromotion: 10
