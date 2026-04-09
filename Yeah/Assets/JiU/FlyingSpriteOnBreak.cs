@@ -5,30 +5,30 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// 当“损坏开始”时，每隔一小段时间在范围内随机位置生成列表中的一个随机 Prefab（实例会保留堆叠，直到修好）。
-    /// 若填写了“指定 WorkItem”，会自动在该物件损坏时开始、修好时停止，无需再拖事件。
+    /// On break start, spawns a random prefab from the list at random positions in bounds at intervals (instances stack until fixed).
+    /// With a WorkItem assigned, starts on break and stops on fix without wiring events.
     /// </summary>
     public class FlyingSpriteOnBreak : MonoBehaviour
     {
-        [Header("指定物件（可选）")]
-        [Tooltip("若指定，则在该物件损坏时开始、修好时停止，无需再绑 OnBroken/OnFixed")]
+        [Header("Target (optional)")]
+        [Tooltip("If set, start on break / stop on fix for that item; no OnBroken/OnFixed wiring needed")]
         public WorkItem workItem;
 
-        [Header("随机 Prefab（建议为带 RectTransform 的 UI）")]
-        [Tooltip("每次随机 Instantiate 其中一个")]
+        [Header("Random prefabs (UI with RectTransform recommended)")]
+        [Tooltip("Each spawn picks one at random")]
         public List<GameObject> prefabs = new List<GameObject>();
 
-        [Tooltip("生成实例的父节点；不填则使用下方 Bounds Rect")]
+        [Tooltip("Parent for instances; unset uses bounds Rect below")]
         public RectTransform spawnParent;
 
-        [Tooltip("随机位置的屏幕/画布范围；不填则使用本物体所在 Canvas 的根 RectTransform")]
+        [Tooltip("Random spawn rect; unset uses root RectTransform of Canvas containing this object")]
         public RectTransform boundsRect;
 
-        [Header("刷新参数")]
-        [Tooltip("每隔多少秒生成一个新的随机 Prefab")]
+        [Header("Spawn timing")]
+        [Tooltip("Seconds between spawns")]
         public float spawnInterval = 0.8f;
 
-        [Tooltip("新生成时置于同级最上层，叠在旧实例上面")]
+        [Tooltip("Bring each new instance to front among siblings")]
         public bool bringToFront = true;
 
         Coroutine _spawnRoutine;
@@ -57,14 +57,14 @@ namespace JiU
         }
 
         /// <summary>
-        /// 开始按间隔随机生成（损坏时）。由 WorkItem.OnBroken 绑定调用。
+        /// Start interval spawning (on break). Bind from WorkItem.OnBroken.
         /// </summary>
         public void StartEffect()
         {
             if (!HasAnyPrefab()) return;
             if (spawnParent == null)
             {
-                Debug.LogWarning($"{nameof(FlyingSpriteOnBreak)} on {name}: 需要指定 Bounds Rect 或把脚本放在 Canvas 下以解析父节点。", this);
+                Debug.LogWarning($"{nameof(FlyingSpriteOnBreak)} on {name}: assign Bounds Rect or place under a Canvas to resolve parent.", this);
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace JiU
         }
 
         /// <summary>
-        /// 停止协程并销毁本次损坏期间生成的所有实例。由 WorkItem.OnFixed 绑定调用。
+        /// Stop spawning and destroy instances from this break. Bind from WorkItem.OnFixed.
         /// </summary>
         public void StopEffect()
         {

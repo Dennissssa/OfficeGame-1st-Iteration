@@ -4,38 +4,38 @@ using Uduino;
 namespace JiU
 {
     /// <summary>
-    /// 预设 LED 颜色，与 Arduino 端约定一致。
+    /// LED color presets matching Arduino firmware.
     /// </summary>
     public enum LEDColorPreset
     {
-        [Tooltip("红色 (255,0,0) - 正常/休息")]
+        [Tooltip("Red (255,0,0) - calm/idle")]
         Red,
-        [Tooltip("黄色 (255,255,0) - 闹鬼/异常")]
+        [Tooltip("Yellow (255,255,0) - haunted/anomaly")]
         Yellow,
-        [Tooltip("绿色 (0,255,0)")]
+        [Tooltip("Green (0,255,0)")]
         Green,
-        [Tooltip("蓝色 (0,0,255)")]
+        [Tooltip("Blue (0,0,255)")]
         Blue,
-        [Tooltip("关闭 (0,0,0)")]
+        [Tooltip("Off (0,0,0)")]
         Off,
-        [Tooltip("使用下方 Custom R/G/B 自定义")]
+        [Tooltip("Use custom R/G/B below")]
         Custom
     }
 
     /// <summary>
-    /// 通过 Uduino 发送 setled 命令控制 ESP32 上的 NeoPixel 灯环。
-    /// 可在任意脚本中静态调用，无需持有 UduinoGameEventOutput 引用。
+    /// Sends setled over Uduino for ESP32 NeoPixel rings.
+    /// Static API; no UduinoGameEventOutput reference needed.
     /// </summary>
     public static class UduinoLEDHelper
     {
-        /// <summary> setled 命令名，需与 Arduino 端一致 </summary>
+        /// <summary>setled command name; must match Arduino.</summary>
         public const string SetLedCommand = "setled";
 
         /// <summary>
-        /// 使用预设颜色设置指定 monitor 的 LED 灯环。
+        /// Set ring color from preset.
         /// </summary>
-        /// <param name="monitorIndex">灯环索引，与硬件映射一致（如 0=Skull/GPIO21, 3=Lamp/GPIO33）</param>
-        /// <param name="preset">预设颜色</param>
+        /// <param name="monitorIndex">Ring index per hardware map (e.g. 0=Skull/GPIO21, 3=Lamp/GPIO33)</param>
+        /// <param name="preset">Color preset</param>
         public static void SetLED(int monitorIndex, LEDColorPreset preset)
         {
             int r, g, b;
@@ -44,7 +44,7 @@ namespace JiU
         }
 
         /// <summary>
-        /// 使用 Unity Color 设置指定 monitor 的 LED（0~1 会转为 0~255）。
+        /// Set ring from Unity Color (0~1 scaled to 0~255).
         /// </summary>
         public static void SetLED(int monitorIndex, Color color)
         {
@@ -55,24 +55,24 @@ namespace JiU
         }
 
         /// <summary>
-        /// 使用 RGB(0~255) 设置指定 monitor 的 LED。
+        /// Set ring from RGB 0~255.
         /// </summary>
         public static void SetLED(int monitorIndex, int r, int g, int b)
         {
             if (UduinoManager.Instance == null || !UduinoManager.Instance.IsRunning())
             {
-                Debug.LogWarning("[JiU.UduinoLEDHelper] Uduino 未运行，跳过 SetLED。");
+                Debug.LogWarning("[JiU.UduinoLEDHelper] Uduino not running; skipping SetLED.");
                 return;
             }
             r = Mathf.Clamp(r, 0, 255);
             g = Mathf.Clamp(g, 0, 255);
             b = Mathf.Clamp(b, 0, 255);
-            // 传 4 个参数，Arduino 端可用 getParameter(0)~getParameter(3) 解析
+            // Four params; Arduino can read getParameter(0)..(3)
             UduinoManager.Instance.sendCommand(SetLedCommand, monitorIndex, r, g, b);
         }
 
         /// <summary>
-        /// 批量设置多个 monitor 为同一颜色。
+        /// Set several monitors to the same RGB.
         /// </summary>
         public static void SetLEDRange(int[] monitorIndices, int r, int g, int b)
         {
@@ -82,7 +82,7 @@ namespace JiU
         }
 
         /// <summary>
-        /// 将预设枚举转为 RGB；Custom 时使用传入的 customR/G/B。
+        /// Preset to RGB; Custom uses customR/G/B.
         /// </summary>
         public static void PresetToRGB(LEDColorPreset preset, int customR, int customG, int customB, out int r, out int g, out int b)
         {

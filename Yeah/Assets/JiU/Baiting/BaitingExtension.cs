@@ -6,37 +6,37 @@ using UnityEngine.Events;
 namespace JiU.Baiting
 {
     /// <summary>
-    /// Baiting 扩展：通过监听 WorkItem 的 OnBaiting（及可选 OnFixed）在不修改原脚本的前提下扩展逻辑。
-    /// 可挂到场景中任意 GameObject，指定要监听的 WorkItem 或自动查找。
+    /// Baiting extension: listens to WorkItem OnBaiting (and optionally OnFixed) without editing core scripts.
+    /// Attach to any GameObject; assign WorkItems or auto-find in scene.
     /// </summary>
     public class BaitingExtension : MonoBehaviour
     {
-        [Header("监听的 WorkItem")]
-        [Tooltip("留空则会在 Start 时自动查找场景中所有 WorkItem")]
+        [Header("WorkItems to watch")]
+        [Tooltip("If empty, finds all WorkItems in scene at Start")]
         public WorkItem[] workItems;
 
-        [Tooltip("勾选则 Start 时用 FindObjectsOfType 查找所有 WorkItem")]
+        [Tooltip("When enabled, uses FindObjectsOfType for all WorkItems at Start")]
         public bool autoFindWorkItems = true;
 
-        [Header("诱饵持续时间（秒）")]
-        [Tooltip("普通 Bait 与 WorkItem 内 BaitSelfFix 的 3 秒对齐。电话式 Bait 可能更久：计时后会等到 IsBaiting 为 false 再触发结束事件")]
+        [Header("Bait duration (seconds)")]
+        [Tooltip("Aligns with normal Bait and WorkItem BaitSelfFix (~3s). Phone bait may last longer: waits until IsBaiting is false before end event")]
         public float baitDuration = 3f;
 
-        [Header("扩展事件")]
-        [Tooltip("任意一个 WorkItem 进入诱饵状态时触发（参数：该 WorkItem）")]
+        [Header("Extension events")]
+        [Tooltip("Fires when any watched WorkItem enters bait (parameter: that WorkItem)")]
         public UnityEvent<WorkItem> OnBaitingStarted;
 
-        [Tooltip("在 baitDuration 秒后触发，表示该诱饵约在此时自愈（参数：该 WorkItem）")]
+        [Tooltip("Fires after baitDuration seconds (~self-resolve time; parameter: that WorkItem)")]
         public UnityEvent<WorkItem> OnBaitingEnded;
 
-        [Tooltip("任意诱饵开始（无参数，便于在 Inspector 里接简单回调）")]
+        [Tooltip("Any bait started (no parameter; simple Inspector hooks)")]
         public UnityEvent OnAnyBaitingStarted;
 
-        [Tooltip("任意诱饵结束（无参数）")]
+        [Tooltip("Any bait ended (no parameter)")]
         public UnityEvent OnAnyBaitingEnded;
 
-        [Header("可选：当前处于诱饵状态的数量")]
-        [Tooltip("仅统计本扩展监听的 WorkItem 中当前 IsBaiting 的数量（只读）")]
+        [Header("Optional: bait count")]
+        [Tooltip("Read-only: how many watched WorkItems currently have IsBaiting true")]
         public int currentBaitingCount => _currentBaitingCount;
 
         private int _currentBaitingCount;

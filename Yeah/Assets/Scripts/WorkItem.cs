@@ -355,7 +355,7 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    /// <summary>电话物体：Boss 预警或 Boss 在场期间不进行随机的 Broke / Bait（含原为兜底而转 Bait 的分支）。</summary>
+    /// <summary>Phone items: skip random Broke/Bait rolls while Boss warning is active or Boss is present (including fallback branches that would become Bait).</summary>
     bool ShouldBlockPhoneRandomBrokeOrBaitForBoss()
     {
         if (!PhoneBaitRulesActive || GameManager.Instance == null)
@@ -385,7 +385,7 @@ public class WorkItem : MonoBehaviour
     {
         while (true)
         {
-            if (!IsBroken || !IsBaiting)
+            if (!IsBroken && !IsBaiting)
             {
                 if (!enableAutoBreak)
                 {
@@ -565,7 +565,7 @@ public class WorkItem : MonoBehaviour
 
     public void Break()
     {
-        if (IsBroken) return;
+        if (IsBroken || IsBaiting) return;
         _hadPhonePickupWhileBroken = false;
         IsBroken = true;
 
@@ -588,7 +588,7 @@ public class WorkItem : MonoBehaviour
 
     public void Bait()
     {
-        if (IsBaiting) return;
+        if (IsBaiting || IsBroken) return;
         IsBaiting = true;
         _phoneLiftedDuringCurrentBait = false;
         StopAllBaitCoroutines();

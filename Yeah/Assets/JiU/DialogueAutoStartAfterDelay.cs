@@ -4,16 +4,16 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// 游戏开始后等待可编辑的秒数，再显示 Dialogue Root 并开始播放对话（调用 <see cref="DialogueController.StartDialogue"/>）。
-    /// 延迟使用真实时间，不受 <see cref="Time.timeScale"/> 影响。
+    /// After play starts, wait a configurable time, then show dialogue root and start <see cref="DialogueController.StartDialogue"/>.
+    /// Delay uses realtime, not affected by <see cref="Time.timeScale"/>.
     /// </summary>
     public class DialogueAutoStartAfterDelay : MonoBehaviour
     {
-        [Tooltip("留空则在本物体上查找 DialogueController")]
+        [Tooltip("If unset, looks for DialogueController on this object")]
         public DialogueController dialogueController;
 
         [Min(0f)]
-        [Tooltip("从本脚本 Start 起，等待多少秒再开始对话")]
+        [Tooltip("Seconds after this script's Start before dialogue begins")]
         public float delaySeconds = 1f;
 
         Coroutine _routine;
@@ -25,7 +25,7 @@ namespace JiU
 
             if (dialogueController == null)
             {
-                Debug.LogWarning($"{nameof(DialogueAutoStartAfterDelay)}: 未指定 {nameof(DialogueController)}。", this);
+                Debug.LogWarning($"{nameof(DialogueAutoStartAfterDelay)}: {nameof(DialogueController)} is not assigned.", this);
                 return;
             }
 

@@ -4,70 +4,70 @@ using UnityEngine.Events;
 namespace JiU
 {
     /// <summary>
-    /// 使用 AudioManager.EffectsList 下标取 Clip，在<strong>本物体上的 AudioSource</strong> 播放（默认自动添加），
-    /// 避免与全局 EffectsSource / Boss 等互相顶掉。可选关闭损坏与 Bait 相关自动播放。
+    /// Uses AudioManager.EffectsList indices for clips, played on <strong>this GameObject's AudioSource</strong> (added automatically if missing),
+    /// so global EffectsSource / Boss audio etc. do not fight for the same output. Optionally skip auto broken/Bait sounds.
     /// </summary>
     public class PlaySoundOnEventAudioManager : MonoBehaviour
     {
-        [Header("本物体播放声道")]
-        [Tooltip("不指定则自动 Add 专用 AudioSource（同一物体上多个本组件时请勿共用 GetComponent，否则会抢一个声道、OnFixed 互相 Stop 掐断 Win/Lose）")]
+        [Header("Local playback (this object)")]
+        [Tooltip("If unset, adds a dedicated AudioSource. Multiple components on one object must not share GetComponent<AudioSource>() or they steal one voice and OnFixed Stops can cut Win/Lose.")]
         public AudioSource localSfxSource;
 
-        [Header("可选：不播损坏 / Bait 相关")]
-        [Tooltip("勾选后：OnBroken / OnBaiting / OnBaitingEnded 不播放、不占用本声道；击打 Win/Lose 仍生效")]
+        [Header("Optional: skip broken / Bait auto sounds")]
+        [Tooltip("When enabled, OnBroken / OnBaiting / OnBaitingEnded do not play on this source; repair Win/Lose still apply")]
         public bool skipBrokenAndBaitSounds = false;
 
-        [Header("AudioManager.EffectsList — 损坏")]
-        [Tooltip("OnBroken 时播放；-1 不播")]
+        [Header("AudioManager.EffectsList — broken")]
+        [Tooltip("Play on OnBroken; -1 = off")]
         public int effectIndex = 0;
 
-        [Tooltip("损坏音是否循环，直到 OnFixed 修好")]
+        [Tooltip("Loop broken SFX until OnFixed")]
         public bool loopBrokenSound = false;
 
-        [Header("AudioManager.EffectsList — Bait")]
-        [Tooltip("进入 Bait 时播放；-1 不播")]
+        [Header("AudioManager.EffectsList — bait")]
+        [Tooltip("Play when entering Bait; -1 = off")]
         public int baitEffectIndex = -1;
 
-        [Tooltip("Bait 提示音是否循环，直到玩家修好或 Bait 时间到")]
+        [Tooltip("Loop bait hint until repaired or bait expires")]
         public bool loopBaitSound = false;
 
-        [Tooltip("Bait 倒计时自然结束瞬间播放；-1 不播")]
+        [Tooltip("Play when bait timer ends naturally; -1 = off")]
         public int baitEndedEffectIndex = -1;
 
-        [Header("AudioManager.EffectsList — 击打反馈（Win / Lose）")]
-        [Tooltip("真正损坏态（IsBroken）下击打修好时；-1 不播")]
+        [Header("AudioManager.EffectsList — repair feedback (Win / Lose)")]
+        [Tooltip("When IsBroken and repair succeeds; -1 = off")]
         public int repairCorrectEffectIndex = -1;
 
-        [Tooltip("Bait 乱按、空闲乱按等非成功修好时；-1 不播")]
+        [Tooltip("Wrong repair (bait spam, idle spam, etc.); -1 = off")]
         public int repairWrongEffectIndex = -1;
 
-        [Header("指定 WorkItem")]
-        [Tooltip("绑定后：损坏/修好、Bait/结束、击打 Win/Lose 会自动订阅")]
+        [Header("WorkItem binding")]
+        [Tooltip("When set, subscribes to broken/fixed, bait/end, repair Win/Lose")]
         public WorkItem workItem;
 
-        [Header("随机音调")]
+        [Header("Random pitch")]
         [Range(0f, 0.5f)]
         public float pitchRandomRange = 0f;
 
-        [Header("其它事件（可选）")]
+        [Header("Other events (optional)")]
         public UnityEvent onPlayed;
 
-        /// <summary>Bait 自然结束与 OnFixed 同帧时，若刚播了 baitEnded 音则本帧不再 Stop。</summary>
+        /// <summary>If bait ends naturally same frame as OnFixed and baitEnded clip just played, skip Stop this frame.</summary>
         bool _suppressNextFixedStop;
 
-        /// <summary>修好瞬间已在本声道播 Win，同帧 OnFixed 不再 Stop，避免把刚播的 Win 掐掉。</summary>
+        /// <summary>Repair Win already playing on this source same frame as OnFixed: skip Stop so Win is not cut off.</summary>
         bool _suppressNextFixedStopForRepairWin;
 
-        /// <summary>摘机禁播时本次未起损坏音，OnFixed 不再 Stop，避免掐维修反馈。</summary>
+        /// <summary>Pickup suppress: broken SFX never started; OnFixed skips Stop to avoid cutting repair feedback.</summary>
         bool _brokenPlaybackSkippedDueToPhonePickup;
 
-        /// <summary>摘机禁播时本次未起 Bait 音，OnFixed 同理。</summary>
+        /// <summary>Pickup suppress: bait SFX never started; same OnFixed handling.</summary>
         bool _baitingPlaybackSkippedDueToPhonePickup;
 
-        /// <summary>调试用：OnBroken 因摘机未起损坏音时为 true，直至 OnFixed 消费。</summary>
+        /// <summary>Debug: true when OnBroken skipped broken SFX due to pickup, until consumed on OnFixed.</summary>
         public bool DebugPeekBrokenPlaybackSkippedDueToPhonePickup => _brokenPlaybackSkippedDueToPhonePickup;
 
-        /// <summary>调试用：OnBaiting 因摘机未起 Bait 音时为 true，直至 OnFixed 消费。</summary>
+        /// <summary>Debug: true when OnBaiting skipped bait SFX due to pickup, until consumed on OnFixed.</summary>
         public bool DebugPeekBaitingPlaybackSkippedDueToPhonePickup => _baitingPlaybackSkippedDueToPhonePickup;
 
         void Awake()
@@ -80,8 +80,7 @@ namespace JiU
             if (localSfxSource != null)
                 return localSfxSource;
 
-            // 必须每个组件独占一个 AudioSource：若用 GetComponent 与同类组件共享，
-            // 则 A 播 Win 后 B 的 OnFixed 会对同一声道 Stop，表现为 Win/Lose 随机不响。
+            // Each component needs its own AudioSource; sharing via GetComponent makes one object's OnFixed Stop another's Win/Lose.
             localSfxSource = gameObject.AddComponent<AudioSource>();
             localSfxSource.playOnAwake = false;
             return localSfxSource;
@@ -139,7 +138,7 @@ namespace JiU
             var src = EnsureLocalAudioSource();
             if (src == null) return;
 
-            // 电话挂机且仍 Broke、损坏音在循环：用 OneShot 播错修音，避免替换 clip 掐断循环
+            // Phone on cradle, still broken, broken loop playing: use OneShot for wrong-repair to avoid swapping clip and killing the loop
             bool phoneOnHookKeepBrokenLoop = workItem != null
                 && workItem.IsBroken
                 && workItem.PhoneIsOnCradleForSfx
@@ -191,8 +190,8 @@ namespace JiU
                 return;
             }
 
-            // 勾选「不播损坏/Bait」时，本声道从未起过损坏循环；若仍 Stop，会在修好同一帧掐掉刚播的 Win/Lose
-            //（Lamp / Printer 等同型物体上尤其明显，因依赖击打反馈而非循环轨）
+            // With skip broken/bait, this source never started broken loop; Stop would cut Win/Lose played same frame as fix
+            // (noticeable on lamp/printer-style items that rely on hit feedback rather than a loop)
             if (skipBrokenAndBaitSounds)
                 return;
 
@@ -262,13 +261,13 @@ namespace JiU
             src.Stop();
         }
 
-        /// <summary> 停止本物体上的物品音效声道 </summary>
+        /// <summary>Stop this object's item SFX source.</summary>
         public void Stop()
         {
             StopInternal(resetLoop: true);
         }
 
-        /// <summary> 播放损坏用下标；是否循环与 loopBrokenSound 一致 </summary>
+        /// <summary>Play broken clip by index; looping matches loopBrokenSound.</summary>
         public void Play()
         {
             if (skipBrokenAndBaitSounds) return;
@@ -285,7 +284,7 @@ namespace JiU
             PlayClipFromEffectsList(effectIndex);
         }
 
-        /// <summary> 手动播 Bait 用下标（例如 UnityEvent） </summary>
+        /// <summary>Manually play bait clip by index (e.g. from UnityEvent).</summary>
         public void PlayBaitSound()
         {
             if (skipBrokenAndBaitSounds) return;
@@ -303,13 +302,13 @@ namespace JiU
             PlayClipFromEffectsList(baitEffectIndex);
         }
 
-        /// <summary> 使用 EffectsList 下标在本物体声道上播放（不受 skipBrokenAndBaitSounds 影响，供 UnityEvent 手动调用） </summary>
+        /// <summary>Play EffectsList index on this local source (ignores skipBrokenAndBaitSounds; for manual UnityEvent calls).</summary>
         public void PlayAtIndex(int index)
         {
             PlayClipFromEffectsList(index);
         }
 
-        /// <returns>是否成功开始播放</returns>
+        /// <returns>True if playback started.</returns>
         bool PlayClipFromEffectsList(int index)
         {
             var src = EnsureLocalAudioSource();
@@ -333,9 +332,9 @@ namespace JiU
         }
 
         /// <summary>
-        /// 摘机后：对落在 <see cref="GameManager.PickupAudioSuppressAppliesToBoundWorkItem"/> 内的组件，
-        /// 立刻停止本地声道上正在播的损坏/Bait 循环，并清理相关内部标记。
-        /// 须在 <see cref="GameManager.SuppressNonBaitBrokeItemSfxFromPhonePickup"/> 已设为 true 之后调用。
+        /// After phone pickup: for components in <see cref="GameManager.PickupAudioSuppressAppliesToBoundWorkItem"/> scope,
+        /// stop local broken/bait loops and clear related flags.
+        /// Call after <see cref="GameManager.SuppressNonBaitBrokeItemSfxFromPhonePickup"/> is enabled.
         /// </summary>
         public static void StopBrokenBaitPlaybackForPickupScope()
         {
@@ -351,8 +350,8 @@ namespace JiU
         }
 
         /// <summary>
-        /// 电话挂机且仍处于 Broke、且曾在 Broke 时摘机过（损坏音曾被摘机停掉）时，重新起损坏循环。
-        /// 由 <see cref="WorkItem.NotifyPhonePutDownForBaitFlow"/> 调用。
+        /// Phone on hook, still broken, had pickup while broken (broken SFX was stopped): restart broken loop.
+        /// Called from <see cref="WorkItem.NotifyPhonePutDownForBaitFlow"/>.
         /// </summary>
         public static void ResumeBrokenLoopAfterPhonePutdownForWorkItem(WorkItem wi)
         {
@@ -398,7 +397,7 @@ namespace JiU
         }
 
         /// <summary>
-        /// 电话摘机/挂机瞬间由 <see cref="GameManager"/> 调用：打印每个组件上两个「摘机跳过」标记的当前值。
+        /// Called from <see cref="GameManager"/> on phone pickup/hang-up: logs pickup-suppress skip flags for each component.
         /// </summary>
         public static void DebugLogAllPhonePickupSkipFlags(string momentLabel, bool suppressNonBaitBrokeSfxActive)
         {
@@ -406,7 +405,7 @@ namespace JiU
             if (arr == null || arr.Length == 0)
             {
                 Debug.Log(
-                    $"[PlaySoundOnEventAudioManager] {momentLabel} | 场景中无组件 | " +
+                    $"[PlaySoundOnEventAudioManager] {momentLabel} | no components in scene | " +
                     $"SuppressNonBaitBrokeItemSfxFromPhonePickup={suppressNonBaitBrokeSfxActive}");
                 return;
             }
@@ -414,7 +413,7 @@ namespace JiU
             var sb = new System.Text.StringBuilder();
             sb.AppendLine(
                 $"[PlaySoundOnEventAudioManager] {momentLabel} | " +
-                $"SuppressNonBaitBrokeItemSfxFromPhonePickup={suppressNonBaitBrokeSfxActive} | 组件数={arr.Length}");
+                $"SuppressNonBaitBrokeItemSfxFromPhonePickup={suppressNonBaitBrokeSfxActive} | componentCount={arr.Length}");
             for (int i = 0; i < arr.Length; i++)
             {
                 PlaySoundOnEventAudioManager m = arr[i];

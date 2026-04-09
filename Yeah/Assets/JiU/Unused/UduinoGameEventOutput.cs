@@ -5,22 +5,22 @@ using Uduino;
 namespace JiU
 {
     /// <summary>
-    /// 当“触发”被调用时（例如 WorkItem 的 OnBroken/OnFixed），向 Uduino 发送输出或触发自定义逻辑。
-    /// 支持：数字输出、模拟输出、自定义命令；也可只触发 UnityEvent 做数据/逻辑修改。
+    /// On trigger (e.g. WorkItem OnBroken/OnFixed), send Uduino outputs or run custom logic.
+    /// Digital, analog, custom command, or UnityEvent-only.
     /// </summary>
     public class UduinoGameEventOutput : MonoBehaviour
     {
         public enum OutputType
         {
-            [Tooltip("数字输出：引脚 0/1")]
+            [Tooltip("Digital write 0/1")]
             DigitalWrite,
-            [Tooltip("模拟输出：引脚 0~255")]
+            [Tooltip("Analog write 0~255")]
             AnalogWrite,
-            [Tooltip("自定义命令：sendCommand(命令名, 参数)")]
+            [Tooltip("Custom sendCommand(name, params)")]
             SendCommand,
-            [Tooltip("NeoPixel 灯环：发送 setled 命令到 ESP32")]
+            [Tooltip("NeoPixel ring: setled to ESP32")]
             SetNeoPixel,
-            [Tooltip("仅触发下面的 OnTriggered，不发给 Uduino")]
+            [Tooltip("Only invoke OnTriggered; no Uduino")]
             OnlyInvokeEvent
         }
 
@@ -28,49 +28,49 @@ namespace JiU
         public class OutputEntry
         {
             public OutputType type = OutputType.DigitalWrite;
-            [Tooltip("数字/模拟引脚号")]
+            [Tooltip("Digital/analog pin number")]
             public int pin = 13;
-            [Tooltip("数字：0 或 1；模拟：0~255")]
+            [Tooltip("Digital: 0 or 1; analog: 0~255")]
             public int value = 1;
-            [Tooltip("SendCommand 时的命令名")]
+            [Tooltip("SendCommand name")]
             public string commandName = "led";
-            [Tooltip("SendCommand 时的参数（可多个用空格隔开）")]
+            [Tooltip("SendCommand params (space-separated if multiple)")]
             public string commandParam = "on";
 
-            [Header("SetNeoPixel 专用")]
-            [Tooltip("灯环索引，与硬件映射一致：0=Skull/GPIO21, 3=Lamp/GPIO33")]
+            [Header("SetNeoPixel only")]
+            [Tooltip("Ring index per hardware: 0=Skull/GPIO21, 3=Lamp/GPIO33")]
             [Range(0, 4)]
             public int ledMonitorIndex = 0;
-            [Tooltip("预设颜色；选 Custom 时用下方 RGB")]
+            [Tooltip("Preset; Custom uses RGB below")]
             public LEDColorPreset neoPixelColorPreset = LEDColorPreset.Red;
             [Range(0, 255)] public int customR = 255;
             [Range(0, 255)] public int customG = 0;
             [Range(0, 255)] public int customB = 0;
         }
 
-        [Header("触发时执行（按顺序）")]
-        [Tooltip("可添加多条：数字输出、模拟输出、自定义命令 或 仅触发事件")]
+        [Header("On trigger (in order)")]
+        [Tooltip("Add entries: digital, analog, command, or event-only")]
         public OutputEntry[] outputs = new OutputEntry[] { new OutputEntry() };
 
-        [Header("可选：传递数值")]
-        [Tooltip("若使用 TriggerWithValue(int)，这里会收到传入的数值并参与输出")]
+        [Header("Optional: pass value")]
+        [Tooltip("With TriggerWithValue(int), use passed int in outputs")]
         public bool useTriggerValue;
-        [Tooltip("用 TriggerWithValue 的值替代上面条目的 value（仅对 Digital/Analog 有效）")]
+        [Tooltip("Override entry value with TriggerWithValue (Digital/Analog only)")]
         public bool valueOverridesEntry;
 
-        [Header("可选：触发时额外回调")]
-        [Tooltip("可绑到其他脚本修改数据或做 UI 等")]
+        [Header("Optional: extra callback")]
+        [Tooltip("Bind for data/UI side effects")]
         public UnityEvent onTriggered;
 
-        [Header("可选：带一个 int 的回调（用于传 pin/数值等）")]
+        [Header("Optional: int callback (pin/value etc.)")]
         public UnityEventInt onTriggeredWithInt;
 
         [System.Serializable]
         public class UnityEventInt : UnityEvent<int> { }
 
         /// <summary>
-        /// 无参触发：按配置的 outputs 依次发送到 Uduino，并调用 onTriggered。
-        /// 可由 WorkItem.OnBroken / OnFixed 等 UnityEvent 调用。
+        /// Fire outputs in order to Uduino and invoke onTriggered.
+        /// Callable from WorkItem OnBroken/OnFixed etc.
         /// </summary>
         public void Trigger()
         {
@@ -78,7 +78,7 @@ namespace JiU
         }
 
         /// <summary>
-        /// 代码调用：设置指定 monitor 的 NeoPixel 颜色（不依赖 outputs 配置）。
+        /// Set NeoPixel color by monitor index (ignores outputs list).
         /// </summary>
         public void SetLED(int monitorIndex, Color color)
         {
@@ -86,7 +86,7 @@ namespace JiU
         }
 
         /// <summary>
-        /// 代码调用：使用预设颜色设置指定 monitor 的 NeoPixel。
+        /// Set NeoPixel by preset for monitor index.
         /// </summary>
         public void SetLED(int monitorIndex, LEDColorPreset preset)
         {
@@ -94,14 +94,14 @@ namespace JiU
         }
 
         /// <summary>
-        /// 带一个 int 的触发：若 useTriggerValue 且 valueOverridesEntry，会用 value 覆盖条目的 value。
+        /// Trigger with int; if useTriggerValue and valueOverridesEntry, overrides entry value.
         /// </summary>
         public void TriggerWithValue(int value)
         {
             if (UduinoManager.Instance == null || !UduinoManager.Instance.IsRunning())
             {
                 if (outputs != null && outputs.Length > 0)
-                    Debug.LogWarning("[JiU.UduinoGameEventOutput] Uduino 未运行，跳过硬件输出，仅执行事件。");
+                    Debug.LogWarning("[JiU.UduinoGameEventOutput] Uduino not running; skipping hardware, events only.");
             }
 
             int overrideVal = useTriggerValue && valueOverridesEntry ? value : -1;

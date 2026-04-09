@@ -6,48 +6,48 @@ using UnityEngine.UI;
 namespace JiU
 {
     /// <summary>
-    /// 入场演出：入场音效+等待 → 显隐一组物体 → Slider 填满 → 音效 → 再显隐+音效 → 开始对话。
-    /// 默认使用真实时间（不受 Time.timeScale 影响），便于与暂停中的 UI 配合。
+    /// Intro sequence: enter SFX + wait -> toggle objects -> fill Slider -> SFX -> toggle + SFX -> start dialogue.
+    /// Uses realtime by default (ignores Time.timeScale) so it works with paused UI.
     /// </summary>
     public class IntroPerformanceFlow : MonoBehaviour
     {
-        [Tooltip("留空则在本物体上添加 AudioSource")]
+        [Tooltip("If unset, adds AudioSource on this object")]
         public AudioSource sfxSource;
 
-        [Tooltip("全程使用真实时间（推荐）；关闭则用 scaled 时间")]
+        [Tooltip("Use realtime for the whole sequence (recommended); off uses scaled time")]
         public bool useUnscaledTime = true;
 
-        [Header("1) 进入场景")]
+        [Header("1) Scene enter")]
         public AudioClip sceneEnterSfx;
 
         [Min(0f)]
-        [Tooltip("播放入场音效后，再等待的秒数")]
+        [Tooltip("Seconds to wait after enter SFX")]
         public float waitAfterEnterSfxSeconds = 1f;
 
-        [Header("2) 等待结束后的显隐")]
+        [Header("2) Toggle after enter wait")]
         public List<GameObject> disableAfterEnterWait = new List<GameObject>();
         public List<GameObject> enableAfterEnterWait = new List<GameObject>();
 
-        [Header("3) Slider 填充")]
+        [Header("3) Slider fill")]
         public Slider progressSlider;
 
         [Min(0.01f)]
-        [Tooltip("从最小值填到最大值所用秒数")]
+        [Tooltip("Seconds to animate from min to max value")]
         public float sliderFillDurationSeconds = 3f;
 
-        [Tooltip("映射填充进度 0~1；不填或空曲线则线性")]
+        [Tooltip("Maps fill progress 0~1; omit or empty curve for linear")]
         public AnimationCurve sliderFillCurve;
 
-        [Header("4) Slider 填满后")]
+        [Header("4) After slider full")]
         public AudioClip sliderFilledSfx;
 
-        [Header("5) 紧接着：显隐 + 音效（同时进行）")]
+        [Header("5) Then: toggles + SFX (together)")]
         public List<GameObject> disableWhenSliderDone = new List<GameObject>();
         public List<GameObject> enableWhenSliderDone = new List<GameObject>();
         public AudioClip withToggleSfx;
 
-        [Header("6) 对话（在上一段 With Toggle Sfx 整段播完后才开始）")]
-        [Tooltip("可为空则跳过；未配置 With Toggle Sfx 时显隐结束后立刻开始对话")]
+        [Header("6) Dialogue (after With Toggle Sfx finishes)")]
+        [Tooltip("Optional; omit to skip. If With Toggle Sfx is unset, dialogue starts right after toggles")]
         public DialogueController dialogueController;
 
         Coroutine _routine;

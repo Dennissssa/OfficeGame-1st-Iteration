@@ -91,7 +91,7 @@ public class ArduinoSerialBridge : MonoBehaviour
     [SerializeField] private WorkItem printerWorkItem;
 
     [Header("Debug")]
-    [Tooltip("勾选后：串口收到 PHONE_PICKUP / PHONE_PUTDOWN 时在 Console 打印一条日志（主线程 Invoke 前）。")]
+    [Tooltip("When enabled, log once to the Console when serial receives PHONE_PICKUP / PHONE_PUTDOWN (before main-thread Invoke).")]
     [SerializeField] private bool debugLogPhonePickupPutdown = true;
 
     // ── Private state ─────────────────────────────────────────
@@ -101,7 +101,7 @@ public class ArduinoSerialBridge : MonoBehaviour
     private bool       _isRunning;
 
     // Flags set by background thread, consumed by main-thread Update()
-    // 勿写成 readonly volatile：C# 不允许同字段兼具二者（CS0678）。
+    // Do not combine readonly + volatile on one field (CS0678).
     private volatile bool[] _hitPending = new bool[NumObjects];
     private volatile bool            _phonePickupPending  = false;
     private volatile bool            _phonePutdownPending = false;
@@ -146,7 +146,7 @@ public class ArduinoSerialBridge : MonoBehaviour
         {
             _phonePickupPending = false;
             if (debugLogPhonePickupPutdown)
-                Debug.Log("[ArduinoSerialBridge] 电话摘机 PHONE_PICKUP", this);
+                Debug.Log("[ArduinoSerialBridge] Phone off-hook PHONE_PICKUP", this);
             onPhonePickup?.Invoke();
         }
 
@@ -154,7 +154,7 @@ public class ArduinoSerialBridge : MonoBehaviour
         {
             _phonePutdownPending = false;
             if (debugLogPhonePickupPutdown)
-                Debug.Log("[ArduinoSerialBridge] 电话挂机 PHONE_PUTDOWN", this);
+                Debug.Log("[ArduinoSerialBridge] Phone on-hook PHONE_PUTDOWN", this);
             onPhonePutdown?.Invoke();
         }
     }

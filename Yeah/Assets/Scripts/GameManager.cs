@@ -310,7 +310,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>对局结束（任意结局）时通知 Arduino 将全部外设恢复默认；<see cref="arduinoBridgeScript"/> 未绑定则忽略。</summary>
+    /// <summary>When a match ends (any outcome), tell Arduino to reset all peripherals to defaults; ignored if <see cref="arduinoBridgeScript"/> is not assigned.</summary>
     void NotifyArduinoSystemResetOnMatchEnd()
     {
         if (arduinoBridgeScript != null)
@@ -782,7 +782,7 @@ public class GameManager : MonoBehaviour
 
         _timeSinceLastScorePhasePromotion += Time.deltaTime;
 
-        // 同一帧可连升多阶（避免：升阶后 norm 已超过下一档门槛却因滞回未 armed 而永久卡住）
+        // Allow multiple phase promotions in one frame (avoids getting stuck when norm already passed the next threshold but hysteresis never re-arms)
         while (_currentPhaseIndex < gamePhases.Count - 1)
         {
             float thr = GetPromotionThresholdForLeavingPhase(_currentPhaseIndex);
@@ -790,7 +790,7 @@ public class GameManager : MonoBehaviour
             float norm = NormalizedPerformanceScore;
             float lowerBound = thr - h;
 
-            // 阈值很小且 ≤ 滞回时 thr−h≤0，norm < lowerBound 永假 → 原先会永远无法 armed；退化为准入仅看 norm≥thr
+            // If threshold <= hysteresis, thr−h <= 0 makes norm < lowerBound never true → could never arm; fall back to arming when norm >= thr only
             if (lowerBound > 1e-4f)
             {
                 if (norm < lowerBound)
@@ -818,7 +818,7 @@ public class GameManager : MonoBehaviour
 
             _currentPhaseIndex++;
             ApplyPhaseConfig(gamePhases[_currentPhaseIndex]);
-            // 新阶段：允许直接跨下一档门槛，不要求分数先跌回「阈值−滞回」以下（多档递增阈值时否则会永久卡死）
+            // New phase: allow crossing the next threshold immediately without score dipping below (threshold − hysteresis) first (avoids deadlock with stacked thresholds)
             _phasePromotionArmed = true;
             _timeSinceLastScorePhasePromotion = 0f;
         }
