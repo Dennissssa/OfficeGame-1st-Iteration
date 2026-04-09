@@ -367,7 +367,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -1336, y: 669}
-  m_SizeDelta: {x: 1123.32, y: 1732.03}
+  m_SizeDelta: {x: 1968, y: 1732.03}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &254210440
 MonoBehaviour:
@@ -1575,7 +1575,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 766614172}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.000028610226}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1583,7 +1583,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -17, y: -368.98}
+  m_AnchoredPosition: {x: -8.665779, y: -379.71448}
   m_SizeDelta: {x: 2048, y: 1351}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &766614174
@@ -1614,7 +1614,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 313812805f3b5f04ab554ef99dc29858, type: 3}
+  m_Texture: {fileID: 2800000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -2943,7 +2943,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IntroController
   dialogueList:
-  - dialogueHead: {fileID: 21300000, guid: f8f0516f8c0ad074d9776dec8ff73b2c, type: 3}
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     dialogueText: Hello again, you worthless wastes of demonic flesh! Welcome to
       another awful day at Hell Inc. Now listen up, because I'm not repeating myself.
     dialogueName: The Boss
@@ -2955,7 +2956,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 7
-  - dialogueHead: {fileID: 21300000, guid: f8f0516f8c0ad074d9776dec8ff73b2c, type: 3}
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     dialogueText: "I hear a lot of you imps talking about this ridiculous heavenly
       propaganda going around. Something about being \u201Csaved\u201D. "
     dialogueName: The Boss
@@ -2967,7 +2969,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 7
-  - dialogueHead: {fileID: 21300000, guid: 949b0b6b9ea69544597d8cc41eac994e, type: 3}
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 91d5df396eaf0d7ddbf597de3b1f1268, type: 3}
     dialogueText: "It should go without saying that if I catch any ONE of you traitorous
       piles of slime with that garbage on your system, I\u2019ll fire you personally.
       With EVERYTHING that entails."
@@ -2980,7 +2983,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 8
-  - dialogueHead: {fileID: 21300000, guid: f8f0516f8c0ad074d9776dec8ff73b2c, type: 3}
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     dialogueText: "That\u2019s all. Have a rotten day. "
     dialogueName: The Boss
     showBoss: 1
@@ -2991,7 +2995,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 5
-  - dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
     dialogueText: THIS SHOULD NEVER BE SEEN IT'S A BUFFER FOR THE AD POPUP
     dialogueName: Samael
     showBoss: 0
@@ -3002,7 +3007,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 0
     dialogueWaitTime: 3
-  - dialogueHead: {fileID: 21300000, guid: 40e7e66a8e185814f9d8594fd8c1daa4, type: 3}
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 40e7e66a8e185814f9d8594fd8c1daa4, type: 3}
     dialogueText: (PLACEHOLDER) a popup appears after ~5 seconds promising "promotion
       benefits from upper management"
     dialogueName: placeholder
@@ -3014,7 +3020,8 @@ MonoBehaviour:
     waitsForPlayerInput: 1
     showDialogue: 0
     dialogueWaitTime: 0
-  - dialogueHead: {fileID: 21300000, guid: 40e7e66a8e185814f9d8594fd8c1daa4, type: 3}
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 40e7e66a8e185814f9d8594fd8c1daa4, type: 3}
     dialogueText: (PLACEHOLDER) clicking the popup causes the computer to glitch
       out and show jesus a lot
     dialogueName: placeholder
@@ -3026,7 +3033,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 0
     dialogueWaitTime: 4
-  - dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: "Hey. It\u2019s Sam. I\u2019m guessing you\u2019re the latest sucker
       that fell for that promotion scam. Don\u2019t feel too bad, you\u2019re the
       third one this week. "
@@ -3039,7 +3047,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 7
-  - dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: "The good news is that it\u2019s easy enough to fix if you\u2019re
       smart like me. Standby, I\u2019m installing something on your system that\u2019ll
       help. "
@@ -3052,7 +3061,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 6.5
-  - dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: (PLACEHOLDER) a window appears showing "angelic corruption process"
     dialogueName: PLACEHOLDER
     showBoss: 0
@@ -3063,7 +3073,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 0
     dialogueWaitTime: 3
-  - dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: There. I've set up a hex that'll purge the virus from affected
       systems through demonic impact.
     dialogueName: Samael
@@ -3075,7 +3086,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 5
-  - dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: In other words, if a device is malfunctioning, HIT IT WITH THE
       BONE UNDER YOUR DESK.
     dialogueName: Samael
@@ -3087,7 +3099,8 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     showDialogue: 1
     dialogueWaitTime: 6
-  - dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: I'll guide you through what a malfunction looks like on each device.
     dialogueName: Samael
     showBoss: 0
@@ -3100,6 +3113,7 @@ MonoBehaviour:
     dialogueWaitTime: 5
   dialogueGroup: {fileID: 429690925}
   dialogueHead: {fileID: 766614175}
+  messageBox: {fileID: 429690927}
   dialogueText: {fileID: 1059647158}
   dialogueName: {fileID: 174393234}
   dialogueCount: 0
@@ -3121,7 +3135,7 @@ MonoBehaviour:
   canAdvance: 1
   canvas: {fileID: 685989572}
   camMain: {fileID: 0}
-  playSceneCount: 1
+  playSceneCount: 2
 --- !u!4 &1536970594
 Transform:
   m_ObjectHideFlags: 0

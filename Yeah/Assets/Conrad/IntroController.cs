@@ -28,6 +28,7 @@ public class IntroController : MonoBehaviour
 
     [System.Serializable] public class dialoguePack
     {
+        public Sprite boxSprite;
         public Sprite dialogueHead;
         public string dialogueText;
         public string dialogueName;
@@ -45,6 +46,7 @@ public class IntroController : MonoBehaviour
 
     public GameObject dialogueGroup;
     public RawImage dialogueHead;
+    public Image messageBox;
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI dialogueName;
     public int dialogueCount;
@@ -121,10 +123,12 @@ public class IntroController : MonoBehaviour
                 return;
             }
         }*/
+        
 
         dialogueText.text = dialogueList[dialogueCount].dialogueText;
         dialogueName.text = dialogueList[dialogueCount].dialogueName;
         dialogueHead.texture = dialogueList[dialogueCount].dialogueHead.texture;
+        messageBox.sprite = dialogueList[dialogueCount].boxSprite;
     }
 
     IEnumerator MakeAd()
