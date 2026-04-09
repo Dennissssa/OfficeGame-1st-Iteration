@@ -54,10 +54,42 @@ namespace JiU
         }
 
         /// <summary>
+        /// 电话摘机后由 <see cref="GameManager"/> 调用：停止作用域内绑定 WorkItem 的损坏 clip 播放。
+        /// </summary>
+        public static void StopForPhonePickupAudioScope()
+        {
+            var arr = Object.FindObjectsOfType<PlaySoundOnEvent>(true);
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                PlaySoundOnEvent p = arr[i];
+                if (p.workItem == null) continue;
+                if (!GameManager.PickupAudioSuppressAppliesToBoundWorkItem(p.workItem)) continue;
+                p.Stop();
+            }
+        }
+
+        /// <summary>与 <see cref="PlaySoundOnEventAudioManager.ResumeBrokenLoopAfterPhonePutdownForWorkItem"/> 配套，用于仅用本组件播损坏 clip 的场景。</summary>
+        public static void ResumeBrokenClipAfterPhonePutdownForWorkItem(WorkItem wi)
+        {
+            if (wi == null || !wi.IsBroken) return;
+            var arr = Object.FindObjectsOfType<PlaySoundOnEvent>(true);
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i].workItem != wi) continue;
+                arr[i].Play();
+            }
+        }
+
+        /// <summary>
         /// 播放损坏音效（修好后会通过 Stop() 立刻结束）。由 WorkItem.OnBroken 等事件绑定调用。
         /// </summary>
         public void Play()
         {
+            // 摘机时仅禁「损坏」起音（本组件即损坏 clip）；维修等不走此入口
+            if (workItem != null && GameManager.PickupAudioSuppressAppliesToBoundWorkItem(workItem))
+                return;
             if (clip == null || audioSource == null) return;
 
             if (pitchRandomRange > 0f)

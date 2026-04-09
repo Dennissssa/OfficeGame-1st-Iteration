@@ -1,7 +1,5 @@
-using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.Serialization;
 
 public class AudioManager : MonoBehaviour
 {
@@ -47,25 +45,48 @@ public class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void PlaySound(int Index)
+    /// <summary>
+    /// 播放 EffectsList[index]。优先使用 EffectsSource（与 PlaySoundOnEventAudioManager、JiUGameManagerBossAudio 一致）；
+    /// 若未分配 EffectsSource，则回退到 EffectsSourceList 中与 index 对应的条目。
+    /// 下标无效时静默忽略，避免 InputSystem 等回调里抛异常。
+    /// </summary>
+    public void PlaySound(int index)
     {
+        if (EffectsList == null || index < 0 || index >= EffectsList.Count)
+            return;
+
+        AudioClip clip = EffectsList[index];
+        if (clip == null)
+            return;
+
+        if (EffectsSource != null)
         {
-            EffectsSourceList[Index].clip = EffectsList[Index];
-            {
-                EffectsSourceList[Index].Play();
-            }
+            EffectsSource.clip = clip;
+            EffectsSource.Play();
+            return;
+        }
+
+        if (EffectsSourceList != null && index < EffectsSourceList.Count && EffectsSourceList[index] != null)
+        {
+            EffectsSourceList[index].clip = clip;
+            EffectsSourceList[index].Play();
         }
     }
 
-    public void PlayMusic(int Index)
+    public void PlayMusic(int index)
     {
-        if (MusicSource.isPlaying)
-        {
-            MusicSource.Stop();
-        }
+        if (MusicSource == null || MusicList == null || index < 0 || index >= MusicList.Count)
+            return;
 
-        MusicSource.clip = MusicList[Index];
-        MusicSource.PlayOneShot(MusicSource.clip);
+        AudioClip clip = MusicList[index];
+        if (clip == null)
+            return;
+
+        if (MusicSource.isPlaying)
+            MusicSource.Stop();
+
+        MusicSource.clip = clip;
+        MusicSource.Play();
     }
 
     //public void PlayRandom(AudioClip clip)

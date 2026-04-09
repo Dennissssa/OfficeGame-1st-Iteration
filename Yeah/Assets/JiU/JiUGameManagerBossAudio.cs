@@ -67,11 +67,22 @@ namespace JiU
             var am = AudioManager.Instance;
             if (am == null || am.EffectsSource == null) return;
 
-            am.EffectsSource.Stop();
             am.EffectsSource.loop = false;
+            am.EffectsSource.Stop();
 
             if (bossArrivedSfxIndex >= 0 && bossArrivedSfxIndex < am.EffectsList.Count)
-                am.PlaySound(bossArrivedSfxIndex);
+            {
+                AudioClip clip = am.EffectsList[bossArrivedSfxIndex];
+                if (clip != null)
+                {
+                    // 同一帧 Stop 后立刻 Play() 在部分情况下会被忽略；PlayOneShot 不依赖 clip 槽位，更稳
+                    am.EffectsSource.PlayOneShot(clip);
+                }
+#if UNITY_EDITOR
+                else
+                    Debug.LogWarning($"[JiUGameManagerBossAudio] EffectsList[{bossArrivedSfxIndex}] 为空，Boss 到达音未播放。", this);
+#endif
+            }
 
             if (musicDuringBossStayIndex >= 0 && musicDuringBossStayIndex < am.MusicList.Count)
                 am.PlayMusic(musicDuringBossStayIndex);
