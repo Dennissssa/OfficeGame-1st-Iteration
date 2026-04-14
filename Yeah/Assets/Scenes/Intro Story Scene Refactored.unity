@@ -3056,8 +3056,8 @@ MonoBehaviour:
   dialogueList:
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
-    dialogueText: Hello again, you worthless wastes of demonic flesh! Welcome to
-      another awful day at Hell Inc. Now listen up, because I'm not repeating myself.
+    dialogueText: Another terrible day at Hell Inc.! My demonic pawns! Do NOT let
+      me catch you lacking!
     dialogueName: The Boss
     showBoss: 1
     showSam: 0
@@ -3071,8 +3071,8 @@ MonoBehaviour:
     dialogueWaitTime: 7
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
-    dialogueText: "I hear a lot of you imps talking about this ridiculous heavenly
-      propaganda going around. Something about being \u201Csaved\u201D. "
+    dialogueText: I've been hearing about this "heavenly malware" trying to hack
+      into our system...
     dialogueName: The Boss
     showBoss: 1
     showSam: 0
@@ -3086,9 +3086,8 @@ MonoBehaviour:
     dialogueWaitTime: 7
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 91d5df396eaf0d7ddbf597de3b1f1268, type: 3}
-    dialogueText: "It should go without saying that if I catch any ONE of you traitorous
-      piles of slime with that garbage on your system, I\u2019ll fire you personally.
-      With EVERYTHING that entails."
+    dialogueText: If I find it on anyone's computer, YOU'RE FIRED! That's all. Have
+      a rotten day!
     dialogueName: The Boss
     showBoss: 1
     showSam: 0
@@ -3100,20 +3099,6 @@ MonoBehaviour:
     initiatesWaitingPeriod: 0
     showDialogue: 1
     dialogueWaitTime: 8
-  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
-    dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
-    dialogueText: "That\u2019s all. Have a rotten day. "
-    dialogueName: The Boss
-    showBoss: 1
-    showSam: 0
-    showAd: 0
-    showTracker: 0
-    adSpamming: 0
-    vocalSound: {fileID: 6615555032701578724, guid: 25956eeb0ea8fa0438606a9de53d9f2b, type: 3}
-    waitsForPlayerInput: 0
-    initiatesWaitingPeriod: 0
-    showDialogue: 1
-    dialogueWaitTime: 5
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
     dialogueText: THIS SHOULD NEVER BE SEEN IT'S A BUFFER FOR THE AD POPUP
@@ -3160,9 +3145,7 @@ MonoBehaviour:
     dialogueWaitTime: 3
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
-    dialogueText: "Hey. It\u2019s Sam. I\u2019m guessing you\u2019re the latest sucker
-      that fell for that promotion scam. Don\u2019t feel too bad, you\u2019re the
-      third one this week. "
+    dialogueText: 'Hey! It''s Sam, from IT. '
     dialogueName: Samael
     showBoss: 0
     showSam: 1
@@ -3176,9 +3159,22 @@ MonoBehaviour:
     dialogueWaitTime: 7
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
-    dialogueText: "The good news is that it\u2019s easy enough to fix if you\u2019re
-      smart like me. Standby, I\u2019m installing something on your system that\u2019ll
-      help. "
+    dialogueText: Why the Hell are you clicking links?! You've got the whole system
+      infected! Whatever-- I've dealt with this before.
+    dialogueName: Samael
+    showBoss: 0
+    showSam: 1
+    showAd: 0
+    showTracker: 0
+    adSpamming: 1
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
+    waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
+    showDialogue: 1
+    dialogueWaitTime: 6.5
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
+    dialogueText: Uploading my monitoring software to your system... nnnow."
     dialogueName: Samael
     showBoss: 0
     showSam: 1
@@ -3206,8 +3202,8 @@ MonoBehaviour:
     dialogueWaitTime: 2
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
-    dialogueText: There. I've set up a hex that'll purge the virus from affected
-      systems through demonic impact.
+    dialogueText: Alright, the new window tracks how much of your system's been taken
+      over by Heaven.
     dialogueName: Samael
     showBoss: 0
     showSam: 1
@@ -3221,8 +3217,7 @@ MonoBehaviour:
     dialogueWaitTime: 5
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
-    dialogueText: In other words, if a device is malfunctioning, HIT IT WITH THE
-      BONE UNDER YOUR DESK.
+    dialogueText: 'If it hits 100%, we are SO fired. '
     dialogueName: Samael
     showBoss: 0
     showSam: 1
@@ -3236,7 +3231,35 @@ MonoBehaviour:
     dialogueWaitTime: 6
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
-    dialogueText: I'll guide you through what a malfunction looks like on each device.
+    dialogueText: Let me set-up screenshare so you can learn how to fix it...
+    dialogueName: Samael
+    showBoss: 0
+    showSam: 1
+    showAd: 0
+    showTracker: 1
+    adSpamming: 0
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
+    waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
+    showDialogue: 1
+    dialogueWaitTime: 5
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
+    dialogueText: In the meantime, GRAB THE BONE UNDER YOUR DESK.
+    dialogueName: Samael
+    showBoss: 0
+    showSam: 1
+    showAd: 0
+    showTracker: 1
+    adSpamming: 0
+    vocalSound: {fileID: 4575168231737306667, guid: 85874748fef337641887787d6ad104c7, type: 3}
+    waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
+    showDialogue: 1
+    dialogueWaitTime: 5
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
+    dialogueText: In the meantime, GRAB THE BONE UNDER YOUR DESK.
     dialogueName: Samael
     showBoss: 0
     showSam: 1
