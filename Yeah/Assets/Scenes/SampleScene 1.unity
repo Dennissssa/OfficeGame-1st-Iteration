@@ -13039,7 +13039,7 @@ MonoBehaviour:
   workPressureInstantOnBrokeRepair: 2
   bossMinWorkThreshold: 0
   bossIncomingConfig: {fileID: 1853649707}
-  enableTutorial: 0
+  enableTutorial: 1
   tutorialBreakOrder:
   - {fileID: 363469229}
   - {fileID: 882021887}
