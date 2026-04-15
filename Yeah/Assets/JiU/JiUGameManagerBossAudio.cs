@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace JiU
@@ -13,10 +14,10 @@ namespace JiU
         [Tooltip("Loop during warning until Boss arrives")]
         public int bossWarningSfxIndex = 0;
 
-        [Tooltip("One-shot when Boss arrives (stops warning loop first)")]
+        [Tooltip("One-shot when Boss stay is safe from instant Broke-fail (same gate as GameManager); skipped on Boss die so only anger SFX plays")]
         public int bossArrivedSfxIndex = 1;
 
-        [Tooltip("Optional one-shot when Boss leaves")]
+        [Tooltip("Optional one-shot when Boss leave starts (with OnBossLeaveStarted / Leaving UI), not when fully gone")]
         public int bossLeftSfxIndex = -1;
 
         [Tooltip("One-shot on Boss-check game over (before pause)")]
@@ -39,6 +40,7 @@ namespace JiU
 
             GameManager.Instance.OnBossWarningStarted.AddListener(OnBossWarningStarted);
             GameManager.Instance.OnBossArrived.AddListener(OnBossArrived);
+            GameManager.Instance.OnBossLeaveStarted.AddListener(OnBossLeaveStarted);
             GameManager.Instance.OnBossLeft.AddListener(OnBossLeft);
             GameManager.Instance.OnGameOverBossCaused.AddListener(OnGameOverBossCaused);
         }
@@ -48,6 +50,7 @@ namespace JiU
             if (GameManager.Instance == null) return;
             GameManager.Instance.OnBossWarningStarted.RemoveListener(OnBossWarningStarted);
             GameManager.Instance.OnBossArrived.RemoveListener(OnBossArrived);
+            GameManager.Instance.OnBossLeaveStarted.RemoveListener(OnBossLeaveStarted);
             GameManager.Instance.OnBossLeft.RemoveListener(OnBossLeft);
             GameManager.Instance.OnGameOverBossCaused.RemoveListener(OnGameOverBossCaused);
         }
@@ -70,22 +73,60 @@ namespace JiU
             am.EffectsSource.loop = false;
             am.EffectsSource.Stop();
 
-            if (bossArrivedSfxIndex >= 0 && bossArrivedSfxIndex < am.EffectsList.Count)
-            {
-                AudioClip clip = am.EffectsList[bossArrivedSfxIndex];
-                if (clip != null)
-                {
-                    // Play() right after Stop same frame can be ignored; PlayOneShot avoids relying on clip slot
-                    am.EffectsSource.PlayOneShot(clip);
-                }
-#if UNITY_EDITOR
-                else
-                    Debug.LogWarning($"[JiUGameManagerBossAudio] EffectsList[{bossArrivedSfxIndex}] is null; Boss arrived SFX skipped.", this);
-#endif
-            }
+            var gm = GameManager.Instance;
+            if (gm != null)
+                gm.StartCoroutine(PlayBossArrivedOneShotIfNoInstantBossFailCoroutine(am));
+            else
+                TryPlayBossArrivedOneShot(am);
 
             if (musicDuringBossStayIndex >= 0 && musicDuringBossStayIndex < am.MusicList.Count)
                 am.PlayMusic(musicDuringBossStayIndex);
+        }
+
+        void TryPlayBossArrivedOneShot(AudioManager am)
+        {
+            if (am?.EffectsSource == null) return;
+            if (bossArrivedSfxIndex < 0 || bossArrivedSfxIndex >= am.EffectsList.Count) return;
+
+            AudioClip clip = am.EffectsList[bossArrivedSfxIndex];
+            if (clip == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[JiUGameManagerBossAudio] EffectsList[{bossArrivedSfxIndex}] is null; Boss arrived SFX skipped.", this);
+#endif
+                return;
+            }
+
+            am.EffectsSource.PlayOneShot(clip);
+        }
+
+        IEnumerator PlayBossArrivedOneShotIfNoInstantBossFailCoroutine(AudioManager am)
+        {
+            var gm = GameManager.Instance;
+            if (gm == null)
+            {
+                TryPlayBossArrivedOneShot(am);
+                yield break;
+            }
+
+            while (gm.BossIsHere && !gm.IsGameOver && gm.IsBossBrokeCheckAwaitingArrivalSprites)
+                yield return null;
+
+            if (!gm.BossIsHere || gm.IsGameOver)
+                yield break;
+
+            if (gm.GetBrokenWorkItemCount() > 0)
+                yield break;
+
+            TryPlayBossArrivedOneShot(am);
+        }
+
+        void OnBossLeaveStarted()
+        {
+            var am = AudioManager.Instance;
+            if (am?.EffectsSource == null) return;
+            if (bossLeftSfxIndex < 0 || bossLeftSfxIndex >= am.EffectsList.Count) return;
+            am.PlaySound(bossLeftSfxIndex);
         }
 
         void OnBossLeft()
@@ -95,10 +136,6 @@ namespace JiU
 
             if (musicAfterBossLeavesIndex >= 0 && musicAfterBossLeavesIndex < am.MusicList.Count)
                 am.PlayMusic(musicAfterBossLeavesIndex);
-
-            if (am.EffectsSource != null &&
-                bossLeftSfxIndex >= 0 && bossLeftSfxIndex < am.EffectsList.Count)
-                am.PlaySound(bossLeftSfxIndex);
         }
 
         void OnGameOverBossCaused()

@@ -182,6 +182,21 @@ public class GameManager : MonoBehaviour
     /// <summary>True while Boss is present but arrival UI (e.g. Look→Peek) is not finished; Broke instant-fail is not evaluated yet.</summary>
     bool _bossBrokeCheckAwaitingArrivalSprites;
 
+    /// <summary>While true, Boss is here but arrival UI is not done; Broke instant-fail is not evaluated yet.</summary>
+    public bool IsBossBrokeCheckAwaitingArrivalSprites => _bossBrokeCheckAwaitingArrivalSprites;
+
+    /// <summary>Count of WorkItems currently in Broke (Hacked) state.</summary>
+    public int GetBrokenWorkItemCount()
+    {
+        int broken = 0;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] != null && items[i].IsBroken)
+                broken++;
+        }
+        return broken;
+    }
+
     int _activeMaxConcurrentBroken = int.MaxValue;
     float _activeWorkPressureInstantOnBroke = 5f;
     float _activeWorkPressureInstantOnBrokeRepair = 8f;
