@@ -61,6 +61,7 @@ public class IntroController : MonoBehaviour
     public GameObject adMeeting;
     public GameObject trackerWindow;
 
+    private GameObject previousAudioSource;
     public List<GameObject> adSpam;
     public int adSpamCount;
     public int maxAdCount;
@@ -118,7 +119,17 @@ public class IntroController : MonoBehaviour
                 dialogueCount++;
                 if (dialogueList[dialogueCount].vocalSound != null)
                 {
-                    Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                    if (previousAudioSource != null)
+                    {
+                        
+                        Destroy(previousAudioSource.gameObject);
+                        previousAudioSource = Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                    }
+                    else
+                    {
+                        GameObject newAud = Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                        previousAudioSource = newAud;
+                    }
                 }
     
                 if (dialogueList[dialogueCount].waitsForPlayerInput == true)
