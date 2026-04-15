@@ -32,7 +32,9 @@ public class IntroController : MonoBehaviour
         public Sprite dialogueHead;
         public string dialogueText;
         public string dialogueName;
+        public bool showZoomJoin;
         public bool showBoss;
+        public bool showSamMeetingJoin;
         public bool showSam;
         public bool showAd;
         public bool showTracker;
@@ -52,7 +54,9 @@ public class IntroController : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI dialogueName;
     public int dialogueCount;
+    public GameObject bossMeetingJoin;
     public GameObject bossMeeting;
+    public GameObject samMeetingJoin;
     public GameObject samMeeting;
     public GameObject adMeeting;
     public GameObject trackerWindow;
@@ -74,7 +78,7 @@ public class IntroController : MonoBehaviour
         kb = Keyboard.current;
         ms = Mouse.current;
         camMain = Camera.main;
-        Instantiate(dialogueList[0].vocalSound,transform.position,Quaternion.identity);
+        //Instantiate(dialogueList[0].vocalSound,transform.position,Quaternion.identity);
     }
 
     void Update()
@@ -134,7 +138,9 @@ public class IntroController : MonoBehaviour
         }
 
         dialogueGroup.SetActive(dialogueList[dialogueCount].showDialogue);
+        bossMeetingJoin.SetActive(dialogueList[dialogueCount].showZoomJoin);
         bossMeeting.SetActive(dialogueList[dialogueCount].showBoss);
+        samMeetingJoin.SetActive(dialogueList[dialogueCount].showSamMeetingJoin);
         samMeeting.SetActive(dialogueList[dialogueCount].showSam);
         adMeeting.SetActive(dialogueList[dialogueCount].showAd);
         trackerWindow.SetActive(dialogueList[dialogueCount].showTracker);
