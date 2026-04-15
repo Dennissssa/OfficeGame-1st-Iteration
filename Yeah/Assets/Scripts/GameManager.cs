@@ -71,6 +71,18 @@ public class GameManager : MonoBehaviour
     public float tutorialDelayPhoneItem;
     public GameObject phoneTutStarterObject;
 
+    [Tooltip("When enableTutorial: each reference is SetActive(false) once, when the first Boss warning starts after the tutorial sequence ends.")]
+    public GameObject[] deactivateOnFirstBossWarningAfterTutorial;
+
+    [Header("Virus die (work overload / work bar full)")]
+    [Tooltip("If set: after cleanup and pause, this plays first; work-progress lose panel opens when the clip duration elapses (realtime). Leave null = open panel immediately like before.")]
+    public AudioClip virusDiePrePanelClip;
+
+    [Tooltip("Plays virusDiePrePanelClip; if null, uses first AudioSource on this GameObject (add one if needed).")]
+    public AudioSource virusDiePrePanelAudioSource;
+
+    Coroutine _virusDieRevealPanelRoutine;
+
     [Header("Normal phase flow")]
     [Tooltip("Apply index 0 at start; phase advance when normalized performance score (TotalPerformanceScore/divisor) hits thresholds (independent of Boss). Empty list keeps Inspector defaults")]
     public List<GamePhaseConfig> gamePhases = new List<GamePhaseConfig>();
@@ -676,6 +688,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void DeactivateTutorialUiObjectsForFirstBossWarning(bool firstBossAfterTutorial)
+    {
+        if (!enableTutorial || !firstBossAfterTutorial)
+            return;
+        if (deactivateOnFirstBossWarningAfterTutorial == null || deactivateOnFirstBossWarningAfterTutorial.Length == 0)
+            return;
+
+        for (int i = 0; i < deactivateOnFirstBossWarningAfterTutorial.Length; i++)
+        {
+            GameObject go = deactivateOnFirstBossWarningAfterTutorial[i];
+            if (go != null)
+                go.SetActive(false);
+        }
+    }
+
     IEnumerator BossLoop()
     {
         while (!isGameOver && !IsVictory)
@@ -713,6 +740,7 @@ public class GameManager : MonoBehaviour
 
             if (isGameOver || IsVictory) yield break;
 
+            bool firstBossAfterTutorial = _immediateBossAfterTutorial;
             float randomWait = _immediateBossAfterTutorial ? 0f : Random.Range(rMin, rMax);
             if (_immediateBossAfterTutorial)
                 _immediateBossAfterTutorial = false;
@@ -730,6 +758,7 @@ public class GameManager : MonoBehaviour
 
             BossWarning = true;
             BossWarningTimeLeft = warnDur;
+            DeactivateTutorialUiObjectsForFirstBossWarning(firstBossAfterTutorial);
             OnBossWarningPhaseStarted();
             OnBossWarningStarted?.Invoke();
 
@@ -1220,21 +1249,73 @@ public class GameManager : MonoBehaviour
 
         if (ui != null)
         {
-            if (debugLogWorkProgressDeath)
-                Debug.Log(
-                    "[GameManager] GameOverWorkProgressFull → calling ShowWorkProgressLose | " +
-                    $"UIManager.instanceID={ui.GetInstanceID()} GameObject=\"{ui.gameObject.name}\" scene={ui.gameObject.scene.name}",
-                    ui);
-            ui.ShowWorkProgressLose(surviveTime, work, TotalPerformanceScore, maxWork);
-            if (debugLogWorkProgressDeath)
-                Debug.Log("[GameManager] ShowWorkProgressLose returned (no exception)", ui);
+            if (virusDiePrePanelClip != null && virusDiePrePanelClip.length > 0.0001f)
+            {
+                Time.timeScale = 0f;
+
+                if (_virusDieRevealPanelRoutine != null)
+                {
+                    StopCoroutine(_virusDieRevealPanelRoutine);
+                    _virusDieRevealPanelRoutine = null;
+                }
+
+                AudioSource src = virusDiePrePanelAudioSource;
+                if (src == null)
+                    src = GetComponent<AudioSource>();
+                if (src == null)
+                {
+                    Debug.LogWarning(
+                        "[GameManager] virusDiePrePanelClip is set but no AudioSource: assign virusDiePrePanelAudioSource or add AudioSource on GameManager. Showing lose panel immediately.",
+                        this);
+                    if (debugLogWorkProgressDeath)
+                        Debug.Log("[GameManager] GameOverWorkProgressFull → ShowWorkProgressLose (no stinger source)", ui);
+                    ui.ShowWorkProgressLose(surviveTime, work, TotalPerformanceScore, maxWork);
+                }
+                else
+                {
+                    src.ignoreListenerPause = true;
+                    src.playOnAwake = false;
+                    src.PlayOneShot(virusDiePrePanelClip);
+                    if (debugLogWorkProgressDeath)
+                        Debug.Log(
+                            "[GameManager] GameOverWorkProgressFull → stinger then delayed ShowWorkProgressLose | " +
+                            $"clipLen={virusDiePrePanelClip.length:F2}s",
+                            this);
+                    _virusDieRevealPanelRoutine = StartCoroutine(
+                        VirusDieRevealPanelAfterStingerRealtime(surviveTime, work, TotalPerformanceScore, maxWork, virusDiePrePanelClip.length));
+                }
+            }
+            else
+            {
+                if (debugLogWorkProgressDeath)
+                    Debug.Log(
+                        "[GameManager] GameOverWorkProgressFull → calling ShowWorkProgressLose | " +
+                        $"UIManager.instanceID={ui.GetInstanceID()} GameObject=\"{ui.gameObject.name}\" scene={ui.gameObject.scene.name}",
+                        ui);
+                ui.ShowWorkProgressLose(surviveTime, work, TotalPerformanceScore, maxWork);
+                if (debugLogWorkProgressDeath)
+                    Debug.Log("[GameManager] ShowWorkProgressLose returned (no exception)", ui);
+
+                Time.timeScale = 0f;
+            }
         }
-#if UNITY_EDITOR
         else
+            Time.timeScale = 0f;
+#if UNITY_EDITOR
+        if (ui == null)
             Debug.LogWarning("[GameManager] GameOverWorkProgressFull: UIManager (ui) not assigned; cannot show work-pressure lose panel.", this);
 #endif
+    }
 
-        Time.timeScale = 0f;
+    IEnumerator VirusDieRevealPanelAfterStingerRealtime(float surviveTime, float finalWork, float performanceScore, float maxWorkProgress, float waitSeconds)
+    {
+        if (waitSeconds > 0f)
+            yield return new WaitForSecondsRealtime(waitSeconds);
+
+        _virusDieRevealPanelRoutine = null;
+
+        if (ui != null)
+            ui.ShowWorkProgressLose(surviveTime, finalWork, performanceScore, maxWorkProgress);
     }
 
     public void RegisterItem(WorkItem item)

@@ -60,6 +60,8 @@ public class WorkItem : MonoBehaviour
 
     [Header("Debug")]
     public bool debugLogs = false;
+    [Tooltip("Log to Console when TryRepair counts as wrong (Bait/idle/phone on-hook); shows itemName or object name")]
+    public bool debugLogWrongRepair = false;
     public KeyCode debugBreakKeyOldInput = KeyCode.None; // Legacy input unused (leave None)
     public string debugBreakBindingPath = "<Keyboard>/b"; // New Input: B forces break (debug)
 
@@ -505,6 +507,7 @@ public class WorkItem : MonoBehaviour
         {
             if (IsBaiting)
             {
+                LogWrongRepairTry("bait_wrong_hit");
                 if (GameManager.Instance != null)
                     GameManager.Instance.UltraPunishment();
                 // Punishment may game-over this frame; invoking again may run Inspector hooks that hide the fail panel
@@ -513,6 +516,7 @@ public class WorkItem : MonoBehaviour
                 return;
             }
 
+            LogWrongRepairTry("idle_wrong_hit");
             if (GameManager.Instance != null)
                 GameManager.Instance.Punishment();
             if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
@@ -540,6 +544,7 @@ public class WorkItem : MonoBehaviour
     {
         if (IsBaiting)
         {
+            LogWrongRepairTry("phone_on_hook_bait");
             if (GameManager.Instance != null)
                 GameManager.Instance.UltraPunishment();
             if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
@@ -547,10 +552,20 @@ public class WorkItem : MonoBehaviour
             return;
         }
 
+        LogWrongRepairTry("phone_on_hook_idle");
         if (GameManager.Instance != null)
             GameManager.Instance.Punishment();
         if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
             OnRepairIncorrect?.Invoke();
+    }
+
+    void LogWrongRepairTry(string reason)
+    {
+        if (!debugLogWrongRepair)
+            return;
+        string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+        string state = IsBaiting ? "Bait" : IsBroken ? "Broke" : "Normal";
+        Debug.Log($"[WorkItem] Wrong TryRepair | item=\"{label}\" obj=\"{gameObject.name}\" state={state} reason={reason}", this);
     }
 
     private void OnRepairPerformed(InputAction.CallbackContext ctx)
