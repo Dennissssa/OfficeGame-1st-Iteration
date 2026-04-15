@@ -9068,6 +9068,7 @@ GameObject:
   - component: {fileID: 1066965542}
   - component: {fileID: 1066965544}
   - component: {fileID: 1066965543}
+  - component: {fileID: 1066965545}
   m_Layer: 5
   m_Name: DialogueBoxPhone1
   m_TagString: Untagged
@@ -9138,6 +9139,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1066965541}
   m_CullTransparentMesh: 1
+--- !u!114 &1066965545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1066965541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93baad179cec4ff7289dee608ce3ae86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
+  nextBox: {fileID: 1942542999}
+  waitTime: 5
 --- !u!1 &1079507879
 GameObject:
   m_ObjectHideFlags: 0
@@ -12850,7 +12865,10 @@ MonoBehaviour:
   - {fileID: 206531936}
   - {fileID: 983266344}
   - {fileID: 1141977272}
+  phonePlacementInt: 3
   tutorialDelayAfterRepairBeforeNextBreak: 2
+  tutorialDelayPhoneItem: 20
+  phoneTutStarterObject: {fileID: 1066965541}
   gamePhases:
   - phaseName: phase 0
     maxConcurrentBrokenWorkItems: 1
@@ -13800,6 +13818,7 @@ GameObject:
   - component: {fileID: 1691812351}
   - component: {fileID: 1691812353}
   - component: {fileID: 1691812352}
+  - component: {fileID: 1691812354}
   m_Layer: 5
   m_Name: DialogueBoxPhone3
   m_TagString: Untagged
@@ -13870,6 +13889,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1691812350}
   m_CullTransparentMesh: 1
+--- !u!114 &1691812354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691812350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93baad179cec4ff7289dee608ce3ae86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
+  nextBox: {fileID: 1823240344}
+  waitTime: 5
 --- !u!1 &1710018927
 GameObject:
   m_ObjectHideFlags: 0
@@ -15116,6 +15149,7 @@ GameObject:
   - component: {fileID: 1942543000}
   - component: {fileID: 1942543002}
   - component: {fileID: 1942543001}
+  - component: {fileID: 1942543003}
   m_Layer: 5
   m_Name: DialogueBoxPhone2
   m_TagString: Untagged
@@ -15186,6 +15220,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1942542999}
   m_CullTransparentMesh: 1
+--- !u!114 &1942543003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942542999}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93baad179cec4ff7289dee608ce3ae86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
+  nextBox: {fileID: 1691812350}
+  waitTime: 5
 --- !u!224 &1956544210 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1134458481914882787, guid: 2875acd265438cd4c8327e9e60963033, type: 3}

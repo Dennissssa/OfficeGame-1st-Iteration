@@ -62,10 +62,14 @@ public class GameManager : MonoBehaviour
 
     [Tooltip("Tutorial Broke order; if empty, uses Items list order below")]
     public List<WorkItem> tutorialBreakOrder = new List<WorkItem>();
+    public int phonePlacementInt;
 
     [Tooltip("Tutorial: after player repairs current broken item, wait this many seconds before next break; no wait after last item. 0 = break next immediately")]
     [Min(0f)]
     public float tutorialDelayAfterRepairBeforeNextBreak = 1f;
+
+    public float tutorialDelayPhoneItem;
+    public GameObject phoneTutStarterObject;
 
     [Header("Normal phase flow")]
     [Tooltip("Apply index 0 at start; phase advance when normalized performance score (TotalPerformanceScore/divisor) hits thresholds (independent of Boss). Empty list keeps Inspector defaults")]
@@ -624,12 +628,25 @@ public class GameManager : MonoBehaviour
             }
 
             wi.Break();
-
             yield return new WaitUntil(() => !wi.IsBroken && !wi.IsBaiting);
 
             float gap = Mathf.Max(0f, tutorialDelayAfterRepairBeforeNextBreak);
+            float phoneGap = Mathf.Max(0f, tutorialDelayPhoneItem);
             if (gap > 0f && HasNextNonNullTutorialWorkItem(order, i))
-                yield return new WaitForSeconds(gap);
+            {
+                if (i == phonePlacementInt-1)
+                {
+                    phoneTutStarterObject.gameObject.SetActive(true);
+                    yield return new WaitForSeconds(phoneGap);
+                }
+                else
+                {
+                    yield return new WaitForSeconds(gap);
+                }
+
+                                
+            }
+
         }
 
         _immediateBossAfterTutorial = true;
