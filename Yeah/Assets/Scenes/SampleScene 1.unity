@@ -2758,7 +2758,7 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 1
+  baitWeight: 0
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/1
   repairKeyCodeFallback: 49
@@ -6925,7 +6925,7 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 1
+  baitWeight: 0
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/5
   repairKeyCodeFallback: 53
@@ -8195,7 +8195,7 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 15
+  baitWeight: 10
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/3
   repairKeyCodeFallback: 51
@@ -12951,7 +12951,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   autoFindItemsOnStart: 0
-  debugLogPhaseAndScore: 1
+  debugLogPhaseAndScore: 0
   debugLogWorkProgressDeath: 0
   items:
   - {fileID: 983266344}

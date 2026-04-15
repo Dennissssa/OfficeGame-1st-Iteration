@@ -138,13 +138,12 @@ namespace JiU
             var src = EnsureLocalAudioSource();
             if (src == null) return;
 
-            // Phone on cradle, still broken, broken loop playing: use OneShot for wrong-repair to avoid swapping clip and killing the loop
-            bool phoneOnHookKeepBrokenLoop = workItem != null
-                && workItem.IsBroken
+            // Phone on cradle: OneShot wrong-repair so looping item SFX (broken or bait) keeps playing until fix / bait end / pickup flow
+            bool phoneOnHookKeepLoopSfx = workItem != null
                 && workItem.PhoneIsOnCradleForSfx
-                && loopBrokenSound;
+                && ((workItem.IsBroken && loopBrokenSound) || (workItem.IsBaiting && loopBaitSound));
 
-            if (phoneOnHookKeepBrokenLoop)
+            if (phoneOnHookKeepLoopSfx)
             {
                 src.PlayOneShot(wrongClip);
                 onPlayed?.Invoke();
