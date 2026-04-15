@@ -93,6 +93,8 @@ public class ArduinoSerialBridge : MonoBehaviour
     [Header("Debug")]
     [Tooltip("When enabled, log once to the Console when serial receives PHONE_PICKUP / PHONE_PUTDOWN (before main-thread Invoke).")]
     [SerializeField] private bool debugLogPhonePickupPutdown = true;
+    [Tooltip("When enabled, log when onHit[3] fires (HIT_4 / Speaker) on the main thread.")]
+    [SerializeField] private bool debugLogOnHitSpeaker = true;
 
     // ── Private state ─────────────────────────────────────────
 
@@ -139,6 +141,8 @@ public class ArduinoSerialBridge : MonoBehaviour
         {
             if (!_hitPending[i]) continue;
             _hitPending[i] = false;
+            if (i == 3 && debugLogOnHitSpeaker)
+                Debug.Log("[ArduinoSerialBridge] onHit[3] invoked (HIT_4 / Speaker).", this);
             onHit[i]?.Invoke();
         }
 
