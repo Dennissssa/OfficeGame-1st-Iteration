@@ -212,7 +212,17 @@ public class IntroController : MonoBehaviour
             dialogueCount++;
             if (dialogueList[dialogueCount].vocalSound != null)
             {
-                Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                if (previousAudioSource != null)
+                {
+                        
+                    Destroy(previousAudioSource.gameObject);
+                    previousAudioSource = Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                }
+                else
+                {
+                    GameObject newAud = Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                    previousAudioSource = newAud;
+                }
             }
     
             if (dialogueList[dialogueCount].waitsForPlayerInput == true)
@@ -234,6 +244,19 @@ public class IntroController : MonoBehaviour
     {
         dialogueCount++;
         canAdvance = true;
-        
+        if (dialogueList[dialogueCount].vocalSound != null)
+        {
+            if (previousAudioSource != null)
+            {
+                        
+                Destroy(previousAudioSource.gameObject);
+                previousAudioSource = Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+            }
+            else
+            {
+                GameObject newAud = Instantiate(dialogueList[dialogueCount].vocalSound, transform.position, Quaternion.identity);
+                previousAudioSource = newAud;
+            }
+        }
     }
 }
