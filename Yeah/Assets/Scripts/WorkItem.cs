@@ -588,7 +588,8 @@ public class WorkItem : MonoBehaviour
         {
             if (GameManager.Instance.isTutorialing == true)
             {
-                tutorialBox.SetActive(true);
+                if(tutorialBox != null)
+                    tutorialBox.SetActive(true);
             }
             GameManager.Instance.OnWorkItemEnteredHackedState(this);
             GameManager.Instance.ApplyWorkPressureOnItemBroke();
