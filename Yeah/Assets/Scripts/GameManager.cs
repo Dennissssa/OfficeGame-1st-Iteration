@@ -663,7 +663,11 @@ public class GameManager : MonoBehaviour
             {
                 if (i == phonePlacementInt-1)
                 {
-                    phoneTutStarterObject.gameObject.SetActive(true);
+                    if (phoneTutStarterObject != null)
+                    {
+                        phoneTutStarterObject.gameObject.SetActive(true);
+                    }
+
                     yield return new WaitForSeconds(phoneGap);
                 }
                 else

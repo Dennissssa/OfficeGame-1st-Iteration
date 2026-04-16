@@ -20,6 +20,6 @@ public class ShowNextBoxForTut : MonoBehaviour
     {
         yield return new WaitForSeconds(waitTime);
         nextBox.SetActive(true);
-        this.gameObject.SetActive(false);
+        Destroy((gameObject));
     }
 }
