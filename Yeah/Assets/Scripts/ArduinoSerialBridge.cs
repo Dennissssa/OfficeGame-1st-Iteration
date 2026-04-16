@@ -117,12 +117,22 @@ public class ArduinoSerialBridge : MonoBehaviour
 
     private void Start()
     {
-        OpenSerial();
-        if (_serial == null || !_serial.IsOpen) return;
-
+        // Bind before opening serial: if the port fails (wrong COM, monitor open, etc.)
+        // we still register WorkItem listeners; otherwise Broke would never call SendLED.
         BindLEDs();
         BindPhone();
         BindPrinter();
+
+        OpenSerial();
+        if (_serial == null || !_serial.IsOpen)
+        {
+            if (ledBindings != null && ledBindings.Length > 0 || phoneWorkItem != null || printerWorkItem != null)
+                Debug.LogWarning(
+                    "[ArduinoSerialBridge] Serial did not open — LED/phone/printer commands will be skipped until the port is valid. " +
+                    "Check port name and close Arduino Serial Monitor.",
+                    this);
+            return;
+        }
 
         // Initialise hardware to a known state
         foreach (var binding in ledBindings)
@@ -199,7 +209,9 @@ public class ArduinoSerialBridge : MonoBehaviour
             {
                 ReadTimeout  = ReadTimeoutMs,
                 WriteTimeout = WriteTimeoutMs,
-                NewLine      = "\n"
+                NewLine      = "\n",
+                // Many Arduino/Uno clones on Windows need DTR so the board leaves reset and accepts data.
+                DtrEnable    = true
             };
             _serial.Open();
 
