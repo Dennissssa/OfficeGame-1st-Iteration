@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="7408c237-30f7-44a8-9118-3af327a18bfc" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Conrad/ShowNextBoxForTut.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Conrad/ShowNextBoxForTut.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GameManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/_Recovery/0 (1).unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/_Recovery/0 (1).unity" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,6 +15,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/Conrad/ButtonFlash.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Conrad/IntroController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Conrad/LerpUp.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Conrad/ShowNextBoxForTut.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/JiU/JiUGameManagerBossAudio.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/JiU/PlaySoundOnEventAudioManager.cs" root0="FORCE_HIGHLIGHTING" />
