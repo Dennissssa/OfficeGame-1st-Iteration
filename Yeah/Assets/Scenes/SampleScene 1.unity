@@ -2988,7 +2988,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 605994a4c4b583f409d9a7cf88ea3c73, type: 3}
   - {fileID: 8300000, guid: d82e1562bb1d5c74db049e980ac7dd6a, type: 3}
   - {fileID: 8300000, guid: 6ac678465a088704bae7e24f73750d81, type: 3}
-  - {fileID: 8300000, guid: 7aa4552a05d0a4d44afc13f2c257d480, type: 3}
+  - {fileID: 8300000, guid: 2f3d43eb2d0f95c49b90cbd5656f08dd, type: 3}
+  - {fileID: 8300000, guid: 8456b4034669d62429f17bf79451ffbe, type: 3}
   MusicList:
   - {fileID: 8300000, guid: ae235624559aa08449eb40198d6308fe, type: 3}
   - {fileID: 8300000, guid: 1fc2b5aa6b61284428103545f5c0cc76, type: 3}
@@ -3026,7 +3027,7 @@ MonoBehaviour:
   bossWarningSfxIndex: 0
   bossArrivedSfxIndex: -1
   bossLeftSfxIndex: -1
-  bossGameOverAngerSfxIndex: 2
+  bossGameOverAngerSfxIndex: 15
   musicDuringBossStayIndex: -1
   musicAfterBossLeavesIndex: -1
 --- !u!82 &387048560

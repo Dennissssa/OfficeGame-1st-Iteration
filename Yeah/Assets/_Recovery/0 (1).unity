@@ -4163,8 +4163,8 @@ MonoBehaviour:
     showTracker: 0
     adSpamming: 1
     vocalSound: {fileID: 87716062201910069, guid: 8993c8d1a827aa673a276833bd8cff62, type: 3}
-    waitsForPlayerInput: 0
-    initiatesWaitingPeriod: 1
+    waitsForPlayerInput: 1
+    initiatesWaitingPeriod: 0
     showDialogue: 0
     dialogueWaitTime: 8
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
