@@ -4067,7 +4067,7 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 11
+    dialogueWaitTime: 8
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     dialogueText: I've been hearing about a malware from HEAVEN trying to hack our
@@ -4084,7 +4084,7 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 8
+    dialogueWaitTime: 6
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 91d5df396eaf0d7ddbf597de3b1f1268, type: 3}
     dialogueText: If I find it on anyone's computer, YOU'RE FIRED! HAHAHAHA!
@@ -4100,7 +4100,7 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 8
+    dialogueWaitTime: 6
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 4ce42a7958145ba4d9e80675bb1644d5, type: 3}
     dialogueText: THIS SHOULD NEVER BE SEEN IT'S A BUFFER FOR THE AD POPUP
@@ -4178,12 +4178,12 @@ MonoBehaviour:
     showSam: 1
     showAd: 0
     showTracker: 0
-    adSpamming: 0
+    adSpamming: 1
     vocalSound: {fileID: 87716062201910069, guid: 60d482181ba70e73196f8295d400da88, type: 3}
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 9
+    dialogueWaitTime: 7.5
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: I'm uploading my monitoring software to your system now.
@@ -4194,12 +4194,12 @@ MonoBehaviour:
     showSam: 1
     showAd: 0
     showTracker: 0
-    adSpamming: 0
+    adSpamming: 1
     vocalSound: {fileID: 87716062201910069, guid: 970492c1102eb47258aaa854d57dfcd9, type: 3}
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 5
+    dialogueWaitTime: 4
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: (PLACEHOLDER) a window appears showing "angelic corruption process"
@@ -4231,7 +4231,7 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 4
+    dialogueWaitTime: 3
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: 'If it hits 100%, we are SO fired. '
@@ -4247,7 +4247,7 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 4
+    dialogueWaitTime: 3
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: I looked into your office systems to see where the hacks are at...
@@ -4264,7 +4264,7 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 4.5
+    dialogueWaitTime: 5
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: See that bone under your desk? Pick it up!
@@ -4280,7 +4280,7 @@ MonoBehaviour:
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 1
-    dialogueWaitTime: 4
+    dialogueWaitTime: 3
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: You can use that to fix everything, while I purge the hack.
