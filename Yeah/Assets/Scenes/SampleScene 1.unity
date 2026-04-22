@@ -9187,6 +9187,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1942542999}
   waitTime: 4.5
+  workItemGateMode: 0
+  gateWorkItem: {fileID: 0}
 --- !u!82 &1066965546
 AudioSource:
   m_ObjectHideFlags: 0
@@ -13534,6 +13536,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1823240344}
   waitTime: 6
+  workItemGateMode: 2
+  gateWorkItem: {fileID: 1141977272}
 --- !u!82 &1691812355
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15029,6 +15033,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1691812350}
   waitTime: 2.5
+  workItemGateMode: 0
+  gateWorkItem: {fileID: 0}
 --- !u!82 &1942543004
 AudioSource:
   m_ObjectHideFlags: 0
