@@ -4152,7 +4152,7 @@ MonoBehaviour:
     showAd: 0
     showTracker: 0
     adSpamming: 0
-    vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
+    vocalSound: {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 1
     showDialogue: 0
@@ -4217,7 +4217,7 @@ MonoBehaviour:
     showAd: 0
     showTracker: 0
     adSpamming: 0
-    vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
+    vocalSound: {fileID: 2567162694690245550, guid: d793647e35bf3a9fa893dbcb22a6af16, type: 3}
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 1
     showDialogue: 0
@@ -4234,7 +4234,7 @@ MonoBehaviour:
     showAd: 1
     showTracker: 0
     adSpamming: 0
-    vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
+    vocalSound: {fileID: 2567162694690245550, guid: fc978c35c063c799f987bde224920380, type: 3}
     waitsForPlayerInput: 1
     initiatesWaitingPeriod: 0
     showDialogue: 0
@@ -4283,7 +4283,7 @@ MonoBehaviour:
     showAd: 0
     showTracker: 0
     adSpamming: 1
-    vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
+    vocalSound: {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 0
     showDialogue: 0
@@ -4348,7 +4348,7 @@ MonoBehaviour:
     showAd: 0
     showTracker: 1
     adSpamming: 0
-    vocalSound: {fileID: 2567162694690245550, guid: fc978c35c063c799f987bde224920380, type: 3}
+    vocalSound: {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 1
     showDialogue: 0

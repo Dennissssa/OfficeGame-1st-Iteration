@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 49214795766570447}
   - component: {fileID: 504240014360913427}
   - component: {fileID: 8041554967713582586}
+  - component: {fileID: 4174471275371579325}
   m_Layer: 5
   m_Name: Holy Fan Bug 2
   m_TagString: Untagged
@@ -75,3 +76,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4174471275371579325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1828913251503759595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0e1f6a5a681964d9120957a70a41dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
+  gyrateAmount: 0.01
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
