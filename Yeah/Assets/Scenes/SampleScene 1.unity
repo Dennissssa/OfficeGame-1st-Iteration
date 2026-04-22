@@ -2988,7 +2988,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 605994a4c4b583f409d9a7cf88ea3c73, type: 3}
   - {fileID: 8300000, guid: d82e1562bb1d5c74db049e980ac7dd6a, type: 3}
   - {fileID: 8300000, guid: 6ac678465a088704bae7e24f73750d81, type: 3}
-  - {fileID: 8300000, guid: 2f3d43eb2d0f95c49b90cbd5656f08dd, type: 3}
+  - {fileID: 8300000, guid: 933e67d6cd7560449b37baee92170eec, type: 3}
   - {fileID: 8300000, guid: 8456b4034669d62429f17bf79451ffbe, type: 3}
   MusicList:
   - {fileID: 8300000, guid: ae235624559aa08449eb40198d6308fe, type: 3}
@@ -7199,11 +7199,11 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 886847041}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.00036621094}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1823240345}
+  m_Father: {fileID: 1691812351}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -9186,7 +9186,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1942542999}
-  waitTime: 5
+  waitTime: 4.5
 --- !u!82 &1066965546
 AudioSource:
   m_ObjectHideFlags: 0
@@ -12700,7 +12700,7 @@ MonoBehaviour:
   - {fileID: 983266344}
   - {fileID: 1141977272}
   phonePlacementInt: 4
-  tutorialDelayAfterRepairBeforeNextBreak: 2
+  tutorialDelayAfterRepairBeforeNextBreak: 1
   tutorialDelayPhoneItem: 20
   phoneTutStarterObject: {fileID: 1066965541}
   deactivateOnFirstBossWarningAfterTutorial:
@@ -13470,7 +13470,7 @@ RectTransform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1097086618}
-  - {fileID: 1966577022}
+  - {fileID: 886847042}
   - {fileID: 1653932238}
   - {fileID: 57578834}
   - {fileID: 214502625}
@@ -13533,7 +13533,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1823240344}
-  waitTime: 6.5
+  waitTime: 6
 --- !u!82 &1691812355
 AudioSource:
   m_ObjectHideFlags: 0
@@ -13545,7 +13545,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: a0ef4ed4f1d0f129c9670924d12f3bb9, type: 3}
+  m_Resource: {fileID: 8300000, guid: 748334b62159a924a93955cbbc204069, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -14355,7 +14355,7 @@ RectTransform:
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1628095948}
-  - {fileID: 886847042}
+  - {fileID: 1966577022}
   - {fileID: 1916708988}
   - {fileID: 1991350956}
   - {fileID: 825588990}
@@ -14416,7 +14416,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: fcb5dc1fc17c0db9ca2613a5da0561e5, type: 3}
+  m_Resource: {fileID: 8300000, guid: e4d8722350221d54989ea89b35acb6a4, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -15028,7 +15028,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1691812350}
-  waitTime: 3.5
+  waitTime: 2.5
 --- !u!82 &1942543004
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15153,11 +15153,11 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1966577021}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.00036621094}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 1691812351}
+  m_Father: {fileID: 1823240345}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
