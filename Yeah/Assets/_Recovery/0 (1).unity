@@ -628,6 +628,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &341627683
 AudioSource:
   m_ObjectHideFlags: 0
@@ -860,6 +863,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &382675887
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1125,6 +1131,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &444813527
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1356,6 +1365,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &530514422
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1543,6 +1555,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &534550126
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1936,6 +1951,7 @@ GameObject:
   - component: {fileID: 909564422}
   - component: {fileID: 909564424}
   - component: {fileID: 909564423}
+  - component: {fileID: 909564425}
   m_Layer: 5
   m_Name: BossWindow
   m_TagString: Untagged
@@ -2000,6 +2016,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 909564421}
   m_CullTransparentMesh: 1
+--- !u!114 &909564425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 909564421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0e1f6a5a681964d9120957a70a41dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
+  gyrateAmount: 0
+  targetSize: {x: 0.7, y: 0.7, z: 0.7}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!1 &924389481
 GameObject:
   m_ObjectHideFlags: 0
@@ -2138,6 +2170,7 @@ GameObject:
   - component: {fileID: 955641282}
   - component: {fileID: 955641284}
   - component: {fileID: 955641283}
+  - component: {fileID: 955641285}
   m_Layer: 5
   m_Name: SamWindow
   m_TagString: Untagged
@@ -2204,6 +2237,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 955641281}
   m_CullTransparentMesh: 1
+--- !u!114 &955641285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 955641281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0e1f6a5a681964d9120957a70a41dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
+  gyrateAmount: 0
+  targetSize: {x: 1.2, y: 1.2, z: 1.2}
+  isGrowing: 1
+  lerpSpeed: 18
 --- !u!1 &978573036
 GameObject:
   m_ObjectHideFlags: 0
@@ -2215,6 +2264,7 @@ GameObject:
   - component: {fileID: 978573039}
   - component: {fileID: 978573038}
   - component: {fileID: 978573037}
+  - component: {fileID: 978573040}
   m_Layer: 5
   m_Name: HeavenWindow
   m_TagString: Untagged
@@ -2281,6 +2331,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 100}
   m_SizeDelta: {x: 2241, y: 3508}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &978573040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 978573036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0e1f6a5a681964d9120957a70a41dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
+  gyrateAmount: 0
+  targetSize: {x: 0.26, y: 0.26, z: 0.26}
+  isGrowing: 1
+  lerpSpeed: 18
 --- !u!1 &997261204
 GameObject:
   m_ObjectHideFlags: 0
@@ -2716,6 +2782,7 @@ GameObject:
   - component: {fileID: 1132064611}
   - component: {fileID: 1132064610}
   - component: {fileID: 1132064612}
+  - component: {fileID: 1132064613}
   m_Layer: 5
   m_Name: BossJoiningWindow
   m_TagString: Untagged
@@ -2878,6 +2945,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1132064613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1132064608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0e1f6a5a681964d9120957a70a41dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
+  gyrateAmount: 0
+  targetSize: {x: 0.8, y: 0.8, z: 0.8}
+  isGrowing: 1
+  lerpSpeed: 18
 --- !u!1 &1132081231
 GameObject:
   m_ObjectHideFlags: 0
@@ -3408,7 +3491,10 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 8985622448240956079, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8337021681373684425, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1997931426}
   m_SourcePrefab: {fileID: 100100000, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
 --- !u!224 &1349697413 stripped
 RectTransform:
@@ -3834,6 +3920,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &1463033138
 AudioSource:
   m_ObjectHideFlags: 0
@@ -4241,13 +4330,29 @@ MonoBehaviour:
     showSamMeetingJoin: 0
     showSam: 1
     showAd: 0
-    showTracker: 1
-    adSpamming: 0
-    vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
+    showTracker: 0
+    adSpamming: 1
+    vocalSound: {fileID: 2567162694690245550, guid: e89f80144e6aad52b89ae6bc63a3b7f9, type: 3}
     waitsForPlayerInput: 0
     initiatesWaitingPeriod: 1
     showDialogue: 0
-    dialogueWaitTime: 2
+    dialogueWaitTime: 2.5
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
+    dialogueText: (PLACEHOLDER) a window appears showing "angelic corruption process"
+    dialogueName: PLACEHOLDER
+    showZoomJoin: 0
+    showBoss: 0
+    showSamMeetingJoin: 0
+    showSam: 1
+    showAd: 0
+    showTracker: 1
+    adSpamming: 0
+    vocalSound: {fileID: 2567162694690245550, guid: fc978c35c063c799f987bde224920380, type: 3}
+    waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 1
+    showDialogue: 0
+    dialogueWaitTime: 0.8
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: That tracks how much of your system the virus has hacked!
@@ -4350,6 +4455,7 @@ MonoBehaviour:
   - {fileID: 1463033133}
   - {fileID: 341627678}
   - {fileID: 382675882}
+  adScript: {fileID: 0}
   adSpamCount: 0
   maxAdCount: 8
   waitAdMake: 0.1
@@ -4750,6 +4856,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &1756734660
 AudioSource:
   m_ObjectHideFlags: 0
@@ -5393,7 +5502,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LerpUp
   endDestination: {fileID: 1322656003}
   startDestination: {fileID: 480514730}
-  lerpSpeed: 3
+  lerpSpeed: 6
 --- !u!1 &1971234732
 GameObject:
   m_ObjectHideFlags: 0
@@ -5484,6 +5593,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 1
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 10
 --- !u!82 &1971234737
 AudioSource:
   m_ObjectHideFlags: 0
@@ -5586,6 +5698,22 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8337021681373684425, guid: 2877b3d52b0ccc0728a491214da6d696, type: 3}
   m_PrefabInstance: {fileID: 1349697412}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1997931426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1997931423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0e1f6a5a681964d9120957a70a41dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
+  gyrateAmount: 0
+  targetSize: {x: 0.4, y: 0.4, z: 0.4}
+  isGrowing: 1
+  lerpSpeed: 18
 --- !u!1 &2016844472
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7408c237-30f7-44a8-9118-3af327a18bfc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/UI Assets/sharkcrash-1 SDF.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UI Assets/sharkcrash-1 SDF.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Yeah/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Conrad/GyrateAd.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Conrad/GyrateAd.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Conrad/IntroController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Conrad/IntroController.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -14,6 +16,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/Conrad/ButtonFlash.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Conrad/GyrateAd.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Conrad/IntroController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Conrad/LerpUp.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Conrad/ShowNextBoxForTut.cs" root0="FORCE_HIGHLIGHTING" />
@@ -105,6 +108,7 @@
       <workItem from="1775099918108" duration="1421000" />
       <workItem from="1775692755760" duration="3015000" />
       <workItem from="1776216025904" duration="6692000" />
+      <workItem from="1776821919806" duration="800000" />
     </task>
     <servers />
   </component>

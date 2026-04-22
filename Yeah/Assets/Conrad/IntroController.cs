@@ -63,6 +63,7 @@ public class IntroController : MonoBehaviour
 
     private GameObject previousAudioSource;
     public List<GameObject> adSpam;
+    public GyrateAd adScript;
     public int adSpamCount;
     public int maxAdCount;
     bool canMakeAd = true;
@@ -170,7 +171,8 @@ public class IntroController : MonoBehaviour
         {
             foreach (GameObject ad in adSpam)
             {
-                ad.gameObject.SetActive(false);
+                adScript = ad.GetComponent<GyrateAd>();
+                adScript.isGrowing = false; 
             }
         }
 
@@ -198,6 +200,8 @@ public class IntroController : MonoBehaviour
         canMakeAd = false;
         adSpam[adSpamCount].SetActive(true);
         adSpamCount++;
+        adScript = adSpam[adSpamCount].GetComponent<GyrateAd>();
+        adScript.isGrowing = true;
         yield return new WaitForSeconds(waitAdMake);
         canMakeAd = true;
     }
