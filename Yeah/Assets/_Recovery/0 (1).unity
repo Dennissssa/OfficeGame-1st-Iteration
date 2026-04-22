@@ -4054,6 +4054,22 @@ MonoBehaviour:
     dialogueWaitTime: 0
   - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
+    dialogueText: 
+    dialogueName: The Boss
+    showZoomJoin: 0
+    showBoss: 1
+    showSamMeetingJoin: 0
+    showSam: 0
+    showAd: 0
+    showTracker: 0
+    adSpamming: 0
+    vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
+    waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 1
+    showDialogue: 0
+    dialogueWaitTime: 1
+  - boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     dialogueText: Another day at Hell Inc.! My pawns! Do NOT let me catch you slacking!
     dialogueName: The Boss
     showZoomJoin: 0
@@ -4167,6 +4183,22 @@ MonoBehaviour:
     initiatesWaitingPeriod: 0
     showDialogue: 0
     dialogueWaitTime: 8
+  - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
+    dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
+    dialogueText: 
+    dialogueName: Samael
+    showZoomJoin: 0
+    showBoss: 0
+    showSamMeetingJoin: 0
+    showSam: 1
+    showAd: 0
+    showTracker: 0
+    adSpamming: 1
+    vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
+    waitsForPlayerInput: 0
+    initiatesWaitingPeriod: 0
+    showDialogue: 0
+    dialogueWaitTime: 1
   - boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     dialogueHead: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     dialogueText: What the hell did you download?! You got us hit by the virus!!
