@@ -1,44 +1,46 @@
+using System.Collections;
 using UnityEngine;
 
 namespace JiU
 {
     /// <summary>
-    /// 将 GameManager 的 Boss 事件接到 AudioManager（仅使用 PlaySound / PlayMusic 与公开的 EffectsSource）。
-    /// 在 Inspector 里填好「AudioManager.EffectsList / MusicList 的下标」；列表顺序由你在 AudioManager 上自行排列。
-    /// 下标为 -1 表示该步不播放。
+    /// Wires GameManager Boss events to AudioManager (PlaySound / PlayMusic and public EffectsSource only).
+    /// Set indices for AudioManager.EffectsList / MusicList in Inspector; list order is yours on AudioManager.
+    /// Index -1 skips that step.
     /// </summary>
     public class JiUGameManagerBossAudio : MonoBehaviour
     {
-        [Header("EffectsList 下标")]
-        [Tooltip("预警阶段循环播放，直到 Boss 到达")]
+        [Header("EffectsList indices")]
+        [Tooltip("Loop during warning until Boss arrives")]
         public int bossWarningSfxIndex = 0;
 
-        [Tooltip("Boss 实际到达时播放一次（会先停掉预警音）")]
+        [Tooltip("One-shot when Boss stay is safe from instant Broke-fail (same gate as GameManager); skipped on Boss die so only anger SFX plays")]
         public int bossArrivedSfxIndex = 1;
 
-        [Tooltip("Boss 离开场景时可选播放一次")]
+        [Tooltip("Optional one-shot when Boss leave starts (with OnBossLeaveStarted / Leaving UI), not when fully gone")]
         public int bossLeftSfxIndex = -1;
 
-        [Tooltip("因 Boss 检查失败时播放一次（在暂停前触发）")]
+        [Tooltip("One-shot on Boss-check game over (before pause)")]
         public int bossGameOverAngerSfxIndex = 2;
 
-        [Header("MusicList 下标（可选）")]
-        [Tooltip("Boss 在场检查期间背景音乐；-1 不换曲")]
+        [Header("MusicList indices (optional)")]
+        [Tooltip("BGM during Boss stay check; -1 = no change")]
         public int musicDuringBossStayIndex = -1;
 
-        [Tooltip("Boss 离开后恢复的音乐；-1 不换曲")]
+        [Tooltip("BGM after Boss leaves; -1 = no change")]
         public int musicAfterBossLeavesIndex = -1;
 
         void Start()
         {
             if (GameManager.Instance == null)
             {
-                Debug.LogWarning("[JiUGameManagerBossAudio] GameManager.Instance 为空，事件未绑定。", this);
+                Debug.LogWarning("[JiUGameManagerBossAudio] GameManager.Instance is null; events not bound.", this);
                 return;
             }
 
             GameManager.Instance.OnBossWarningStarted.AddListener(OnBossWarningStarted);
             GameManager.Instance.OnBossArrived.AddListener(OnBossArrived);
+            GameManager.Instance.OnBossLeaveStarted.AddListener(OnBossLeaveStarted);
             GameManager.Instance.OnBossLeft.AddListener(OnBossLeft);
             GameManager.Instance.OnGameOverBossCaused.AddListener(OnGameOverBossCaused);
         }
@@ -48,6 +50,7 @@ namespace JiU
             if (GameManager.Instance == null) return;
             GameManager.Instance.OnBossWarningStarted.RemoveListener(OnBossWarningStarted);
             GameManager.Instance.OnBossArrived.RemoveListener(OnBossArrived);
+            GameManager.Instance.OnBossLeaveStarted.RemoveListener(OnBossLeaveStarted);
             GameManager.Instance.OnBossLeft.RemoveListener(OnBossLeft);
             GameManager.Instance.OnGameOverBossCaused.RemoveListener(OnGameOverBossCaused);
         }
@@ -67,14 +70,63 @@ namespace JiU
             var am = AudioManager.Instance;
             if (am == null || am.EffectsSource == null) return;
 
-            am.EffectsSource.Stop();
             am.EffectsSource.loop = false;
+            am.EffectsSource.Stop();
 
-            if (bossArrivedSfxIndex >= 0 && bossArrivedSfxIndex < am.EffectsList.Count)
-                am.PlaySound(bossArrivedSfxIndex);
+            var gm = GameManager.Instance;
+            if (gm != null)
+                gm.StartCoroutine(PlayBossArrivedOneShotIfNoInstantBossFailCoroutine(am));
+            else
+                TryPlayBossArrivedOneShot(am);
 
             if (musicDuringBossStayIndex >= 0 && musicDuringBossStayIndex < am.MusicList.Count)
                 am.PlayMusic(musicDuringBossStayIndex);
+        }
+
+        void TryPlayBossArrivedOneShot(AudioManager am)
+        {
+            if (am?.EffectsSource == null) return;
+            if (bossArrivedSfxIndex < 0 || bossArrivedSfxIndex >= am.EffectsList.Count) return;
+
+            AudioClip clip = am.EffectsList[bossArrivedSfxIndex];
+            if (clip == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[JiUGameManagerBossAudio] EffectsList[{bossArrivedSfxIndex}] is null; Boss arrived SFX skipped.", this);
+#endif
+                return;
+            }
+
+            am.EffectsSource.PlayOneShot(clip);
+        }
+
+        IEnumerator PlayBossArrivedOneShotIfNoInstantBossFailCoroutine(AudioManager am)
+        {
+            var gm = GameManager.Instance;
+            if (gm == null)
+            {
+                TryPlayBossArrivedOneShot(am);
+                yield break;
+            }
+
+            while (gm.BossIsHere && !gm.IsGameOver && gm.IsBossBrokeCheckAwaitingArrivalSprites)
+                yield return null;
+
+            if (!gm.BossIsHere || gm.IsGameOver)
+                yield break;
+
+            if (gm.GetBrokenWorkItemCount() > 0)
+                yield break;
+
+            TryPlayBossArrivedOneShot(am);
+        }
+
+        void OnBossLeaveStarted()
+        {
+            var am = AudioManager.Instance;
+            if (am?.EffectsSource == null) return;
+            if (bossLeftSfxIndex < 0 || bossLeftSfxIndex >= am.EffectsList.Count) return;
+            am.PlaySound(bossLeftSfxIndex);
         }
 
         void OnBossLeft()
@@ -84,10 +136,6 @@ namespace JiU
 
             if (musicAfterBossLeavesIndex >= 0 && musicAfterBossLeavesIndex < am.MusicList.Count)
                 am.PlayMusic(musicAfterBossLeavesIndex);
-
-            if (am.EffectsSource != null &&
-                bossLeftSfxIndex >= 0 && bossLeftSfxIndex < am.EffectsList.Count)
-                am.PlaySound(bossLeftSfxIndex);
         }
 
         void OnGameOverBossCaused()

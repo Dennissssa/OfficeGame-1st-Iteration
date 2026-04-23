@@ -8,61 +8,61 @@ using UnityEngine.InputSystem.LowLevel;
 namespace JiU
 {
     /// <summary>
-    /// 从 Uduino 读取指定引脚数值，当达到设定阈值时触发一个可编辑的“虚拟按键”，
-    /// 从而驱动游戏内已有的按键逻辑（如 WorkItem 的修理键）。
+    /// Reads a Uduino pin; when threshold is met, fires a configurable virtual key
+    /// to drive existing input logic (e.g. WorkItem repair hotkey).
     /// </summary>
     public class UduinoPinToKeyTrigger : MonoBehaviour
     {
-        [Header("引脚与读取方式")]
-        [Tooltip("要读取的引脚编号（ESP32 上可用数字引脚或模拟引脚，如 34、35、A0 对应 36 等）")]
+        [Header("Pin and read mode")]
+        [Tooltip("Pin to read (ESP32: digital or analog, e.g. 34, 35; A0 may map to 36 etc.)")]
         public int pinNumber = 34;
 
-        [Tooltip("勾选为模拟读取(analogRead)，不勾选为数字读取(digitalRead)")]
+        [Tooltip("Use analogRead when on, digitalRead when off")]
         public bool useAnalogRead = true;
 
-        [Header("触发条件")]
-        [Tooltip("模拟值范围 0~4095（ESP32），数字值为 0 或 1")]
+        [Header("Trigger condition")]
+        [Tooltip("Analog ~0~4095 on ESP32; digital 0 or 1")]
         public float thresholdValue = 512f;
 
         public enum TriggerMode
         {
-            [Tooltip("数值 >= 阈值时触发")]
+            [Tooltip("Fire when value >= threshold")]
             AboveOrEqual,
-            [Tooltip("数值 <= 阈值时触发")]
+            [Tooltip("Fire when value <= threshold")]
             BelowOrEqual,
-            [Tooltip("数值 == 阈值时触发（数字引脚常用）")]
+            [Tooltip("Fire when value == threshold (common for digital)")]
             Equal
         }
 
-        [Tooltip("满足条件时如何触发")]
+        [Tooltip("How threshold is evaluated")]
         public TriggerMode triggerMode = TriggerMode.AboveOrEqual;
 
-        [Header("要模拟的按键")]
-        [Tooltip("触发时模拟按下的键，与 Inspector 里 WorkItem 的 Hotkey 对应，例如 1、2、B、Q")]
+        [Header("Key to simulate")]
+        [Tooltip("Key to synthesize on trigger; match WorkItem repair hotkey in Inspector (e.g. 1, 2, B, Q)")]
         public KeyCode triggerKeyCode = KeyCode.Alpha1;
 
-        [Header("防抖")]
-        [Tooltip("触发后多少秒内不再重复触发（避免同一帧或短时间重复）")]
+        [Header("Debounce")]
+        [Tooltip("Seconds after trigger before another can fire")]
         public float cooldownSeconds = 0.3f;
 
-        [Header("多引脚时（错帧读取）")]
-        [Tooltip("同一场景有多个 UduinoPinToKeyTrigger 时，用读槽错开读取，避免串口冲突。0=第一个，1=第二个… 留 0 也可自动分配")]
+        [Header("Staggered reads (multiple pins)")]
+        [Tooltip("With several triggers, stagger reads by slot to reduce serial contention. 0 = first, 1 = second… 0 can auto-assign")]
         public int readSlotIndex = 0;
 
-        [Header("Debug（运行游戏时排查用）")]
-        [Tooltip("勾选后在 Console 输出：当前读值、是否满足条件、是否触发、冷却/槽位等")]
+        [Header("Debug")]
+        [Tooltip("Log reads, condition, triggers, cooldown/slot to Console")]
         public bool debugLogs = false;
-        [Tooltip("每多少帧打印一次当前读值，避免刷屏（仅当 debugLogs 开启时生效）")]
+        [Tooltip("Frames between value logs when debugLogs is on")]
         public int debugLogIntervalFrames = 30;
 
-        [Header("可选：自定义回调")]
-        [Tooltip("达到阈值时额外调用，可不填")]
+        [Header("Optional callback")]
+        [Tooltip("Invoked when threshold fires; optional")]
         public UnityEvent onTriggered;
 
-        [Header("直接修好目标（推荐与 WorkItem 联用时使用）")]
-        [Tooltip("触发时直接对这些 WorkItem 调用 TryRepair()，只影响列表中的物品")]
+        [Header("Direct repair targets (recommended with WorkItem)")]
+        [Tooltip("On trigger, call TryRepair() on these items only")]
         public WorkItem[] directRepairTargets = Array.Empty<WorkItem>();
-        [Tooltip("勾选时会模拟按键（上述「要模拟的按键」），所有绑定该键的 WorkItem 都会收到修好；已设直接修好目标时建议取消勾选，避免误修其他物品")]
+        [Tooltip("When on, simulates the key above so all WorkItems bound to that key get repair; with direct targets, prefer off to avoid wrong repairs")]
         public bool simulateKey = true;
 
         private float _lastTriggerTime = -999f;
@@ -75,13 +75,13 @@ namespace JiU
 
         void Start()
         {
-            // 无论是否勾选 Debug，都打一条启动日志，方便确认脚本在运行
-            Debug.Log($"[JiU.UduinoPinToKeyTrigger] 已启动: {gameObject.name} Pin={pinNumber} ({ (useAnalogRead ? "模拟" : "数字") }) " +
-                $"阈值={thresholdValue}。勾选 Inspector 里「Debug Logs」可看详细读值与触发。");
+            // Startup log even without Debug to confirm script is running
+            Debug.Log($"[JiU.UduinoPinToKeyTrigger] Started: {gameObject.name} Pin={pinNumber} ({(useAnalogRead ? "analog" : "digital")}) " +
+                $"threshold={thresholdValue}. Enable Debug Logs in Inspector for detailed reads/triggers.");
 
             if (UduinoManager.Instance == null)
             {
-                Debug.LogWarning("[JiU.UduinoPinToKeyTrigger] 场景中未找到 UduinoManager，请确保已添加 Uduino 并连接设备。");
+                Debug.LogWarning("[JiU.UduinoPinToKeyTrigger] UduinoManager not found in scene; add Uduino and connect device.");
                 return;
             }
 
@@ -92,8 +92,8 @@ namespace JiU
 
             if (debugLogs)
             {
-                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} ({ (useAnalogRead ? "模拟" : "数字") }) " +
-                    $"阈值={thresholdValue} 模式={triggerMode} 按键={triggerKeyCode} 冷却={cooldownSeconds}s");
+                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} ({(useAnalogRead ? "analog" : "digital")}) " +
+                    $"threshold={thresholdValue} mode={triggerMode} key={triggerKeyCode} cooldown={cooldownSeconds}s");
             }
         }
 
@@ -118,20 +118,20 @@ namespace JiU
         {
             if (UduinoManager.Instance == null || !UduinoManager.Instance.IsRunning())
             {
-                // 未连接时每隔约 1 秒打一次，不依赖 Debug Logs 勾选，方便发现「运行游戏时没连上」
+                // ~1s log when not connected, without needing Debug Logs
                 if (Time.time - _lastDebugLogTime > 1f)
                 {
                     _lastDebugLogTime = Time.time;
-                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} Uduino 未运行或未连接，跳过读取。请确认已点 Play 且设备已连接。");
+                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} Uduino not running or not connected; skipping read. Enter Play and connect device.");
                 }
                 return;
             }
 
-            // 首次进入「已连接」状态时打一条，确认脚本在跑且 Uduino 已就绪
+            // First frame Uduino is connected
             if (!_hasLoggedStartup)
             {
                 _hasLoggedStartup = true;
-                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} Uduino 已连接，开始按帧读取。勾选 Debug Logs 可看具体 value。");
+                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} Uduino connected; reading each frame. Debug Logs shows values.");
             }
 
             int total = s_allTriggers.Count;
@@ -140,7 +140,7 @@ namespace JiU
             bool doReadThisFrame = (total <= 1) || (slot >= 0 && (Time.frameCount % total) == slot);
 
             if (debugLogs && total > 1 && doReadThisFrame && Time.frameCount % (total * 60) == slot)
-                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 当前槽位 slot={slot}/{total}，本帧轮到我读");
+                Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} read slot={slot}/{total}, this frame is my turn");
 
             int value;
             if (doReadThisFrame)
@@ -150,11 +150,11 @@ namespace JiU
                     : UduinoManager.Instance.digitalRead(pinNumber);
                 _lastReadValue = value;
                 if (debugLogs && debugLogIntervalFrames > 0 && (Time.frameCount % debugLogIntervalFrames == 0))
-                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 读到 value={value} (阈值={thresholdValue})");
+                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} read value={value} (threshold={thresholdValue})");
                 if (debugLogs && value == -1 && Time.time - _lastInvalidReadLogTime > 2f)
                 {
                     _lastInvalidReadLogTime = Time.time;
-                    Debug.LogWarning($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 读回 -1，可能未就绪或串口无响应");
+                    Debug.LogWarning($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} read -1; board not ready or serial no response");
                 }
             }
             else
@@ -170,7 +170,7 @@ namespace JiU
                 {
                     _lastTriggerTime = Time.time;
                     if (debugLogs)
-                        Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 触发! value={value}" + (simulateKey ? $" -> 模拟按键 {triggerKeyCode}" : " -> 仅直接修好目标"));
+                        Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} TRIGGER value={value}" + (simulateKey ? $" -> simulate key {triggerKeyCode}" : " -> direct repair only"));
                     if (simulateKey)
                         TriggerKey();
                     onTriggered?.Invoke();
@@ -181,7 +181,7 @@ namespace JiU
                     }
                 }
                 else if (debugLogs)
-                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} 条件已满足但冷却中，跳过 (还需 {cooldownSeconds - (Time.time - _lastTriggerTime):F2}s)");
+                    Debug.Log($"[JiU.UduinoPinToKeyTrigger] {gameObject.name} Pin={pinNumber} condition met but cooldown ({cooldownSeconds - (Time.time - _lastTriggerTime):F2}s left)");
             }
 
             _lastConditionMet = conditionMet;
@@ -207,19 +207,19 @@ namespace JiU
             {
                 try
                 {
-                    // 使用 QueueStateEvent + KeyboardState 模拟按下（不依赖 PressKey/ReleaseKey）
+                    // QueueStateEvent + KeyboardState (no PressKey/ReleaseKey)
                     InputSystem.QueueStateEvent(keyboard, new KeyboardState(key));
                     InputSystem.QueueStateEvent(keyboard, new KeyboardState());
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning("[JiU.UduinoPinToKeyTrigger] 模拟按键失败: " + e.Message);
+                    Debug.LogWarning("[JiU.UduinoPinToKeyTrigger] Key simulation failed: " + e.Message);
                 }
             }
             else
             {
                 if (keyboard == null)
-                    Debug.LogWarning("[JiU.UduinoPinToKeyTrigger] 当前没有键盘设备，无法模拟按键。");
+                    Debug.LogWarning("[JiU.UduinoPinToKeyTrigger] No keyboard device; cannot simulate key.");
             }
         }
 

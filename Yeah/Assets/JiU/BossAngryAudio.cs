@@ -3,17 +3,17 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// 因 Boss 检查导致游戏失败时播放一次“生气”音效。
-    /// 依赖 GameManager 的 OnGameOverBossCaused 事件。失败时场景已暂停(Time.timeScale=0)，
-    /// 本组件会确保使用不受时间缩放影响的播放方式，保证音效能正常播完。
+    /// One-shot "angry" SFX when Boss check causes game over.
+    /// Uses GameManager.OnGameOverBossCaused. Game may be paused (Time.timeScale=0);
+    /// playback ignores time scale so the clip can finish.
     /// </summary>
     public class BossAngryAudio : MonoBehaviour
     {
-        [Header("音频")]
-        [Tooltip("Boss 导致失败时播放一次的生气 Clip")]
+        [Header("Audio")]
+        [Tooltip("One-shot angry clip on Boss-caused game over")]
         public AudioClip angryClip;
 
-        [Tooltip("不填则使用本物体上的 AudioSource，没有则自动添加")]
+        [Tooltip("If unset, uses or adds AudioSource on this object")]
         public AudioSource audioSource;
 
         [Range(0f, 1f)]
@@ -25,7 +25,7 @@ namespace JiU
                 audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
                 audioSource = gameObject.AddComponent<AudioSource>();
-            // 失败时 Time.timeScale=0，此处用 PlayOneShot 不受影响，音效会按真实时间播完
+            // Game over may use timeScale=0; PlayOneShot still plays in real time
             audioSource.ignoreListenerPause = true;
         }
 
@@ -41,7 +41,7 @@ namespace JiU
             GameManager.Instance.OnGameOverBossCaused.RemoveListener(PlayOnce);
         }
 
-        /// <summary> Boss 导致失败时播放一次（由事件调用） </summary>
+        /// <summary>Play once on Boss-caused game over (event).</summary>
         public void PlayOnce()
         {
             if (angryClip == null || audioSource == null) return;

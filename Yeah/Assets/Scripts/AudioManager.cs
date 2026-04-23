@@ -1,7 +1,5 @@
-using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.Serialization;
 
 public class AudioManager : MonoBehaviour
 {
@@ -47,25 +45,48 @@ public class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void PlaySound(int Index)
+    /// <summary>
+    /// Plays EffectsList[index]. Prefers EffectsSource (same as PlaySoundOnEventAudioManager, JiUGameManagerBossAudio).
+    /// If EffectsSource is unset, falls back to the EffectsSourceList entry for that index.
+    /// Invalid indices are ignored silently to avoid exceptions inside Input System callbacks.
+    /// </summary>
+    public void PlaySound(int index)
     {
+        if (EffectsList == null || index < 0 || index >= EffectsList.Count)
+            return;
+
+        AudioClip clip = EffectsList[index];
+        if (clip == null)
+            return;
+
+        if (EffectsSource != null)
         {
-            EffectsSourceList[Index].clip = EffectsList[Index];
-            {
-                EffectsSourceList[Index].Play();
-            }
+            EffectsSource.clip = clip;
+            EffectsSource.Play();
+            return;
+        }
+
+        if (EffectsSourceList != null && index < EffectsSourceList.Count && EffectsSourceList[index] != null)
+        {
+            EffectsSourceList[index].clip = clip;
+            EffectsSourceList[index].Play();
         }
     }
 
-    public void PlayMusic(int Index)
+    public void PlayMusic(int index)
     {
-        if (MusicSource.isPlaying)
-        {
-            MusicSource.Stop();
-        }
+        if (MusicSource == null || MusicList == null || index < 0 || index >= MusicList.Count)
+            return;
 
-        MusicSource.clip = MusicList[Index];
-        MusicSource.PlayOneShot(MusicSource.clip);
+        AudioClip clip = MusicList[index];
+        if (clip == null)
+            return;
+
+        if (MusicSource.isPlaying)
+            MusicSource.Stop();
+
+        MusicSource.clip = clip;
+        MusicSource.Play();
     }
 
     //public void PlayRandom(AudioClip clip)
