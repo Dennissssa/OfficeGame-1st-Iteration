@@ -2031,7 +2031,7 @@ MonoBehaviour:
   gyrateAmount: 0
   targetSize: {x: 0.7, y: 0.7, z: 0.7}
   isGrowing: 1
-  lerpSpeed: 10
+  lerpSpeed: 20
 --- !u!1 &924389481
 GameObject:
   m_ObjectHideFlags: 0
@@ -2252,7 +2252,7 @@ MonoBehaviour:
   gyrateAmount: 0
   targetSize: {x: 1.2, y: 1.2, z: 1.2}
   isGrowing: 1
-  lerpSpeed: 18
+  lerpSpeed: 20
 --- !u!1 &978573036
 GameObject:
   m_ObjectHideFlags: 0
@@ -2346,7 +2346,7 @@ MonoBehaviour:
   gyrateAmount: 0
   targetSize: {x: 0.26, y: 0.26, z: 0.26}
   isGrowing: 1
-  lerpSpeed: 18
+  lerpSpeed: 20
 --- !u!1 &997261204
 GameObject:
   m_ObjectHideFlags: 0
@@ -2960,7 +2960,7 @@ MonoBehaviour:
   gyrateAmount: 0
   targetSize: {x: 0.8, y: 0.8, z: 0.8}
   isGrowing: 1
-  lerpSpeed: 18
+  lerpSpeed: 20
 --- !u!1 &1132081231
 GameObject:
   m_ObjectHideFlags: 0
@@ -5502,7 +5502,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LerpUp
   endDestination: {fileID: 1322656003}
   startDestination: {fileID: 480514730}
-  lerpSpeed: 6
+  lerpSpeed: 12
 --- !u!1 &1971234732
 GameObject:
   m_ObjectHideFlags: 0
@@ -5713,7 +5713,7 @@ MonoBehaviour:
   gyrateAmount: 0
   targetSize: {x: 0.4, y: 0.4, z: 0.4}
   isGrowing: 1
-  lerpSpeed: 18
+  lerpSpeed: 20
 --- !u!1 &2016844472
 GameObject:
   m_ObjectHideFlags: 0
