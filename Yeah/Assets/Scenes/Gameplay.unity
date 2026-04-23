@@ -12743,7 +12743,7 @@ MonoBehaviour:
     workPunishment: 2
     workUltraPunishment: 3
     workGainPerSecondPerWorkingItem: 0.1
-    workLossPerSecondPerBrokenItem: 1
+    workLossPerSecondPerBrokenItem: 1.5
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 5
@@ -12758,7 +12758,7 @@ MonoBehaviour:
     workPunishment: 2
     workUltraPunishment: 4
     workGainPerSecondPerWorkingItem: 0.2
-    workLossPerSecondPerBrokenItem: 1
+    workLossPerSecondPerBrokenItem: 2
     workPressureInstantOnBroke: 0
     workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 6
@@ -12773,14 +12773,14 @@ MonoBehaviour:
     workPunishment: 2
     workUltraPunishment: 5
     workGainPerSecondPerWorkingItem: 0.3
-    workLossPerSecondPerBrokenItem: 1
-    workPressureInstantOnBroke: 0
+    workLossPerSecondPerBrokenItem: 2
+    workPressureInstantOnBroke: 1
     workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 0.8
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
-  - phaseName: Phase 3
+  - phaseName: Phase 4
     maxConcurrentBrokenWorkItems: 5
     minBreakIntervalSeconds: 3
     maxBreakIntervalSeconds: 6
@@ -12788,8 +12788,8 @@ MonoBehaviour:
     workPunishment: 3
     workUltraPunishment: 5
     workGainPerSecondPerWorkingItem: 0.4
-    workLossPerSecondPerBrokenItem: 1
-    workPressureInstantOnBroke: 0
+    workLossPerSecondPerBrokenItem: 2
+    workPressureInstantOnBroke: 1.5
     workPressureInstantOnBrokeRepair: 2
     warningShowDelayAfterBreak: 6
     warningMessageFormat: '{0} has been hacked!'
@@ -14745,7 +14745,7 @@ MonoBehaviour:
     phoneBaitScoreDecayMultiplier: 0.5
     performancePenaltyIdleWrongHit: 200
     performancePenaltyBaitWrongHit: 300
-  performanceScoreNormalizationDivisor: 3000
+  performanceScoreNormalizationDivisor: 2400
   scoreThresholdForNextPhase: 0
   scorePhasePromotionHysteresis: 0.05
   defaultMinPerformanceScoreGainPerPhaseForSaturatedPromotion: 10
