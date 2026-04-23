@@ -91,6 +91,8 @@ public class ArduinoSerialBridge : MonoBehaviour
     [SerializeField] private WorkItem printerWorkItem;
 
     [Header("Debug")]
+    [Tooltip("When enabled, log each line written to the serial port (e.g. Sent: PRINTER:ON, PHONE:ANOMALY, LED1:NORMAL, SYSTEM:RESET).")]
+    [SerializeField] private bool debugLogSerialTx = true;
     [Tooltip("When enabled, log once to the Console when serial receives PHONE_PICKUP / PHONE_PUTDOWN (before main-thread Invoke).")]
     [SerializeField] private bool debugLogPhonePickupPutdown = true;
     [Tooltip("When enabled, log when onHit[3] fires (HIT_4 / Speaker) on the main thread.")]
@@ -112,6 +114,11 @@ public class ArduinoSerialBridge : MonoBehaviour
     private readonly List<BoundListener> _boundListeners = new List<BoundListener>();
     private UnityAction _printerOnBroken, _printerOnFixed;
     private UnityAction _phoneOnBroken, _phoneOnBaiting, _phoneOnFixed, _phoneOnBaitingEnded;
+
+    /// <summary>用于 PICKUP/PUTDOWN 与固件对表：上一次成功写出的以 <c>PHONE:</c> 开头的行。</summary>
+    bool _hasSentPhoneLine;
+    float _unscaledTimeLastPhoneLineSent;
+    string _lastPhoneLineSent;
 
     // ── Lifecycle ─────────────────────────────────────────────
 
@@ -160,7 +167,17 @@ public class ArduinoSerialBridge : MonoBehaviour
         {
             _phonePickupPending = false;
             if (debugLogPhonePickupPutdown)
-                Debug.Log("[ArduinoSerialBridge] Phone off-hook PHONE_PICKUP", this);
+            {
+                if (_hasSentPhoneLine)
+                {
+                    float dt = Time.unscaledTime - _unscaledTimeLastPhoneLineSent;
+                    Debug.Log(
+                        $"[ArduinoSerialBridge] Phone off-hook PHONE_PICKUP (距上次串口 { _lastPhoneLineSent } 约 {dt:F2}s，unscaled) — 若 ANOMALY 后应响铃，此间隔内应能听到；若始终无声，多查固件/DFPlayer/SD。",
+                        this);
+                }
+                else
+                    Debug.Log("[ArduinoSerialBridge] Phone off-hook PHONE_PICKUP (本局尚未成功发出过 PHONE:* 行)", this);
+            }
             onPhonePickup?.Invoke();
         }
 
@@ -168,7 +185,17 @@ public class ArduinoSerialBridge : MonoBehaviour
         {
             _phonePutdownPending = false;
             if (debugLogPhonePickupPutdown)
-                Debug.Log("[ArduinoSerialBridge] Phone on-hook PHONE_PUTDOWN", this);
+            {
+                if (_hasSentPhoneLine)
+                {
+                    float dt = Time.unscaledTime - _unscaledTimeLastPhoneLineSent;
+                    Debug.Log(
+                        $"[ArduinoSerialBridge] Phone on-hook PHONE_PUTDOWN (距上次串口 { _lastPhoneLineSent } 约 {dt:F2}s，unscaled)",
+                        this);
+                }
+                else
+                    Debug.Log("[ArduinoSerialBridge] Phone on-hook PHONE_PUTDOWN", this);
+            }
             onPhonePutdown?.Invoke();
         }
     }
@@ -345,7 +372,14 @@ public class ArduinoSerialBridge : MonoBehaviour
         try
         {
             _serial.WriteLine(msg);
-            Debug.Log($"[ArduinoSerialBridge] Sent: {msg}");
+            if (msg != null && msg.StartsWith("PHONE:", StringComparison.Ordinal))
+            {
+                _hasSentPhoneLine = true;
+                _unscaledTimeLastPhoneLineSent = Time.unscaledTime;
+                _lastPhoneLineSent = msg;
+            }
+            if (debugLogSerialTx)
+                Debug.Log($"[ArduinoSerialBridge] Sent: {msg}");
         }
         catch (Exception ex)
         {

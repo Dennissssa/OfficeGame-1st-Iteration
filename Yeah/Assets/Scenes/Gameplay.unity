@@ -499,8 +499,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Listen to who's calling-- if it's a holy choir, hit the receiver, then
-    hang up.
+  m_text: Listen to who's calling -- if it's the Boss, just hang up and let it go
+    to voicemail.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2c9ddead18b75364a886d3e789efe7bd, type: 2}
   m_sharedMaterial: {fileID: 9143716374363814668, guid: 2c9ddead18b75364a886d3e789efe7bd, type: 2}
@@ -1930,6 +1930,7 @@ MonoBehaviour:
       m_Calls: []
   debugLogs: 0
   debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 0
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -2812,6 +2813,7 @@ MonoBehaviour:
       m_Calls: []
   debugLogs: 0
   debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 0
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -3839,6 +3841,7 @@ MonoBehaviour:
       m_Calls: []
   debugLogs: 0
   debugLogWrongRepair: 0
+  debugLogBreakBaitSkips: 0
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -7005,6 +7008,7 @@ MonoBehaviour:
       m_Calls: []
   debugLogs: 0
   debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 0
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -8393,6 +8397,7 @@ MonoBehaviour:
       m_Calls: []
   debugLogs: 0
   debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 0
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -9186,9 +9191,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1942542999}
-  waitTime: 4.5
+  waitTime: 4.2
   workItemGateMode: 0
   gateWorkItem: {fileID: 0}
+  isPhoneTutorialStartLine: 1
+  isPhoneTutorialLastLine: 0
+  keepLastLineVisibleUntilRepaired: {fileID: 0}
+  debugLog: 0
 --- !u!82 &1066965546
 AudioSource:
   m_ObjectHideFlags: 0
@@ -10061,7 +10070,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   debugLogs: 0
-  debugLogWrongRepair: 1
+  debugLogWrongRepair: 0
+  debugLogBreakBaitSkips: 0
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -12703,8 +12713,8 @@ MonoBehaviour:
   - {fileID: 1141977272}
   phonePlacementInt: 4
   tutorialDelayAfterRepairBeforeNextBreak: 1
-  tutorialDelayPhoneItem: 20
   phoneTutStarterObject: {fileID: 1066965541}
+  debugLogTutorialPhoneBreakFlow: 0
   deactivateOnFirstBossWarningAfterTutorial:
   - {fileID: 1848505527}
   virusDiePrePanelClip: {fileID: 8300000, guid: 73a7e65cc5e90d1418aa06bfc53a3623, type: 3}
@@ -12809,7 +12819,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   autoFindItemsOnStart: 0
-  debugLogPhaseAndScore: 0
+  debugLogPhaseAndScore: 1
   debugLogWorkProgressDeath: 0
   items:
   - {fileID: 983266344}
@@ -13535,9 +13545,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
   nextBox: {fileID: 1823240344}
-  waitTime: 6
+  waitTime: 0.1
   workItemGateMode: 2
   gateWorkItem: {fileID: 1141977272}
+  isPhoneTutorialStartLine: 0
+  isPhoneTutorialLastLine: 0
+  keepLastLineVisibleUntilRepaired: {fileID: 0}
+  debugLog: 0
 --- !u!82 &1691812355
 AudioSource:
   m_ObjectHideFlags: 0
@@ -14339,6 +14353,7 @@ GameObject:
   - component: {fileID: 1823240347}
   - component: {fileID: 1823240346}
   - component: {fileID: 1823240348}
+  - component: {fileID: 1823240349}
   m_Layer: 5
   m_Name: DialogueBoxPhone4
   m_TagString: Untagged
@@ -14506,6 +14521,26 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1823240349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823240344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93baad179cec4ff7289dee608ce3ae86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShowNextBoxForTut
+  nextBox: {fileID: 0}
+  waitTime: 0
+  workItemGateMode: 0
+  gateWorkItem: {fileID: 0}
+  isPhoneTutorialStartLine: 0
+  isPhoneTutorialLastLine: 1
+  keepLastLineVisibleUntilRepaired: {fileID: 1141977272}
+  debugLog: 0
 --- !u!1 &1848505527
 GameObject:
   m_ObjectHideFlags: 0
@@ -15035,6 +15070,10 @@ MonoBehaviour:
   waitTime: 2.5
   workItemGateMode: 0
   gateWorkItem: {fileID: 0}
+  isPhoneTutorialStartLine: 0
+  isPhoneTutorialLastLine: 0
+  keepLastLineVisibleUntilRepaired: {fileID: 0}
+  debugLog: 0
 --- !u!82 &1942543004
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15382,6 +15421,7 @@ MonoBehaviour:
     WorkItem: {fileID: 983266344}
   phoneWorkItem: {fileID: 1141977272}
   printerWorkItem: {fileID: 882021887}
+  debugLogSerialTx: 0
   debugLogPhonePickupPutdown: 0
   debugLogOnHitSpeaker: 0
 --- !u!1 &1991350955
@@ -15441,7 +15481,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Otherwise, if it's the Boss, just hang up and let it go to voicemail.
+  m_text: 'If it''s a holy choir, hit the receiver, then hang up. '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2c9ddead18b75364a886d3e789efe7bd, type: 2}
   m_sharedMaterial: {fileID: 9143716374363814668, guid: 2c9ddead18b75364a886d3e789efe7bd, type: 2}

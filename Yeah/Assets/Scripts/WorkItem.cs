@@ -62,6 +62,8 @@ public class WorkItem : MonoBehaviour
     public bool debugLogs = false;
     [Tooltip("Log to Console when TryRepair counts as wrong (Bait/idle/phone on-hook); shows itemName or object name")]
     public bool debugLogWrongRepair = false;
+    [Tooltip("Log when Break() or Bait() returns without doing anything (e.g. still Baiting → Break skipped). 用于查教程/电话 Bait 与 Broke 竞态。")]
+    public bool debugLogBreakBaitSkips = false;
     public KeyCode debugBreakKeyOldInput = KeyCode.None; // Legacy input unused (leave None)
     public string debugBreakBindingPath = "<Keyboard>/b"; // New Input: B forces break (debug)
 
@@ -580,7 +582,18 @@ public class WorkItem : MonoBehaviour
 
     public void Break()
     {
-        if (IsBroken || IsBaiting) return;
+        if (IsBroken || IsBaiting)
+        {
+            if (debugLogBreakBaitSkips)
+            {
+                string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+                Debug.LogWarning(
+                    $"[WorkItem] Break() SKIPPED | item=\"{label}\" go=\"{gameObject.name}\" IsBroken={IsBroken} IsBaiting={IsBaiting} " +
+                    $"(若 IsBaiting 为 true，可能仍在教程 ForceBait 中，OnBroken/串口 ANOMALY 不会发)",
+                    this);
+            }
+            return;
+        }
         _hadPhonePickupWhileBroken = false;
         IsBroken = true;
 
@@ -604,7 +617,17 @@ public class WorkItem : MonoBehaviour
 
     public void Bait()
     {
-        if (IsBaiting || IsBroken) return;
+        if (IsBaiting || IsBroken)
+        {
+            if (debugLogBreakBaitSkips)
+            {
+                string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+                Debug.LogWarning(
+                    $"[WorkItem] Bait() SKIPPED | item=\"{label}\" go=\"{gameObject.name}\" IsBaiting={IsBaiting} IsBroken={IsBroken}",
+                    this);
+            }
+            return;
+        }
         IsBaiting = true;
         _phoneLiftedDuringCurrentBait = false;
         StopAllBaitCoroutines();
@@ -679,11 +702,11 @@ public class WorkItem : MonoBehaviour
         if (wasBroken && GameManager.Instance != null)
         {
             GameManager.Instance.ApplyWorkPressureOnBrokeRepaired();
-            tutorialBox.SetActive(false);
-            if (isLast)
-            {
+            // tutorialBox may point at a dialogue already Destroy()ed by ShowNextBoxForTut; treat as optional.
+            if (tutorialBox != null)
+                tutorialBox.SetActive(false);
+            if (isLast && finalBox != null)
                 finalBox.SetActive(true);
-            }
         }
             
 
