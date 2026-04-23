@@ -25,6 +25,19 @@ public class ShowNextBoxForTut : MonoBehaviour
     [Tooltip("要进入 Broke/Bait 并等待恢复的 WorkItem（须与 ArduinoSerialBridge 里绑定的为同一引用，串口才会联动）。")]
     [SerializeField] private WorkItem gateWorkItem;
 
+    [Header("Phone 教程（GameManager）")]
+    [Tooltip("本框为电话教程链的「首句」时勾选；可选，用于在播放开始时重置“末句已完成”门闩。通常与 phoneTutStarter 根上第一条一致。")]
+    [SerializeField] private bool isPhoneTutorialStartLine;
+
+    [Tooltip("本框为电话教程链的「末句」时务必勾选；在本框流程全部结束（门控、wait、激活 next）之后通知 GameManager，其才会在教程中让电话进入 Broke。")]
+    [SerializeField] private bool isPhoneTutorialLastLine;
+
+    [Tooltip("仅末句：在通知 GameManager 之后、销毁本对象之前，等待此 WorkItem 被玩家修好（脱离 Broke/Bait），末句框才会从屏幕上消失。不填则对 gateWorkItem 使用同一规则；二者皆空则只通知、随后立刻销毁。")]
+    [SerializeField] private WorkItem keepLastLineVisibleUntilRepaired;
+
+    [Tooltip("输出门控/末句/GameManager 通知，与 GameManager.debugLogTutorialPhoneBreakFlow、WorkItem.debugLogBreakBaitSkips 一起查 Bait 与 Broke 竞态。")]
+    [SerializeField] private bool debugLog;
+
     void Start()
     {
         StartCoroutine(beginDialogueNext());
@@ -32,6 +45,9 @@ public class ShowNextBoxForTut : MonoBehaviour
 
     IEnumerator beginDialogueNext()
     {
+        if (isPhoneTutorialStartLine && GameManager.Instance != null)
+            GameManager.Instance.RegisterPhoneTutorialStartLine();
+
         if (workItemGateMode != TutorialWorkItemGateMode.Disabled)
         {
             if (gateWorkItem == null)
@@ -45,9 +61,25 @@ public class ShowNextBoxForTut : MonoBehaviour
                 yield return WaitUntilWorkItemIdle(gateWorkItem);
 
                 if (workItemGateMode == TutorialWorkItemGateMode.ForceBreak)
+                {
+                    if (debugLog)
+                    {
+                        Debug.Log(
+                            $"[ShowNextBoxForTut] \"{name}\" 调用 gateWorkItem.Break() 前: IsBroken={gateWorkItem.IsBroken} IsBaiting={gateWorkItem.IsBaiting}",
+                            this);
+                    }
                     gateWorkItem.Break();
+                }
                 else if (workItemGateMode == TutorialWorkItemGateMode.ForceBait)
+                {
+                    if (debugLog)
+                    {
+                        Debug.Log(
+                            $"[ShowNextBoxForTut] \"{name}\" 调用 gateWorkItem.Bait() 前: IsBroken={gateWorkItem.IsBroken} IsBaiting={gateWorkItem.IsBaiting}",
+                            this);
+                    }
                     gateWorkItem.Bait();
+                }
 
                 yield return WaitUntilWorkItemIdle(gateWorkItem);
             }
@@ -56,7 +88,47 @@ public class ShowNextBoxForTut : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
         if (nextBox != null)
             nextBox.SetActive(true);
+
+        if (isPhoneTutorialLastLine)
+        {
+            if (GameManager.Instance != null)
+            {
+                if (debugLog)
+                {
+                    Debug.Log(
+                        $"[ShowNextBoxForTut] \"{name}\" → RegisterPhoneTutorialLastLineCompleted（本帧后 GameManager 可继续，下一轮将对队尾电话 tutorial Break）",
+                        this);
+                }
+                GameManager.Instance.RegisterPhoneTutorialLastLineCompleted();
+            }
+
+            WorkItem waitFix = keepLastLineVisibleUntilRepaired != null
+                ? keepLastLineVisibleUntilRepaired
+                : gateWorkItem;
+            if (waitFix != null)
+                yield return WaitUntilBrokeOrBaitThenRepairedForLastLine(waitFix);
+            else if (GameManager.Instance != null)
+                Debug.LogWarning(
+                    $"[ShowNextBoxForTut] \"{name}\" 为电话教程末句但未设置 keepLastLineVisibleUntilRepaired 且无 gateWorkItem，末句 UI 会立刻被销毁。",
+                    this);
+        }
+
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// 等对方 Broke/（或 Bait）出现后再等修好，避免在 GameManager 尚未 <see cref="WorkItem.Break"/> 前一帧就误判为已修好。
+    /// </summary>
+    static IEnumerator WaitUntilBrokeOrBaitThenRepairedForLastLine(WorkItem item)
+    {
+        if (item == null)
+            yield break;
+
+        yield return new WaitUntil(() => item == null || item.IsBroken || item.IsBaiting);
+        if (item == null)
+            yield break;
+
+        yield return new WaitUntil(() => item == null || (!item.IsBroken && !item.IsBaiting));
     }
 
     static IEnumerator WaitUntilWorkItemIdle(WorkItem item)

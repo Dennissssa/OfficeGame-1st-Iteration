@@ -68,8 +68,10 @@ public class GameManager : MonoBehaviour
     [Min(0f)]
     public float tutorialDelayAfterRepairBeforeNextBreak = 1f;
 
-    public float tutorialDelayPhoneItem;
     public GameObject phoneTutStarterObject;
+
+    [Tooltip("在 Console 输出电话教程与教程 Break 顺序：末句门闩、每次 Break 前工位 IsBroken/IsBaiting。用于查 ForceBait 与教程 Broke 竞态、串口 OnBroken 未触发。")]
+    [SerializeField] bool debugLogTutorialPhoneBreakFlow;
 
     [Tooltip("When enableTutorial: each reference is SetActive(false) once, when the first Boss warning starts after the tutorial sequence ends.")]
     public GameObject[] deactivateOnFirstBossWarningAfterTutorial;
@@ -267,8 +269,29 @@ public class GameManager : MonoBehaviour
     Coroutine _bossLoopCoroutine;
     Coroutine _tutorialCoroutine;
 
+    /// <summary>Set true by <see cref="RegisterPhoneTutorialLastLineCompleted"/> from the last phone tutorial <c>ShowNextBoxForTut</c> line.</summary>
+    bool _phoneTutorialLastLineCompleted;
+
     /// <summary>When tutorial is on and tutorial break sequence not done: victory countdown paused; ticks after tutorial ends.</summary>
     bool VictoryCountdownPausedForTutorial => enableTutorial && !_tutorialBreakSequenceDone;
+
+    /// <summary>Optional: first line in the phone tutorial chain; clears the last-line gate (same as when <see cref="phoneTutStarterObject"/> is shown).</summary>
+    public void RegisterPhoneTutorialStartLine()
+    {
+        _phoneTutorialLastLineCompleted = false;
+        if (debugLogTutorialPhoneBreakFlow)
+            Debug.Log("[GameManager/Tutorial] RegisterPhoneTutorialStartLine → 已重置 _phoneTutorialLastLineCompleted = false", this);
+    }
+
+    /// <summary>Call when the last phone tutorial line has finished (after gates, <c>waitTime</c>, and next panel). Unblocks the tutorial coroutine so the phone can <c>Break()</c>.</summary>
+    public void RegisterPhoneTutorialLastLineCompleted()
+    {
+        _phoneTutorialLastLineCompleted = true;
+        if (debugLogTutorialPhoneBreakFlow)
+            Debug.Log(
+                "[GameManager/Tutorial] RegisterPhoneTutorialLastLineCompleted → 门闩打开，教程协程将继续；下一将 tutorial Break() 的工位请见下一条 [GameManager/Tutorial] 即将 tutorial Break 日志。",
+                this);
+    }
 
     void Awake()
     {
@@ -631,6 +654,15 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
+    static string DebugLabelForWorkItem(WorkItem wi)
+    {
+        if (wi == null) return "(null)";
+        string n = wi.itemName;
+        if (!string.IsNullOrWhiteSpace(n))
+            return n.Trim();
+        return wi.name;
+    }
+
     IEnumerator TutorialBreakSequenceCoroutine()
     {
         yield return null;
@@ -654,28 +686,46 @@ public class GameManager : MonoBehaviour
                 BeginPreFirstBossBrokenWarningIconHold();
             }
 
+            if (debugLogTutorialPhoneBreakFlow)
+            {
+                string lab = DebugLabelForWorkItem(wi);
+                int lastIdx = Mathf.Max(0, order.Count - 1);
+                Debug.Log(
+                    $"[GameManager/Tutorial] 即将 tutorial Break() | orderIndex={i}/{lastIdx} item={lab} " +
+                    $"IsBroken={wi.IsBroken} IsBaiting={wi.IsBaiting} — 若 IsBaiting 为 true，WorkItem.Break() 将直接 return（无 OnBroken/无串口 ANOMALY）",
+                    this);
+            }
+
             wi.Break();
             yield return new WaitUntil(() => !wi.IsBroken && !wi.IsBaiting);
 
             float gap = Mathf.Max(0f, tutorialDelayAfterRepairBeforeNextBreak);
-            float phoneGap = Mathf.Max(0f, tutorialDelayPhoneItem);
-            if (gap > 0f && HasNextNonNullTutorialWorkItem(order, i))
+            if (HasNextNonNullTutorialWorkItem(order, i))
             {
-                if (i == phonePlacementInt-1)
+                if (i == phonePlacementInt - 1)
                 {
                     if (phoneTutStarterObject != null)
                     {
-                        phoneTutStarterObject.gameObject.SetActive(true);
+                        _phoneTutorialLastLineCompleted = false;
+                        if (debugLogTutorialPhoneBreakFlow)
+                        {
+                            WorkItem nextWi = i + 1 < order.Count ? order[i + 1] : null;
+                            string nextLab = DebugLabelForWorkItem(nextWi);
+                            Debug.Log(
+                                $"[GameManager/Tutorial] 电话教程段：已打开 phoneTutStarterObject，等待末句 ShowNextBox (RegisterPhoneTutorialLastLineCompleted)。" +
+                                $"下一轮将 Break 的工位应为: {nextLab} (下标 {i + 1})",
+                                this);
+                        }
+                        phoneTutStarterObject.SetActive(true);
+                        yield return new WaitUntil(() => _phoneTutorialLastLineCompleted);
+                        if (debugLogTutorialPhoneBreakFlow)
+                            Debug.Log("[GameManager/Tutorial] 已收到末句门闩，继续教程循环 → 下一轮将对该工位 Break()", this);
                     }
-
-                    yield return new WaitForSeconds(phoneGap);
                 }
-                else
+                else if (gap > 0f)
                 {
                     yield return new WaitForSeconds(gap);
                 }
-
-                                
             }
 
         }
