@@ -3,6 +3,17 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
+/// <summary>Phone WorkItem interaction mode. Non-phone items ignore this.</summary>
+public enum PhoneBehaviorVersion
+{
+    /// <summary>Like other WorkItems; off-hook during Broke/Bait re-sends PHONE:* (DFPlayer firmware).</summary>
+    Version1_StandardWithPickupAudio = 0,
+    /// <summary>Correct repair only after first pickup in this Broke/Bait episode.</summary>
+    Version2_FirstPickupInteractionGate = 1,
+    /// <summary>Legacy: on-hook wrong repair, phone Bait flow, Boss blocks phone rolls.</summary>
+    Version3_LegacyHookAndBaitRules = 2,
+}
+
 [RequireComponent(typeof(Collider))]
 public class WorkItem : MonoBehaviour
 {
@@ -20,6 +31,10 @@ public class WorkItem : MonoBehaviour
     [Tooltip("Weight for Bait on next failure roll")]
     [Min(0f)]
     public float baitWeight = 1f;
+
+    [Tooltip("Seconds before non-phone Bait auto-resolves (Version 3 phone Bait uses pickup flow instead).")]
+    [Min(0.01f)]
+    public float baitSelfFixDurationSeconds = 3f;
 
     [Header("Hotkey Repair (Input System)")]
     [Tooltip("When off: this object's Input System binding and key polling never call TryRepair(); Uduino / Inspector can still invoke TryRepair")]
@@ -70,16 +85,34 @@ public class WorkItem : MonoBehaviour
     public bool IsBroken { get; private set; } = false;
     public bool IsBaiting {get; private set;} = false;
 
-    /// <summary>Whether Bait uses phone rules (Inspector toggle or itemName equals "phone", case-insensitive).</summary>
-    public bool PhoneBaitRulesActive =>
-        usePhoneBaitBehavior
+    /// <summary>True when this object is configured as the phone WorkItem.</summary>
+    public bool IsPhoneWorkItem =>
+        treatAsPhoneWorkItem
         || (!string.IsNullOrWhiteSpace(itemName) && itemName.Trim().Equals("phone", System.StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Version 3 only: legacy hook/Bait phone rules (same as pre-version-selector behavior).</summary>
+    public bool PhoneBaitRulesActive =>
+        IsPhoneWorkItem
+        && phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules
+        && (usePhoneBaitBehavior
+            || (!string.IsNullOrWhiteSpace(itemName) && itemName.Trim().Equals("phone", System.StringComparison.OrdinalIgnoreCase)));
 
     /// <summary>For GameManager: whether phone-style Bait should decay performance score per second.</summary>
     public bool ShouldApplyPhoneBaitPerformanceDecay => IsBaiting && PhoneBaitRulesActive;
 
-    /// <summary>For audio: under phone rules, whether handset is on cradle (not off-hook). Always false for non-phone items.</summary>
+    /// <summary>For audio: under V3 phone rules, whether handset is on cradle (not off-hook).</summary>
     public bool PhoneIsOnCradleForSfx => PhoneBaitRulesActive && !_phonePhysicallyOffHook;
+
+    /// <summary>V2/V3: off-hook suppresses Unity broken/Bait loop SFX on pickup. V1 does not.</summary>
+    public bool PhoneSuppressesUnitySfxOnPickup =>
+        IsPhoneWorkItem
+        && phoneBehaviorVersion != PhoneBehaviorVersion.Version1_StandardWithPickupAudio;
+
+    /// <summary>Handset off-hook (from PHONE_PICKUP / NotifyPhonePickedUp).</summary>
+    public bool PhonePhysicallyOffHook => _phonePhysicallyOffHook;
+
+    /// <summary>V2: first pickup in current Broke/Bait episode unlocked interaction.</summary>
+    public bool PhoneInteractionUnlocked => _phoneInteractionUnlocked;
 
     private Renderer[] allRenderers;
     private MaterialPropertyBlock mpb;
@@ -96,6 +129,9 @@ public class WorkItem : MonoBehaviour
     /// <summary>Maintained by pickup/hang-up events: true when handset is considered off-hook.</summary>
     bool _phonePhysicallyOffHook;
 
+    /// <summary>V2: true after first pickup during current Broke/Bait; cleared on Fix / Bait resolve / new Broke/Bait.</summary>
+    bool _phoneInteractionUnlocked;
+
     /// <summary>Ignore TryRepair briefly after hang-up (reduce piezo vibration false triggers).</summary>
     float _phoneTryRepairSuppressedUntilTime;
 
@@ -107,8 +143,15 @@ public class WorkItem : MonoBehaviour
 
     public string itemName;
 
-    [Header("Phone · Bait (distinct from normal Bait)")]
-    [Tooltip("When on: no 3s self-fix; without off-hook, Bait persists. End: off-hook then hang-up, or wait phoneBaitAutoResolveSecondsAfterPickup after pickup.")]
+    [Header("Phone")]
+    [Tooltip("Force phone behavior even if itemName is not \"phone\".")]
+    public bool treatAsPhoneWorkItem;
+
+    [Tooltip("Version 1 = normal WorkItem + Arduino audio on pickup while Broke/Bait. Version 2 = must pick up once before correct repair. Version 3 = legacy hook/Bait rules.")]
+    public PhoneBehaviorVersion phoneBehaviorVersion = PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules;
+
+    [Header("Phone · Version 3 only")]
+    [Tooltip("When on (V3): no 3s self-fix; without off-hook, Bait persists. End: off-hook then hang-up, or wait phoneBaitAutoResolveSecondsAfterPickup after pickup.")]
     public bool usePhoneBaitBehavior;
 
     [Tooltip("Seconds after off-hook to auto-resolve Bait; 0 = only hang-up after pickup ends it (holding without hang-up keeps Bait).")]
@@ -311,13 +354,70 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    /// <summary>Bind from Arduino <c>onPhonePickup</c>: updates off-hook state and advances phone Bait flow when applicable.</summary>
-    public void NotifyPhonePickedUpForBaitFlow()
+    /// <summary>Call from GameManager / Arduino <c>onPhonePickup</c>.</summary>
+    public void NotifyPhonePickedUp()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+
+        bool wasOffHook = _phonePhysicallyOffHook;
+        _phonePhysicallyOffHook = true;
+
+        switch (phoneBehaviorVersion)
+        {
+            case PhoneBehaviorVersion.Version1_StandardWithPickupAudio:
+                if (IsBroken)
+                    _hadPhonePickupWhileBroken = true;
+                if ((IsBroken || IsBaiting) && !wasOffHook)
+                    TrySendPhoneHardwareAudioForCurrentState();
+                break;
+
+            case PhoneBehaviorVersion.Version2_FirstPickupInteractionGate:
+                if (IsBroken || IsBaiting)
+                {
+                    if (!_phoneInteractionUnlocked)
+                        _phoneInteractionUnlocked = true;
+                    if (IsBroken)
+                        _hadPhonePickupWhileBroken = true;
+                }
+                break;
+
+            case PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules:
+                NotifyPhonePickedUp_Version3();
+                break;
+        }
+    }
+
+    /// <summary>Call from GameManager / Arduino <c>onPhonePutdown</c>.</summary>
+    public void NotifyPhonePutDown()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+
+        _phonePhysicallyOffHook = false;
+
+        switch (phoneBehaviorVersion)
+        {
+            case PhoneBehaviorVersion.Version1_StandardWithPickupAudio:
+                break;
+
+            case PhoneBehaviorVersion.Version2_FirstPickupInteractionGate:
+            case PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules:
+                NotifyPhonePutDown_Version2And3();
+                break;
+        }
+    }
+
+    /// <summary>Legacy entry; prefer <see cref="NotifyPhonePickedUp"/>.</summary>
+    public void NotifyPhonePickedUpForBaitFlow() => NotifyPhonePickedUp();
+
+    /// <summary>Legacy entry; prefer <see cref="NotifyPhonePutDown"/>.</summary>
+    public void NotifyPhonePutDownForBaitFlow() => NotifyPhonePutDown();
+
+    void NotifyPhonePickedUp_Version3()
     {
         if (!PhoneBaitRulesActive)
             return;
-
-        _phonePhysicallyOffHook = true;
 
         if (IsBroken)
             _hadPhonePickupWhileBroken = true;
@@ -339,17 +439,18 @@ public class WorkItem : MonoBehaviour
             _phoneBaitAfterPickupCoroutine = StartCoroutine(PhoneBaitAutoResolveAfterPickupRoutine());
     }
 
-    /// <summary>Bind from Arduino <c>onPhonePutdown</c>: on-hook state, TryRepair debounce; ends phone Bait if was lifted this Bait.</summary>
-    public void NotifyPhonePutDownForBaitFlow()
+    void NotifyPhonePutDown_Version2And3()
     {
-        if (!PhoneBaitRulesActive)
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules && !PhoneBaitRulesActive)
             return;
 
-        _phonePhysicallyOffHook = false;
         _phoneTryRepairSuppressedUntilTime = Time.time + Mathf.Max(0f, phonePutDownTryRepairDebounceSeconds);
 
-        if (IsBaiting && _phoneLiftedDuringCurrentBait)
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules
+            && IsBaiting && _phoneLiftedDuringCurrentBait)
+        {
             ResolveBaitLikeSelfFix();
+        }
 
         if (IsBroken && _hadPhonePickupWhileBroken)
         {
@@ -357,6 +458,29 @@ public class WorkItem : MonoBehaviour
             JiU.PlaySoundOnEventAudioManager.ResumeBrokenLoopAfterPhonePutdownForWorkItem(this);
             JiU.PlaySoundOnEvent.ResumeBrokenClipAfterPhonePutdownForWorkItem(this);
         }
+    }
+
+    void TrySendPhoneHardwareAudioForCurrentState()
+    {
+        if (GameManager.Instance == null || GameManager.Instance.arduinoBridgeScript == null)
+            return;
+        GameManager.Instance.arduinoBridgeScript.SendPhoneAudioForWorkItemState(IsBaiting);
+    }
+
+    void ResetPhoneEpisodeStateForNewBrokeOrBait()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+        _phoneInteractionUnlocked = false;
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules)
+            _phonePhysicallyOffHook = false;
+    }
+
+    void ClearPhoneEpisodeStateOnResolved()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+        _phoneInteractionUnlocked = false;
     }
 
     /// <summary>Phone items: skip random Broke/Bait rolls while Boss warning is active or Boss is present (including fallback branches that would become Bait).</summary>
@@ -490,19 +614,8 @@ public class WorkItem : MonoBehaviour
     {
         //Debug.Log($"I am trying to fix {this.itemName}!");
 
-        // Phone: before generic logic — ignore TryRepair entirely during post-hang-up debounce (no false punish)
-        if (PhoneBaitRulesActive)
-        {
-            if (Time.time < _phoneTryRepairSuppressedUntilTime)
-                return;
-
-            // On-hook: any TryRepair counts as wrong repair (Ultra on Bait, else Punishment)
-            if (!_phonePhysicallyOffHook)
-            {
-                ApplyPhoneTryRepairWhileOnHookPunishment();
-                return;
-            }
-        }
+        if (IsPhoneWorkItem && TryHandlePhoneTryRepairBeforeGeneric())
+            return;
 
         // Only real Broke after range checks does win + Fix; Bait / idle spam only lose and return
         if (!IsBroken)
@@ -540,6 +653,67 @@ public class WorkItem : MonoBehaviour
             string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
             GameManager.Instance.DebugLogPerformanceAfterSuccessfulRepair(label);
         }
+    }
+
+    /// <returns>True if TryRepair should stop (handled or debounced).</returns>
+    bool TryHandlePhoneTryRepairBeforeGeneric()
+    {
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version2_FirstPickupInteractionGate)
+        {
+            if (Time.time < _phoneTryRepairSuppressedUntilTime)
+                return true;
+
+            if ((IsBroken || IsBaiting) && !_phoneInteractionUnlocked)
+            {
+                ApplyPhoneTryRepairWhileLockedPunishment();
+                return true;
+            }
+
+            return false;
+        }
+
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules && PhoneBaitRulesActive)
+        {
+            if (Time.time < _phoneTryRepairSuppressedUntilTime)
+                return true;
+
+            if (!_phonePhysicallyOffHook)
+            {
+                ApplyPhoneTryRepairWhileOnHookPunishment();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void ApplyPhoneTryRepairWhileLockedPunishment()
+    {
+        if (IsBaiting)
+        {
+            LogWrongRepairTry("phone_v2_locked_bait");
+            if (GameManager.Instance != null)
+                GameManager.Instance.UltraPunishment();
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
+            return;
+        }
+
+        if (IsBroken)
+        {
+            LogWrongRepairTry("phone_v2_locked_broke");
+            if (GameManager.Instance != null)
+                GameManager.Instance.Punishment();
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
+            return;
+        }
+
+        LogWrongRepairTry("phone_v2_locked_idle");
+        if (GameManager.Instance != null)
+            GameManager.Instance.Punishment();
+        if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+            OnRepairIncorrect?.Invoke();
     }
 
     void ApplyPhoneTryRepairWhileOnHookPunishment()
@@ -595,6 +769,7 @@ public class WorkItem : MonoBehaviour
             return;
         }
         _hadPhonePickupWhileBroken = false;
+        ResetPhoneEpisodeStateForNewBrokeOrBait();
         IsBroken = true;
 
         if (GameManager.Instance != null)
@@ -630,6 +805,7 @@ public class WorkItem : MonoBehaviour
         }
         IsBaiting = true;
         _phoneLiftedDuringCurrentBait = false;
+        ResetPhoneEpisodeStateForNewBrokeOrBait();
         StopAllBaitCoroutines();
 
         WarnIfTintDidNotApply(ApplyTintOverride(baitColor), "Bait");
@@ -650,7 +826,7 @@ public class WorkItem : MonoBehaviour
 
     IEnumerator BaitSelfFix()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(Mathf.Max(0.01f, baitSelfFixDurationSeconds));
         _baitSelfFixCoroutine = null;
         if (!IsBaiting)
             yield break;
@@ -677,6 +853,7 @@ public class WorkItem : MonoBehaviour
         _phoneLiftedDuringCurrentBait = false;
 
         IsBaiting = false;
+        ClearPhoneEpisodeStateOnResolved();
         ClearTintOverride();
         OnBaitingEnded?.Invoke();
 
@@ -696,6 +873,7 @@ public class WorkItem : MonoBehaviour
         bool wasBroken = IsBroken;
         IsBroken = false;
         IsBaiting = false;
+        ClearPhoneEpisodeStateOnResolved();
         if (wasBroken)
             _hadPhonePickupWhileBroken = false;
 

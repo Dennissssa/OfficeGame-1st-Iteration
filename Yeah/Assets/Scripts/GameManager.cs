@@ -184,8 +184,7 @@ public class GameManager : MonoBehaviour
     public ArduinoSerialBridge arduinoBridgeScript;
 
     [Header("Phone pickup · SFX scope")]
-    [Tooltip("Assign the phone WorkItem: off-hook only suppresses <strong>broken and Bait start SFX</strong> (incl. Bait end start) for audio bound to that item; repair sounds and PlayAtIndex unchanged. Empty = global.\n" +
-             "If phone rules are enabled (TryRepair uses hook state), hook state syncs on this WorkItem; no need to duplicate NotifyPhone* on Arduino.")]
+    [Tooltip("Assign the phone WorkItem. V2/V3: off-hook suppresses broken/Bait loop SFX on pickup; hang-up while still Broke resumes loop. V1: no suppress; pickup may re-send PHONE:* for Arduino audio. Empty = all IsPhoneWorkItem in scene.")]
     public WorkItem phoneWorkItemForPickupAudioSuppressScope;
 
     [Header("Debug · phone pickup and PlaySoundOnEventAudioManager")]
@@ -315,10 +314,14 @@ public class GameManager : MonoBehaviour
     /// <summary>Call from Arduino <c>onPhonePickup</c> or other UnityEvents.</summary>
     public void PhonePickup_SetSuppressNonBaitBrokeSfx()
     {
+        NotifyPhonePickupHookToWorkItems();
+
+        if (!AnyPhoneSuppressesUnitySfxOnPickup())
+            return;
+
         SuppressNonBaitBrokeItemSfxFromPhonePickup = true;
         JiU.PlaySoundOnEventAudioManager.StopBrokenBaitPlaybackForPickupScope();
         JiU.PlaySoundOnEvent.StopForPhonePickupAudioScope();
-        NotifyPhonePickupHookToWorkItems();
         if (debugLogPhonePickupPlaySoundSkipFlags)
             JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("after PHONE_PICKUP (off-hook)", true);
     }
@@ -326,25 +329,40 @@ public class GameManager : MonoBehaviour
     /// <summary>Call from Arduino <c>onPhonePutdown</c> or other UnityEvents.</summary>
     public void PhonePutdown_ClearSuppressNonBaitBrokeSfx()
     {
-        SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
         NotifyPhonePutdownHookToWorkItems();
+        SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
         if (debugLogPhonePickupPlaySoundSkipFlags)
             JiU.PlaySoundOnEventAudioManager.DebugLogAllPhonePickupSkipFlags("after PHONE_PUTDOWN (on-hook)", false);
+    }
+
+    bool AnyPhoneSuppressesUnitySfxOnPickup()
+    {
+        if (phoneWorkItemForPickupAudioSuppressScope != null)
+            return phoneWorkItemForPickupAudioSuppressScope.PhoneSuppressesUnitySfxOnPickup;
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            WorkItem wi = items[i];
+            if (wi != null && wi.IsPhoneWorkItem && wi.PhoneSuppressesUnitySfxOnPickup)
+                return true;
+        }
+
+        return false;
     }
 
     void NotifyPhonePickupHookToWorkItems()
     {
         if (phoneWorkItemForPickupAudioSuppressScope != null)
         {
-            phoneWorkItemForPickupAudioSuppressScope.NotifyPhonePickedUpForBaitFlow();
+            phoneWorkItemForPickupAudioSuppressScope.NotifyPhonePickedUp();
             return;
         }
 
         for (int i = 0; i < items.Count; i++)
         {
             WorkItem wi = items[i];
-            if (wi != null && wi.PhoneBaitRulesActive)
-                wi.NotifyPhonePickedUpForBaitFlow();
+            if (wi != null && wi.IsPhoneWorkItem)
+                wi.NotifyPhonePickedUp();
         }
     }
 
@@ -352,15 +370,15 @@ public class GameManager : MonoBehaviour
     {
         if (phoneWorkItemForPickupAudioSuppressScope != null)
         {
-            phoneWorkItemForPickupAudioSuppressScope.NotifyPhonePutDownForBaitFlow();
+            phoneWorkItemForPickupAudioSuppressScope.NotifyPhonePutDown();
             return;
         }
 
         for (int i = 0; i < items.Count; i++)
         {
             WorkItem wi = items[i];
-            if (wi != null && wi.PhoneBaitRulesActive)
-                wi.NotifyPhonePutDownForBaitFlow();
+            if (wi != null && wi.IsPhoneWorkItem)
+                wi.NotifyPhonePutDown();
         }
     }
 

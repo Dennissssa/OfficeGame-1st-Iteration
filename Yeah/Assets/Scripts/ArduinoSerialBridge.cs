@@ -300,8 +300,8 @@ public class ArduinoSerialBridge : MonoBehaviour
     {
         if (phoneWorkItem == null) return;
 
-        _phoneOnBroken       = () => SendPhone(PhoneCommand.Anomaly);
-        _phoneOnBaiting      = () => SendPhone(PhoneCommand.Bait);
+        _phoneOnBroken       = () => OnPhoneWorkItemBrokenForSerial();
+        _phoneOnBaiting      = () => OnPhoneWorkItemBaitingForSerial();
         _phoneOnFixed        = () => SendPhone(PhoneCommand.Normal);
         _phoneOnBaitingEnded = () => SendPhone(PhoneCommand.Normal);
 
@@ -309,6 +309,22 @@ public class ArduinoSerialBridge : MonoBehaviour
         phoneWorkItem.OnBaiting.AddListener(_phoneOnBaiting);
         phoneWorkItem.OnFixed.AddListener(_phoneOnFixed);
         phoneWorkItem.OnBaitingEnded.AddListener(_phoneOnBaitingEnded);
+    }
+
+    void OnPhoneWorkItemBrokenForSerial()
+    {
+        if (phoneWorkItem != null
+            && phoneWorkItem.phoneBehaviorVersion == PhoneBehaviorVersion.Version1_StandardWithPickupAudio)
+            return;
+        SendPhone(PhoneCommand.Anomaly);
+    }
+
+    void OnPhoneWorkItemBaitingForSerial()
+    {
+        if (phoneWorkItem != null
+            && phoneWorkItem.phoneBehaviorVersion == PhoneBehaviorVersion.Version1_StandardWithPickupAudio)
+            return;
+        SendPhone(PhoneCommand.Bait);
     }
 
     private void UnbindPhone()
@@ -352,6 +368,15 @@ public class ArduinoSerialBridge : MonoBehaviour
     public void SendPhone(string command)
     {
         SendRaw($"PHONE:{command}");
+    }
+
+    /// <summary>
+    /// Version 1: re-send PHONE:ANOMALY/BAIT on pickup while Broke/Bait (DFPlayer firmware).
+    /// No-op on minimal firmware that ignores PHONE lines (e.g. LED-only sketch).
+    /// </summary>
+    public void SendPhoneAudioForWorkItemState(bool isBaiting)
+    {
+        SendPhone(isBaiting ? PhoneCommand.Bait : PhoneCommand.Anomaly);
     }
 
     /// <summary>Send a printer motor command. true = ON, false = OFF.</summary>

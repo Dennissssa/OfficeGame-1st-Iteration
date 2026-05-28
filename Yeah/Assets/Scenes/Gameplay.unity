@@ -1901,6 +1901,7 @@ MonoBehaviour:
   enableAutoBreak: 1
   breakWeight: 25
   baitWeight: 0
+  baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/2
   repairKeyCodeFallback: 50
@@ -1935,6 +1936,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Speaker
+  treatAsPhoneWorkItem: 0
+  phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
   phoneBaitAutoResolveSecondsAfterPickup: 8
   phonePutDownTryRepairDebounceSeconds: 0.5
@@ -2784,6 +2787,7 @@ MonoBehaviour:
   enableAutoBreak: 1
   breakWeight: 25
   baitWeight: 0
+  baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/1
   repairKeyCodeFallback: 49
@@ -2818,6 +2822,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Monitor
+  treatAsPhoneWorkItem: 0
+  phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
   phoneBaitAutoResolveSecondsAfterPickup: 8
   phonePutDownTryRepairDebounceSeconds: 0.5
@@ -3812,6 +3818,7 @@ MonoBehaviour:
   enableAutoBreak: 1
   breakWeight: 25
   baitWeight: 15
+  baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/2
   repairKeyCodeFallback: 50
@@ -3846,6 +3853,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Lamp
+  treatAsPhoneWorkItem: 0
+  phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
   phoneBaitAutoResolveSecondsAfterPickup: 8
   phonePutDownTryRepairDebounceSeconds: 0.5
@@ -6979,6 +6988,7 @@ MonoBehaviour:
   enableAutoBreak: 1
   breakWeight: 25
   baitWeight: 0
+  baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/5
   repairKeyCodeFallback: 53
@@ -7013,6 +7023,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Printer
+  treatAsPhoneWorkItem: 0
+  phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
   phoneBaitAutoResolveSecondsAfterPickup: 8
   phonePutDownTryRepairDebounceSeconds: 0.5
@@ -8368,6 +8380,7 @@ MonoBehaviour:
   enableAutoBreak: 1
   breakWeight: 25
   baitWeight: 10
+  baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/3
   repairKeyCodeFallback: 51
@@ -8402,6 +8415,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Skull
+  treatAsPhoneWorkItem: 0
+  phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
   phoneBaitAutoResolveSecondsAfterPickup: 8
   phonePutDownTryRepairDebounceSeconds: 0.5
@@ -10042,6 +10057,7 @@ MonoBehaviour:
   enableAutoBreak: 1
   breakWeight: 25
   baitWeight: 5
+  baitSelfFixDurationSeconds: 6
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/4
   repairKeyCodeFallback: 52
@@ -10076,7 +10092,9 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: phone
-  usePhoneBaitBehavior: 1
+  treatAsPhoneWorkItem: 1
+  phoneBehaviorVersion: 0
+  usePhoneBaitBehavior: 0
   phoneBaitAutoResolveSecondsAfterPickup: 6
   phonePutDownTryRepairDebounceSeconds: 1
   tutorialBox: {fileID: 1066965541}
