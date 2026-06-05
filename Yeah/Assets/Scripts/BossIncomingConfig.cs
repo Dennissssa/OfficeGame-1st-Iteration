@@ -3,6 +3,7 @@ using UnityEngine.Serialization;
 
 /// <summary>
 /// Boss arrival and performance-score settings in one component for Inspector tuning.
+/// Boss trigger timing is now driven by the work bar (see GameManager.bossWorkTriggerNormalizedMin/ProbabilityPerSecond).
 /// </summary>
 public class BossIncomingConfig : MonoBehaviour
 {
@@ -26,24 +27,9 @@ public class BossIncomingConfig : MonoBehaviour
     }
 
     [Header("── Trigger Timing ──")]
-    [Tooltip("After each Boss leaves, Boss cannot trigger again until this cooldown elapses (includes score force trigger)")]
+    [Tooltip("After each Boss leaves, Boss cannot trigger again until this cooldown elapses")]
     [Min(0f)]
     public float cooldownDuration = 5f;
-
-    [Tooltip("Min random wait (seconds) after cooldown before Boss can trigger")]
-    [Min(0f)]
-    public float randomTriggerMinTime = 10f;
-
-    [Tooltip("Max random wait (seconds) after cooldown before Boss can trigger")]
-    [Min(0f)]
-    public float randomTriggerMaxTime = 25f;
-
-    [Tooltip("When enabled, Boss triggers immediately if normalized performance (TotalPerformanceScore/divisor) falls below threshold (runs in parallel with random timer; first wins)")]
-    public bool enableScoreForceTrigger;
-
-    [Range(0f, 1f)]
-    [Tooltip("Force Boss when normalized score (0~1 = score/divisor) is below this")]
-    public float scoreTriggerThreshold = 0.35f;
 
     [Tooltip("Min Boss warning duration (seconds) per round")]
     [Min(0f)]
@@ -98,7 +84,7 @@ public class BossIncomingConfig : MonoBehaviour
 
     [Min(1e-4f)]
     [FormerlySerializedAs("performanceNormalizedHalfRange")]
-    [Tooltip("Performance score divisor: norm = Clamp01(TotalPerformanceScore / this). Phase promotion and Boss force thresholds are 0~1 relative to this.")]
+    [Tooltip("Performance score divisor: norm = Clamp01(TotalPerformanceScore / this). Phase promotion thresholds are 0~1 relative to this.")]
     public float performanceScoreNormalizationDivisor = 1000f;
 
     [Header("── Phase Difficulty ──")]
@@ -112,16 +98,8 @@ public class BossIncomingConfig : MonoBehaviour
 
     [Min(0f)]
     [FormerlySerializedAs("defaultMinWorkGainPerPhaseForSaturatedPromotion")]
-    [Tooltip(
-        "When GamePhase minPerformanceScoreGainThisPhaseForSaturatedPromotion is 0, use this: after entering a phase, TotalPerformanceScore must gain this much more before timed promotion at saturated norm. 0 disables global saturated timed promotion.")]
+    [Tooltip("When GamePhase minPerformanceScoreGainThisPhaseForSaturatedPromotion is 0, use this: after entering a phase, TotalPerformanceScore must gain this much more before timed promotion at saturated norm. 0 disables global saturated timed promotion.")]
     public float defaultMinPerformanceScoreGainPerPhaseForSaturatedPromotion = 10f;
-
-    /// <summary>When random range is invalid, clamp max to at least min (and non-negative).</summary>
-    public void SanitizeRandomTriggerRange()
-    {
-        if (randomTriggerMaxTime < randomTriggerMinTime)
-            randomTriggerMaxTime = randomTriggerMinTime;
-    }
 
     public void SanitizeBossWarningDurationRange()
     {
@@ -131,7 +109,6 @@ public class BossIncomingConfig : MonoBehaviour
 
     public void SanitizeAllTriggerTimingRanges()
     {
-        SanitizeRandomTriggerRange();
         SanitizeBossWarningDurationRange();
     }
 }

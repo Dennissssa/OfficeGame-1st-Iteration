@@ -7075,8 +7075,9 @@ GameObject:
   - component: {fileID: 879958897}
   - component: {fileID: 879958899}
   - component: {fileID: 879958898}
+  - component: {fileID: 879958900}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: Mini Game Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7093,7 +7094,11 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1411907901}
+  - {fileID: 915814029}
+  - {fileID: 1289738246}
+  - {fileID: 1854834968}
   m_Father: {fileID: 807909839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -7139,6 +7144,33 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 879958896}
   m_CullTransparentMesh: 1
+--- !u!114 &879958900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 879958896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85d8a938aac427e42b2bc1c381f9c04e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FileSortingGame
+  spawnArea: {fileID: 1411907901}
+  leftDropZone: {fileID: 915814032}
+  rightDropZone: {fileID: 1289738249}
+  wrongDropBlockerPanel: {fileID: 1854834967}
+  filePrefab: {fileID: 1154374863482529976, guid: f3400956988677741a902070e40ee027, type: 3}
+  fileCardSize: {x: 60, y: 80}
+  typeASprites: []
+  typeAColor: {r: 0.95, g: 0.25, b: 0.25, a: 1}
+  typeBSprites: []
+  typeBColor: {r: 0.25, g: 0.5, b: 1, a: 1}
+  maxFileCount: 10
+  spawnIntervalSeconds: 1.5
+  workReductionPerCorrectSort: 5
+  wrongDropBlockDuration: 1.5
+  debugLog: 0
 --- !u!1 &882021885 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 54833eb6d72fcf1438da8fc91c280fb5, type: 3}
@@ -7834,6 +7866,96 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 896942001}
   m_CullTransparentMesh: 1
+--- !u!1 &915814028
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 915814029}
+  - component: {fileID: 915814031}
+  - component: {fileID: 915814030}
+  - component: {fileID: 915814032}
+  m_Layer: 5
+  m_Name: Left Zone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &915814029
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 915814028}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 879958897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -835, y: 0}
+  m_SizeDelta: {x: -1670, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &915814030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 915814028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0, b: 0.27518845, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &915814031
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 915814028}
+  m_CullTransparentMesh: 1
+--- !u!114 &915814032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 915814028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3639b970e8cd8f4fa0bbf2b4d4f69c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropZone
+  acceptedType: 0
+  controller: {fileID: 0}
 --- !u!1 &930211666
 GameObject:
   m_ObjectHideFlags: 0
@@ -10956,6 +11078,96 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1232477342}
   m_CullTransparentMesh: 1
+--- !u!1 &1289738245
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1289738246}
+  - component: {fileID: 1289738248}
+  - component: {fileID: 1289738247}
+  - component: {fileID: 1289738249}
+  m_Layer: 5
+  m_Name: Right Zone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1289738246
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289738245}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 879958897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 835, y: 0}
+  m_SizeDelta: {x: -1670, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1289738247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289738245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0.40809155, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1289738248
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289738245}
+  m_CullTransparentMesh: 1
+--- !u!114 &1289738249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289738245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3639b970e8cd8f4fa0bbf2b4d4f69c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropZone
+  acceptedType: 1
+  controller: {fileID: 0}
 --- !u!1001 &1299272328
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11396,7 +11608,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1391850210}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &1391850214
 Camera:
   m_ObjectHideFlags: 0
@@ -11583,6 +11795,81 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1399204693}
+  m_CullTransparentMesh: 1
+--- !u!1 &1411907900
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1411907901}
+  - component: {fileID: 1411907903}
+  - component: {fileID: 1411907902}
+  m_Layer: 5
+  m_Name: Spawn Area
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1411907901
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411907900}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 879958897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -500, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1411907902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411907900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0.77658606, b: 0, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1411907903
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411907900}
   m_CullTransparentMesh: 1
 --- !u!1001 &1421626982
 PrefabInstance:
@@ -13028,16 +13315,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   work: 0
   maxWork: 100
-  workPunishment: 0
-  workUltraPunishment: 0
+  workPunishment: 5
+  workUltraPunishment: 10
+  workBaseIncreasePerSecond: 0
+  workReductionPerCorrectSort: 5
   workMashGain: 0
-  workGainPerSecondPerWorkingItem: 0.5
-  workLossPerSecondPerBrokenItem: 1.5
+  workGainPerSecondPerWorkingItem: 0
+  workLossPerSecondPerBrokenItem: 2
   workPressureInstantOnBroke: 0
-  workPressureInstantOnBrokeRepair: 2
+  workPressureInstantOnBrokeRepair: 0
   bossMinWorkThreshold: 0
+  bossWorkTriggerNormalizedMin: 0.7
+  bossWorkTriggerProbabilityPerSecond: 0.3
+  bossArrivalWorkResetDuration: 1.5
   bossIncomingConfig: {fileID: 1853649707}
-  enableTutorial: 1
+  enableTutorial: 0
   tutorialBreakOrder:
   - {fileID: 363469229}
   - {fileID: 882021887}
@@ -13058,13 +13350,15 @@ MonoBehaviour:
     minBreakIntervalSeconds: 4
     maxBreakIntervalSeconds: 8
     bossMinWorkThreshold: 0
-    workPunishment: 2
-    workUltraPunishment: 3
-    workGainPerSecondPerWorkingItem: 0.1
-    workLossPerSecondPerBrokenItem: 1
+    workBaseIncreasePerSecond: 1
+    workPunishment: 5
+    workUltraPunishment: 10
+    workGainPerSecondPerWorkingItem: 0
+    workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
-    workPressureInstantOnBrokeRepair: 2
-    warningShowDelayAfterBreak: 5
+    workPressureInstantOnBrokeRepair: 0
+    workReductionPerCorrectSort: 3
+    warningShowDelayAfterBreak: 2
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 0.1
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
@@ -13073,13 +13367,15 @@ MonoBehaviour:
     minBreakIntervalSeconds: 4
     maxBreakIntervalSeconds: 8
     bossMinWorkThreshold: 0
-    workPunishment: 2
-    workUltraPunishment: 3
-    workGainPerSecondPerWorkingItem: 0.1
-    workLossPerSecondPerBrokenItem: 1.5
+    workBaseIncreasePerSecond: 1
+    workPunishment: 5
+    workUltraPunishment: 10
+    workGainPerSecondPerWorkingItem: 0
+    workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
-    workPressureInstantOnBrokeRepair: 2
-    warningShowDelayAfterBreak: 5
+    workPressureInstantOnBrokeRepair: 0
+    workReductionPerCorrectSort: 3
+    warningShowDelayAfterBreak: 3
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 0.3
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
@@ -13088,13 +13384,15 @@ MonoBehaviour:
     minBreakIntervalSeconds: 3
     maxBreakIntervalSeconds: 6
     bossMinWorkThreshold: 0
-    workPunishment: 2
-    workUltraPunishment: 4
-    workGainPerSecondPerWorkingItem: 0.2
-    workLossPerSecondPerBrokenItem: 2
+    workBaseIncreasePerSecond: 1
+    workPunishment: 5
+    workUltraPunishment: 10
+    workGainPerSecondPerWorkingItem: 0
+    workLossPerSecondPerBrokenItem: 3
     workPressureInstantOnBroke: 0
-    workPressureInstantOnBrokeRepair: 2
-    warningShowDelayAfterBreak: 6
+    workPressureInstantOnBrokeRepair: 0
+    workReductionPerCorrectSort: 3
+    warningShowDelayAfterBreak: 4
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 0.6
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
@@ -13103,13 +13401,15 @@ MonoBehaviour:
     minBreakIntervalSeconds: 3
     maxBreakIntervalSeconds: 6
     bossMinWorkThreshold: 0
-    workPunishment: 2
-    workUltraPunishment: 5
-    workGainPerSecondPerWorkingItem: 0.3
-    workLossPerSecondPerBrokenItem: 2
-    workPressureInstantOnBroke: 1
-    workPressureInstantOnBrokeRepair: 2
-    warningShowDelayAfterBreak: 6
+    workBaseIncreasePerSecond: 1
+    workPunishment: 5
+    workUltraPunishment: 10
+    workGainPerSecondPerWorkingItem: 0
+    workLossPerSecondPerBrokenItem: 3
+    workPressureInstantOnBroke: 0
+    workPressureInstantOnBrokeRepair: 0
+    workReductionPerCorrectSort: 4
+    warningShowDelayAfterBreak: 4
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 0.8
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
@@ -13118,13 +13418,15 @@ MonoBehaviour:
     minBreakIntervalSeconds: 3
     maxBreakIntervalSeconds: 6
     bossMinWorkThreshold: 0
-    workPunishment: 3
-    workUltraPunishment: 5
-    workGainPerSecondPerWorkingItem: 0.4
-    workLossPerSecondPerBrokenItem: 2
-    workPressureInstantOnBroke: 1.5
-    workPressureInstantOnBrokeRepair: 2
-    warningShowDelayAfterBreak: 6
+    workBaseIncreasePerSecond: 1
+    workPunishment: 5
+    workUltraPunishment: 10
+    workGainPerSecondPerWorkingItem: 0
+    workLossPerSecondPerBrokenItem: 3
+    workPressureInstantOnBroke: 0
+    workPressureInstantOnBrokeRepair: 0
+    workReductionPerCorrectSort: 5
+    warningShowDelayAfterBreak: 4
     warningMessageFormat: '{0} has been hacked!'
     normalizedScoreRequiredForNextPhase: 1
     minPerformanceScoreGainThisPhaseForSaturatedPromotion: 0
@@ -13152,7 +13454,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   autoFindItemsOnStart: 0
-  debugLogPhaseAndScore: 1
+  debugLogPhaseAndScore: 0
   debugLogWorkProgressDeath: 0
   items:
   - {fileID: 983266344}
@@ -15037,11 +15339,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossIncomingConfig
   cooldownDuration: 1
-  randomTriggerMinTime: 10
-  randomTriggerMaxTime: 25
-  enableScoreForceTrigger: 0
-  scoreTriggerThreshold: 0.5
-  bossWarningDurationMin: 3
+  bossWarningDurationMin: 2
   bossWarningDurationMax: 5
   bossStayDuration: 2
   bossLeaveAnimationDuration: 3
@@ -15050,9 +15348,9 @@ MonoBehaviour:
   enableBossPatrolAnimation: 1
   patrolAnimationClip: {fileID: 7400000, guid: 63dd142c3c085b143a6d6c7248d4d9e4, type: 2}
   enableBossPhaseHackLimit: 1
-  maxHackedItemsDuringBoss: 1
+  maxHackedItemsDuringBoss: 2
   enablePreArrivalFreeze: 1
-  freezeWindowBeforeArrival: 3
+  freezeWindowBeforeArrival: 2
   phaseScoreSettings:
   - baseScore: 100
     scoreDecayPerSecond: 5
@@ -15079,10 +15377,98 @@ MonoBehaviour:
     phoneBaitScoreDecayMultiplier: 0.5
     performancePenaltyIdleWrongHit: 200
     performancePenaltyBaitWrongHit: 300
-  performanceScoreNormalizationDivisor: 2400
+  performanceScoreNormalizationDivisor: 3000
   scoreThresholdForNextPhase: 0
   scorePhasePromotionHysteresis: 0.05
   defaultMinPerformanceScoreGainPerPhaseForSaturatedPromotion: 10
+--- !u!1 &1854834967
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1854834968}
+  - component: {fileID: 1854834971}
+  - component: {fileID: 1854834970}
+  - component: {fileID: 1854834969}
+  m_Layer: 5
+  m_Name: Wrong Block
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1854834968
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854834967}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 879958897}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -200, y: -200}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &1854834969
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854834967}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &1854834970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854834967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1854834971
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854834967}
+  m_CullTransparentMesh: 1
 --- !u!1 &1908596035
 GameObject:
   m_ObjectHideFlags: 0

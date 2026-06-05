@@ -22,7 +22,10 @@ public class GamePhaseConfig
     [Tooltip("While Boss is present, skip work-amount check and only check for Broke; kept for legacy scenes")]
     public float bossMinWorkThreshold = 20f;
 
-    [Header("Work pressure bar (0 empty → maxWork full = lose)")]
+    [Header("Work pressure bar (0 empty → maxWork full triggers Boss)")]
+    [Tooltip("每秒基础 work 增加量（独立于工位状态，模拟持续的工作压力）")]
+    [Min(0f)]
+    public float workBaseIncreasePerSecond = 0f;
     [Tooltip("Punishment (wrong hits etc.): instant work bar spike beyond per-second drift")]
     public float workPunishment = 5f;
     [Tooltip("UltraPunishment on bait wrong hit: instant work bar spike")]
@@ -37,6 +40,10 @@ public class GamePhaseConfig
     [Tooltip("Instant work bar drop when player repairs Broke")]
     [Min(0f)]
     public float workPressureInstantOnBrokeRepair = 8f;
+
+    [Tooltip("文件分类小游戏每次正确分类减少的 work 压力")]
+    [Min(0f)]
+    public float workReductionPerCorrectSort = 5f;
 
     [Header("Broken warnings (Broke only, not bait)")]
     [Tooltip("Seconds after Broke before a list warning entry is created")]
