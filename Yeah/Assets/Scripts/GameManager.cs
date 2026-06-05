@@ -39,6 +39,13 @@ public class GameManager : MonoBehaviour
     public float maxWork = 100f;
     public float workPunishment;
     public float workUltraPunishment;
+    [Tooltip("每秒基础 work 增加量（无阶段配置时的默认值）")]
+    [Min(0f)]
+    public float workBaseIncreasePerSecond = 0f;
+
+    [Tooltip("文件分类小游戏每次正确分类减少的 work 压力（无阶段配置时的默认值）")]
+    [Min(0f)]
+    public float workReductionPerCorrectSort = 5f;
     [Tooltip("Work pressure reduced toward 0 when Reward() is called")]
     public float workMashGain;
     [Tooltip("Work pressure reduced per second per working item")]
@@ -51,6 +58,19 @@ public class GameManager : MonoBehaviour
     public float workPressureInstantOnBrokeRepair = 8f;
     [Tooltip("Boss no longer validates work amount; kept for compatibility")]
     public float bossMinWorkThreshold = 20f;
+
+    [Header("Work-based Boss Trigger")]
+    [Tooltip("归一化 work 值（0~1）超过此值时开始以概率触发 Boss；work 到满（maxWork）则直接触发")]
+    [Range(0f, 1f)]
+    public float bossWorkTriggerNormalizedMin = 0.5f;
+
+    [Tooltip("work 在触发区间内时每秒触发 Boss 的概率（0 = 不触发，1 ≈ 1 秒内必触发，可超过 1 加快概率）")]
+    [Min(0f)]
+    public float bossWorkTriggerProbabilityPerSecond = 0.3f;
+
+    [Tooltip("Boss 到场后 work 条渐变归零所需时间（秒）；0 = 立即归零")]
+    [Min(0f)]
+    public float bossArrivalWorkResetDuration = 1.5f;
 
     [Header("Boss incoming (see BossIncomingConfig component)")]
     [Tooltip("Can live on same GameObject as GameManager; if empty, GetComponent in Awake")]
@@ -217,6 +237,7 @@ public class GameManager : MonoBehaviour
     int _activeMaxConcurrentBroken = int.MaxValue;
     float _activeWorkPressureInstantOnBroke = 5f;
     float _activeWorkPressureInstantOnBrokeRepair = 8f;
+    float _activeSortWorkReduction = 5f;
     float _activeBreakMin = 4f;
     float _activeBreakMax = 10f;
     float _activeWarningShowDelayAfterBreak = 0.5f;
@@ -470,6 +491,7 @@ public class GameManager : MonoBehaviour
             _normalPerformanceScoringActive = false;
             _activeWorkPressureInstantOnBroke = workPressureInstantOnBroke;
             _activeWorkPressureInstantOnBrokeRepair = workPressureInstantOnBrokeRepair;
+            _activeSortWorkReduction = workReductionPerCorrectSort;
         }
 
         if (enableTutorial)
@@ -628,8 +650,8 @@ public class GameManager : MonoBehaviour
         }
 
         work += broken * workLossPerSecondPerBrokenItem * Time.deltaTime;
-
         work -= working * workGainPerSecondPerWorkingItem * Time.deltaTime;
+        work += workBaseIncreasePerSecond * Time.deltaTime;
 
         work = Mathf.Clamp(work, 0f, maxWork);
 
@@ -644,12 +666,6 @@ public class GameManager : MonoBehaviour
         if (BossIsHere && !_bossBrokeCheckAwaitingArrivalSprites && broken > 0)
         {
             GameOver("Boss saw hacked items!");
-            return;
-        }
-
-        if (work >= maxWork)
-        {
-            GameOverWorkProgressFull();
             return;
         }
 
@@ -794,8 +810,6 @@ public class GameManager : MonoBehaviour
                 ? Random.Range(cfg.bossWarningDurationMin, cfg.bossWarningDurationMax)
                 : Random.Range(2f, 4f);
             float stayDur = cfg != null ? cfg.bossStayDuration : 6f;
-            float rMin = cfg != null ? cfg.randomTriggerMinTime : 10f;
-            float rMax = cfg != null ? cfg.randomTriggerMaxTime : 25f;
 
             if (_applyCooldownBeforeNextBossWait)
             {
@@ -813,17 +827,26 @@ public class GameManager : MonoBehaviour
             if (isGameOver || IsVictory) yield break;
 
             bool firstBossAfterTutorial = _immediateBossAfterTutorial;
-            float randomWait = _immediateBossAfterTutorial ? 0f : Random.Range(rMin, rMax);
             if (_immediateBossAfterTutorial)
-                _immediateBossAfterTutorial = false;
-
-            float elapsed = 0f;
-            while (elapsed < randomWait && !isGameOver && !IsVictory)
             {
-                if (cfg != null && cfg.enableScoreForceTrigger && NormalizedPerformanceScore < cfg.scoreTriggerThreshold)
-                    break;
-                elapsed += Time.deltaTime;
-                yield return null;
+                _immediateBossAfterTutorial = false;
+            }
+            else
+            {
+                // 等待 work 条触发 Boss：进入阈值区间后按概率触发；到满则直接触发
+                while (!isGameOver && !IsVictory)
+                {
+                    float norm = maxWork > 0.0001f ? Mathf.Clamp01(work / maxWork) : 0f;
+                    if (norm >= 1f)
+                        break; // work 满 → 立即触发
+                    if (norm >= bossWorkTriggerNormalizedMin)
+                    {
+                        float p = bossWorkTriggerProbabilityPerSecond * Time.deltaTime;
+                        if (Random.value < p)
+                            break;
+                    }
+                    yield return null;
+                }
             }
 
             if (isGameOver || IsVictory) yield break;
@@ -856,6 +879,15 @@ public class GameManager : MonoBehaviour
 
             if (screenTint != null)
                 screenTint.SetTarget(0.35f, 0.15f);
+
+            // Boss 到场后将 work 条渐变归零（与 Boss 停留同步进行）
+            if (bossArrivalWorkResetDuration > 0.001f)
+                StartCoroutine(GradualWorkResetCoroutine(bossArrivalWorkResetDuration));
+            else
+            {
+                work = 0f;
+                if (ui != null) ui.SetWork(work);
+            }
 
             float stay = stayDur;
             while (stay > 0f && !isGameOver && !IsVictory)
@@ -1042,6 +1074,8 @@ public class GameManager : MonoBehaviour
         _activeBreakMin = c.minBreakIntervalSeconds;
         _activeBreakMax = Mathf.Max(c.minBreakIntervalSeconds, c.maxBreakIntervalSeconds);
         bossMinWorkThreshold = c.bossMinWorkThreshold;
+        workBaseIncreasePerSecond = c.workBaseIncreasePerSecond;
+        _activeSortWorkReduction = c.workReductionPerCorrectSort;
         workPunishment = c.workPunishment;
         workUltraPunishment = c.workUltraPunishment;
         workGainPerSecondPerWorkingItem = c.workGainPerSecondPerWorkingItem;
@@ -1250,6 +1284,14 @@ public class GameManager : MonoBehaviour
         work = Mathf.Max(0f, work);
     }
 
+    /// <summary>返回当前 phase 激活的分类减少值；GameManager 未就绪时返回 fallback。</summary>
+    public float GetActiveSortWorkReduction(float fallback = 5f)
+    {
+        return gamePhases != null && gamePhases.Count > 0
+            ? _activeSortWorkReduction
+            : fallback;
+    }
+
     /// <summary>When WorkItem enters Broke; instant work bar spike.</summary>
     public void ApplyWorkPressureOnItemBroke()
     {
@@ -1270,8 +1312,6 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver || IsVictory) return;
         work = Mathf.Clamp(work, 0f, maxWork);
-        if (work >= maxWork)
-            GameOverWorkProgressFull();
     }
 
     void GameOverWorkProgressFull()
@@ -1834,6 +1874,26 @@ public class GameManager : MonoBehaviour
             ui.ShowGameOver(surviveTime, work, reason, TotalPerformanceScore);
 
         Time.timeScale = 0f;
+    }
+
+    /// <summary>Boss 到场后将 work 条在 duration 秒内平滑插值至 0。</summary>
+    IEnumerator GradualWorkResetCoroutine(float duration)
+    {
+        float startWork = work;
+        float elapsed = 0f;
+        while (elapsed < duration && !isGameOver && !IsVictory)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            work = Mathf.Lerp(startWork, 0f, t);
+            if (ui != null) ui.SetWork(work);
+            yield return null;
+        }
+        if (!isGameOver && !IsVictory)
+        {
+            work = 0f;
+            if (ui != null) ui.SetWork(work);
+        }
     }
 
     public void Restart()
