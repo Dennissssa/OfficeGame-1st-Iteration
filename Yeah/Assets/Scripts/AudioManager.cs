@@ -39,10 +39,15 @@ public class AudioManager : MonoBehaviour
         }
         else if (_instance != this)
         {
+            // 同一场景内出现重复实例时销毁多余的
             Destroy(gameObject);
         }
+    }
 
-        DontDestroyOnLoad(gameObject);
+    private void OnDestroy()
+    {
+        if (_instance == this)
+            _instance = null;
     }
 
     /// <summary>

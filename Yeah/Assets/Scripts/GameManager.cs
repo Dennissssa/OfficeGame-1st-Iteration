@@ -103,6 +103,26 @@ public class GameManager : MonoBehaviour
     [Tooltip("Plays virusDiePrePanelClip; if null, uses first AudioSource on this GameObject (add one if needed).")]
     public AudioSource virusDiePrePanelAudioSource;
 
+    [Header("Victory Cinematic (plays after close-up, before result panel; leave all lists empty to skip)")]
+    [Tooltip("AudioSource used to play cinematic clips (shared by both victory and boss-fail). If null, falls back to the first AudioSource on this GameObject.")]
+    public AudioSource cinematicAudioSource;
+
+    [Tooltip("Victory: audio clips played in sequence before the win panel opens. Null entries are skipped.")]
+    public List<AudioClip> victoryCinematicClips = new List<AudioClip>();
+
+    [Tooltip("Victory: each entry swaps the target Image's sprite when the cinematic starts (before audio begins).")]
+    public List<CinematicSpriteSwap> victoryCinematicSpriteSwaps = new List<CinematicSpriteSwap>();
+
+    [Header("Boss Fail Cinematic (plays after close-up, before result panel; leave all lists empty to skip)")]
+    [Tooltip("Boss fail: audio clips played in sequence before the game-over panel opens. Null entries are skipped.")]
+    public List<AudioClip> bossFailCinematicClips = new List<AudioClip>();
+
+    [Tooltip("Boss fail: GameObjects to Destroy when the cinematic starts.")]
+    public List<GameObject> bossFailCinematicDestroyObjects = new List<GameObject>();
+
+    [Tooltip("Boss fail: GameObjects to SetActive(true) when the cinematic starts.")]
+    public List<GameObject> bossFailCinematicActivateObjects = new List<GameObject>();
+
     Coroutine _virusDieRevealPanelRoutine;
 
     [Header("Normal phase flow")]
@@ -110,9 +130,9 @@ public class GameManager : MonoBehaviour
     public List<GamePhaseConfig> gamePhases = new List<GamePhaseConfig>();
 
     [Header("Victory condition")]
-    [Tooltip("Match countdown (seconds); at 0 auto victory (no longer based on clearing all phases)")]
-    [Min(0.1f)]
-    public float victoryCountdownSeconds = 300f;
+    [Tooltip("演出倒计时起始秒数（固定数字）；归零时触发胜利。与实际游玩时间 surviveTime 独立，两者均在教程结束后开始。")]
+    [Min(0f)]
+    public float performanceCountdownSeconds = 300f;
 
     [Header("Victory countdown · near-end warning (optional)")]
     [Tooltip("Show once when remaining seconds first drop to or below threshold; like Boss warning, prefer separate UI so it does not fight broken-item TMP")]
@@ -284,10 +304,18 @@ public class GameManager : MonoBehaviour
     /// <summary>When normalized score stays near 1, hysteresis cannot re-arm; min seconds between saturated score-based promotions.</summary>
     const float MinSecondsBetweenScorePhasePromotionsWhenSaturated = 0.35f;
 
-    float surviveTime;
+    [Header("Gameplay Duration")]
+    [Tooltip("游戏实际进行的时长（秒）；归零时触发胜利结算。演出时间 performanceCountdownSeconds 建议设置更长以配合演出效果。两者均在教程结束后开始倒数。")]
+    [Min(0f)]
+    public float surviveTime = 180f;
+
+    /// <summary>Runtime countdown initialized from <see cref="surviveTime"/>; when it reaches 0 victory is triggered.</summary>
+    float _gameTimeRemaining;
     bool isGameOver;
     Coroutine _bossLoopCoroutine;
     Coroutine _tutorialCoroutine;
+    Coroutine _victoryCinematicCoroutine;
+    Coroutine _bossFailCinematicCoroutine;
 
     /// <summary>Set true by <see cref="RegisterPhoneTutorialLastLineCompleted"/> from the last phone tutorial <c>ShowNextBoxForTut</c> line.</summary>
     bool _phoneTutorialLastLineCompleted;
@@ -410,6 +438,26 @@ public class GameManager : MonoBehaviour
             arduinoBridgeScript.ResetSystem();
     }
 
+    /// <summary>
+    /// 结算时（胜利/失败/work满）统一清理所有 WorkItem 的运行状态：
+    /// 禁用自动 break、静默复位 Broke/Bait 状态与 tint，停止 Bait 协程。
+    /// 不触发 OnFixed 等 UnityEvent，不影响 work 值，不播放音效。
+    /// Arduino 硬件侧已由 NotifyArduinoSystemResetOnMatchEnd() 发 SYSTEM:RESET 处理。
+    /// </summary>
+    void CleanupAllWorkItemsOnMatchEnd()
+    {
+        SetAllWorkItemsAutoBreak(false);
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] != null)
+                items[i].ForceResetOnMatchEnd();
+        }
+
+        // 强制停止所有 broken/bait 音频 loop（Time.timeScale=0 不会自动停止 AudioSource）
+        JiU.PlaySoundOnEventAudioManager.StopAllOnMatchEnd();
+        JiU.PlaySoundOnEvent.StopAllOnMatchEnd();
+    }
+
     void WarnIfMultipleUIManagerInScene()
     {
         UIManager[] all = FindObjectsOfType<UIManager>(true);
@@ -456,7 +504,8 @@ public class GameManager : MonoBehaviour
             ? "{0} is broken!"
             : tutorialWarningMessageFormat;
 
-        _victoryCountdownRemaining = Mathf.Max(0.1f, victoryCountdownSeconds);
+        _victoryCountdownRemaining = performanceCountdownSeconds;
+        _gameTimeRemaining = surviveTime;
 
         if (ui != null)
         {
@@ -593,22 +642,21 @@ public class GameManager : MonoBehaviour
         if (_tutorialBreakSequenceDone)
         {
             isTutorialing = false;
+            _gameTimeRemaining -= Time.deltaTime;   // 实际游戏时长倒数
         }
-        surviveTime += Time.deltaTime;
 
-        float remainingBeforeTick = _victoryCountdownRemaining;
         if (!VictoryCountdownPausedForTutorial)
-            _victoryCountdownRemaining -= Time.deltaTime;
+            _victoryCountdownRemaining -= Time.deltaTime;   // 演出展示倒数（纯显示）
 
         if (!_victoryNearEndWarningShown && enableVictoryNearEndWarning && nearEndWarningWhenRemainingSeconds > 0f
-            && !VictoryCountdownPausedForTutorial
-            && remainingBeforeTick > 0f && remainingBeforeTick <= nearEndWarningWhenRemainingSeconds
+            && _tutorialBreakSequenceDone
+            && _gameTimeRemaining > 0f && _gameTimeRemaining <= nearEndWarningWhenRemainingSeconds
             && (nearEndWarningPanelRoot != null || nearEndWarningText != null))
         {
             TryShowVictoryNearEndWarning();
         }
 
-        if (_victoryCountdownRemaining <= 0f)
+        if (_gameTimeRemaining <= 0f && _tutorialBreakSequenceDone)
         {
             HideVictoryNearEndWarning();
             TriggerVictory();
@@ -1194,6 +1242,7 @@ public class GameManager : MonoBehaviour
         IsVictory = true;
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
         NotifyArduinoSystemResetOnMatchEnd();
+        CleanupAllWorkItemsOnMatchEnd();
 
         if (_bossLoopCoroutine != null)
         {
@@ -1217,10 +1266,8 @@ public class GameManager : MonoBehaviour
         HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
 
-        if (ui != null)
-            ui.ShowGameWin(TotalPerformanceScore);
-
         Time.timeScale = 0f;
+        _victoryCinematicCoroutine = StartCoroutine(VictoryCinematicThenPanelCoroutine());
     }
 
     void TryShowVictoryNearEndWarning()
@@ -1326,12 +1373,13 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
         NotifyArduinoSystemResetOnMatchEnd();
+        CleanupAllWorkItemsOnMatchEnd();
 
         if (debugLogWorkProgressDeath)
         {
             Debug.Log(
                 "[GameManager] Work bar full → death (GameOverWorkProgressFull). " +
-                $"work={work:F2}/{maxWork:F2}, survive={surviveTime:F1}s, performanceScore={TotalPerformanceScore:F1}, " +
+                $"work={work:F2}/{maxWork:F2}, elapsed={surviveTime - Mathf.Max(0f, _gameTimeRemaining):F1}s, performanceScore={TotalPerformanceScore:F1}, " +
                 $"UIManager={(ui != null ? "bound" : "null")}",
                 this);
         }
@@ -1381,7 +1429,7 @@ public class GameManager : MonoBehaviour
                         this);
                     if (debugLogWorkProgressDeath)
                         Debug.Log("[GameManager] GameOverWorkProgressFull → ShowWorkProgressLose (no stinger source)", ui);
-                    ui.ShowWorkProgressLose(surviveTime, work, TotalPerformanceScore, maxWork);
+                    ui.ShowWorkProgressLose(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork);
                 }
                 else
                 {
@@ -1394,7 +1442,7 @@ public class GameManager : MonoBehaviour
                             $"clipLen={virusDiePrePanelClip.length:F2}s",
                             this);
                     _virusDieRevealPanelRoutine = StartCoroutine(
-                        VirusDieRevealPanelAfterStingerRealtime(surviveTime, work, TotalPerformanceScore, maxWork, virusDiePrePanelClip.length));
+                        VirusDieRevealPanelAfterStingerRealtime(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork, virusDiePrePanelClip.length));
                 }
             }
             else
@@ -1404,7 +1452,7 @@ public class GameManager : MonoBehaviour
                         "[GameManager] GameOverWorkProgressFull → calling ShowWorkProgressLose | " +
                         $"UIManager.instanceID={ui.GetInstanceID()} GameObject=\"{ui.gameObject.name}\" scene={ui.gameObject.scene.name}",
                         ui);
-                ui.ShowWorkProgressLose(surviveTime, work, TotalPerformanceScore, maxWork);
+                ui.ShowWorkProgressLose(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork);
                 if (debugLogWorkProgressDeath)
                     Debug.Log("[GameManager] ShowWorkProgressLose returned (no exception)", ui);
 
@@ -1842,6 +1890,7 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         SuppressNonBaitBrokeItemSfxFromPhonePickup = false;
         NotifyArduinoSystemResetOnMatchEnd();
+        CleanupAllWorkItemsOnMatchEnd();
 
         if (_bossLoopCoroutine != null)
         {
@@ -1870,10 +1919,8 @@ public class GameManager : MonoBehaviour
         HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
 
-        if (ui != null)
-            ui.ShowGameOver(surviveTime, work, reason, TotalPerformanceScore);
-
         Time.timeScale = 0f;
+        _bossFailCinematicCoroutine = StartCoroutine(BossFailCinematicThenPanelCoroutine(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, reason));
     }
 
     /// <summary>Boss 到场后将 work 条在 duration 秒内平滑插值至 0。</summary>
@@ -1896,6 +1943,112 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Cinematic helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    static bool HasAnyValidClip(List<AudioClip> clips)
+    {
+        if (clips == null) return false;
+        for (int i = 0; i < clips.Count; i++)
+            if (clips[i] != null) return true;
+        return false;
+    }
+
+    AudioSource GetOrWarnCinematicAudioSource()
+    {
+        if (cinematicAudioSource != null)
+            return cinematicAudioSource;
+        AudioSource src = GetComponent<AudioSource>();
+        if (src == null)
+            Debug.LogWarning(
+                "[GameManager] Cinematic clips are set but cinematicAudioSource is not assigned " +
+                "and there is no AudioSource on this GameObject; audio will be skipped.", this);
+        return src;
+    }
+
+    /// <summary>Plays each non-null clip in sequence using real-time waits (works even with timeScale = 0).</summary>
+    IEnumerator PlayCinematicClipsRealtime(List<AudioClip> clips)
+    {
+        if (clips == null || clips.Count == 0) yield break;
+        AudioSource src = GetOrWarnCinematicAudioSource();
+        if (src == null) yield break;
+        src.ignoreListenerPause = true;
+        for (int i = 0; i < clips.Count; i++)
+        {
+            AudioClip clip = clips[i];
+            if (clip == null) continue;
+            src.PlayOneShot(clip);
+            yield return new WaitForSecondsRealtime(clip.length);
+        }
+    }
+
+    void ApplyCinematicSpriteSwaps(List<CinematicSpriteSwap> swaps)
+    {
+        if (swaps == null) return;
+        for (int i = 0; i < swaps.Count; i++)
+        {
+            CinematicSpriteSwap s = swaps[i];
+            if (s != null && s.targetImage != null && s.newSprite != null)
+                s.targetImage.sprite = s.newSprite;
+        }
+    }
+
+    void ApplyCinematicDestroyAndActivate(List<GameObject> destroys, List<GameObject> activates)
+    {
+        if (destroys != null)
+            for (int i = 0; i < destroys.Count; i++)
+                if (destroys[i] != null) Destroy(destroys[i]);
+        if (activates != null)
+            for (int i = 0; i < activates.Count; i++)
+                if (activates[i] != null) activates[i].SetActive(true);
+    }
+
+    /// <summary>
+    /// Victory pre-panel cinematic: swaps sprites immediately, then plays clips in sequence.
+    /// If no content is configured, opens the win panel straight away.
+    /// Runs with timeScale = 0; uses WaitForSecondsRealtime for audio timing.
+    /// </summary>
+    IEnumerator VictoryCinematicThenPanelCoroutine()
+    {
+        bool hasClips = HasAnyValidClip(victoryCinematicClips);
+        bool hasSwaps = victoryCinematicSpriteSwaps != null && victoryCinematicSpriteSwaps.Count > 0;
+
+        if (hasClips || hasSwaps)
+        {
+            ApplyCinematicSpriteSwaps(victoryCinematicSpriteSwaps);
+            if (hasClips)
+                yield return PlayCinematicClipsRealtime(victoryCinematicClips);
+        }
+
+        _victoryCinematicCoroutine = null;
+        if (ui != null)
+            ui.ShowGameWin(TotalPerformanceScore);
+    }
+
+    /// <summary>
+    /// Boss-fail pre-panel cinematic: destroys/activates objects immediately, then plays clips in sequence.
+    /// If no content is configured, opens the game-over panel straight away.
+    /// Runs with timeScale = 0; uses WaitForSecondsRealtime for audio timing.
+    /// </summary>
+    IEnumerator BossFailCinematicThenPanelCoroutine(float capturedSurviveTime, float capturedWork, string reason)
+    {
+        bool hasClips = HasAnyValidClip(bossFailCinematicClips);
+        bool hasDestroys = bossFailCinematicDestroyObjects != null && bossFailCinematicDestroyObjects.Count > 0;
+        bool hasActivates = bossFailCinematicActivateObjects != null && bossFailCinematicActivateObjects.Count > 0;
+
+        if (hasClips || hasDestroys || hasActivates)
+        {
+            ApplyCinematicDestroyAndActivate(bossFailCinematicDestroyObjects, bossFailCinematicActivateObjects);
+            if (hasClips)
+                yield return PlayCinematicClipsRealtime(bossFailCinematicClips);
+        }
+
+        _bossFailCinematicCoroutine = null;
+        if (ui != null)
+            ui.ShowGameOver(capturedSurviveTime, capturedWork, reason, TotalPerformanceScore);
+    }
+
     public void Restart()
     {
         Time.timeScale = 1f;
@@ -1907,4 +2060,18 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         Application.Quit();
     }
+}
+
+/// <summary>
+/// A UI Image/Sprite pair used by the pre-panel cinematic sequence.
+/// The target Image's sprite is swapped to newSprite when the cinematic starts.
+/// </summary>
+[System.Serializable]
+public class CinematicSpriteSwap
+{
+    [Tooltip("The UI Image component whose sprite will be replaced when the cinematic starts.")]
+    public Image targetImage;
+
+    [Tooltip("Sprite to assign to the Image when the cinematic starts.")]
+    public Sprite newSprite;
 }

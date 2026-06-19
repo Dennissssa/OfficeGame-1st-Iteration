@@ -35,6 +35,9 @@ public class FileSortingGame : MonoBehaviour
 
     // ─── Prefab ────────────────────────────────────────────────
 
+    [Tooltip("文件卡片的拖拽范围限制（通常比 Spawn Area 更大，是包含关系）；\n留空则以 spawnArea 作为拖拽边界。")]
+    public RectTransform dragBoundaryRect;
+
     [Header("File Prefab")]
     [Tooltip("需含 Image + SortableFile 组件；CanvasGroup 若未预设，运行时自动添加")]
     public GameObject filePrefab;
@@ -251,10 +254,18 @@ public class FileSortingGame : MonoBehaviour
         Log($"[FileSortingGame] 正确分类 work-={reduction}");
     }
 
-    /// <summary>玩家错误分类后由 SortableFile.OnEndDrag 调用；文件自动回原位。</summary>
+    /// <summary>玩家错误分类后由 SortableFile.OnEndDrag 调用；销毁文件并触发遮挡。</summary>
     public void OnWrongDrop(SortableFile file)
     {
-        Log("[FileSortingGame] 错误分类，触发遮挡。");
+        Log("[FileSortingGame] 错误分类，销毁文件 + 触发遮挡。");
+
+        _activeFiles.Remove(file);
+
+        // 同 OnCorrectDrop：销毁空壳根节点和视觉节点
+        if (file.spawnedRoot != null && file.spawnedRoot != file.gameObject)
+            Destroy(file.spawnedRoot);
+        Destroy(file.gameObject);
+
         if (_blockCoroutine != null)
             StopCoroutine(_blockCoroutine);
         _blockCoroutine = StartCoroutine(WrongDropBlockRoutine());

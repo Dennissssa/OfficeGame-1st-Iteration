@@ -97,6 +97,16 @@ public class SortableFile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         if (!_isDragging) return;
         float scale = _rootCanvas != null ? _rootCanvas.scaleFactor : 1f;
         _rt.anchoredPosition += eventData.delta / scale;
+
+        // 将卡片限制在拖拽边界内（优先用 dragBoundaryRect，未设置时退回 spawnArea）
+        if (controller != null && _rootCanvas != null)
+        {
+            RectTransform boundary = controller.dragBoundaryRect != null
+                ? controller.dragBoundaryRect
+                : controller.spawnArea;
+            if (boundary != null)
+                _rt.anchoredPosition = ClampToSpawnArea(_rt.anchoredPosition, boundary);
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -129,17 +139,17 @@ public class SortableFile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
             if (hit != null)
             {
+                _droppedOnZone = true; // 无论对错都标记，阻止下方 return-to-home 逻辑
+
                 if (fileType == hit.acceptedType)
                 {
-                    _droppedOnZone = true;
                     controller.OnCorrectDrop(this);
-                    return; // 已销毁，不需要返回原位
                 }
                 else
                 {
-                    controller.OnWrongDrop(this);
-                    // 继续执行下方：文件返回原位
+                    controller.OnWrongDrop(this); // 错误投放：销毁文件 + 触发遮挡
                 }
+                return;
             }
         }
 
@@ -153,6 +163,38 @@ public class SortableFile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
 
     // ─── 工具 ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 将拖拽时（已提升到根 Canvas）的 anchoredPosition 限制在 spawnArea 内。
+    /// 以卡片的 pivot 为基准，确保整张卡片都在边界内。
+    /// </summary>
+    Vector2 ClampToSpawnArea(Vector2 pos, RectTransform spawnArea)
+    {
+        RectTransform canvasRT = _rootCanvas.GetComponent<RectTransform>();
+        if (canvasRT == null) return pos;
+
+        // 将 spawnArea 四角从世界坐标转到根 Canvas 本地坐标
+        Vector3[] corners = new Vector3[4];
+        spawnArea.GetWorldCorners(corners);
+        Vector2 bMin = canvasRT.InverseTransformPoint(corners[0]); // bottom-left
+        Vector2 bMax = canvasRT.InverseTransformPoint(corners[2]); // top-right
+
+        // 卡片尺寸（sizeDelta 不随 reparent 改变）
+        float w  = _rt.rect.width;
+        float h  = _rt.rect.height;
+        float px = _rt.pivot.x;
+        float py = _rt.pivot.y;
+
+        // pivot 点允许的范围（让整张卡片始终在边界内）
+        float xMin = bMin.x + px * w;
+        float xMax = bMax.x - (1f - px) * w;
+        float yMin = bMin.y + py * h;
+        float yMax = bMax.y - (1f - py) * h;
+
+        return new Vector2(
+            Mathf.Clamp(pos.x, Mathf.Min(xMin, xMax), Mathf.Max(xMin, xMax)),
+            Mathf.Clamp(pos.y, Mathf.Min(yMin, yMax), Mathf.Max(yMin, yMax)));
+    }
 
     /// <summary>用屏幕空间 World Corners 判断两个 RectTransform 是否有重叠区域。</summary>
     static bool OverlapsInScreenSpace(RectTransform a, RectTransform b)

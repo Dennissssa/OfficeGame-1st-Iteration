@@ -331,6 +331,18 @@ namespace JiU
         }
 
         /// <summary>
+        /// 结算时（胜利/失败）无条件停止场景内所有 PlaySoundOnEventAudioManager 的本地音源。
+        /// 用于在 Time.timeScale=0 之前或之后强制停止仍在循环的 broken/bait 音效。
+        /// </summary>
+        public static void StopAllOnMatchEnd()
+        {
+            var arr = Object.FindObjectsOfType<PlaySoundOnEventAudioManager>(true);
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+                arr[i].Stop(); // Stop() → StopInternal(resetLoop:true)
+        }
+
+        /// <summary>
         /// After phone pickup: for components in <see cref="GameManager.PickupAudioSuppressAppliesToBoundWorkItem"/> scope,
         /// stop local broken/bait loops and clear related flags.
         /// Call after <see cref="GameManager.SuppressNonBaitBrokeItemSfxFromPhonePickup"/> is enabled.

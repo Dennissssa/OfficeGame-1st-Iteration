@@ -54,6 +54,17 @@ namespace JiU
         }
 
         /// <summary>
+        /// 结算时（胜利/失败）无条件停止场景内所有 PlaySoundOnEvent 的音源。
+        /// </summary>
+        public static void StopAllOnMatchEnd()
+        {
+            var arr = Object.FindObjectsOfType<PlaySoundOnEvent>(true);
+            if (arr == null) return;
+            for (int i = 0; i < arr.Length; i++)
+                arr[i].Stop();
+        }
+
+        /// <summary>
         /// After phone pickup, <see cref="GameManager"/> stops broken-clip playback for WorkItems in suppress scope.
         /// </summary>
         public static void StopForPhonePickupAudioScope()

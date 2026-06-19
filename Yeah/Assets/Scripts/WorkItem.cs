@@ -863,6 +863,26 @@ public class WorkItem : MonoBehaviour
             OnFixed?.Invoke();
     }
 
+    /// <summary>
+    /// 结算（胜利/失败）时由 GameManager 调用的静默复位。
+    /// 清除 Broke/Bait 状态、停止协程、恢复 tint——不触发任何 UnityEvent，不播放音效，不影响 work 值。
+    /// </summary>
+    public void ForceResetOnMatchEnd()
+    {
+        if (!IsBroken && !IsBaiting) return;
+
+        enableAutoBreak = false;
+        StopAllBaitCoroutines();
+
+        IsBroken  = false;
+        IsBaiting = false;
+        _phoneLiftedDuringCurrentBait = false;
+        _hadPhonePickupWhileBroken    = false;
+        ClearPhoneEpisodeStateOnResolved();
+        ClearTintOverride();
+        // 不调用 OnFixed/OnBaitingEnded，避免在结算时播放修复音效或触发其他 Inspector 绑定
+    }
+
     public void Fix()
     {
         // Run fix logic and OnFixed only from Broke or Bait; idle keypress does nothing
