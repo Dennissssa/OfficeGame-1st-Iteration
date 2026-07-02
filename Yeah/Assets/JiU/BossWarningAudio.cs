@@ -3,22 +3,22 @@ using UnityEngine;
 namespace JiU
 {
     /// <summary>
-    /// Boss 预警开始时播放指定音频，Boss 实际到达时立刻停止。
-    /// 依赖 GameManager 的 OnBossWarningStarted / OnBossArrived 事件。
+    /// Plays warning audio when Boss warning starts; stops when Boss arrives.
+    /// Uses GameManager OnBossWarningStarted / OnBossArrived.
     /// </summary>
     public class BossWarningAudio : MonoBehaviour
     {
-        [Header("音频")]
-        [Tooltip("Boss 预警阶段播放的 Clip")]
+        [Header("Audio")]
+        [Tooltip("Clip during Boss warning phase")]
         public AudioClip warningClip;
 
-        [Tooltip("不填则使用本物体上的 AudioSource，没有则自动添加")]
+        [Tooltip("If unset, uses or adds AudioSource on this object")]
         public AudioSource audioSource;
 
         [Range(0f, 1f)]
         public float volume = 1f;
 
-        [Tooltip("是否循环播放预警音（Boss 到达时会自动停）")]
+        [Tooltip("Loop warning clip (stops when Boss arrives)")]
         public bool loop = true;
 
         void Awake()
@@ -44,7 +44,7 @@ namespace JiU
             GameManager.Instance.OnBossArrived.RemoveListener(StopWarning);
         }
 
-        /// <summary> 预警开始时播放（由事件调用） </summary>
+        /// <summary>Start warning playback (event).</summary>
         public void PlayWarning()
         {
             if (warningClip == null || audioSource == null) return;
@@ -55,7 +55,7 @@ namespace JiU
             audioSource.Play();
         }
 
-        /// <summary> Boss 到达时立刻关闭（由事件调用） </summary>
+        /// <summary>Stop when Boss arrives (event).</summary>
         public void StopWarning()
         {
             if (audioSource != null)

@@ -1,9 +1,18 @@
-using NUnit.Framework;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+
+/// <summary>Phone WorkItem interaction mode. Non-phone items ignore this.</summary>
+public enum PhoneBehaviorVersion
+{
+    /// <summary>Like other WorkItems; off-hook during Broke/Bait re-sends PHONE:* (DFPlayer firmware).</summary>
+    Version1_StandardWithPickupAudio = 0,
+    /// <summary>Correct repair only after first pickup in this Broke/Bait episode.</summary>
+    Version2_FirstPickupInteractionGate = 1,
+    /// <summary>Legacy: on-hook wrong repair, phone Bait flow, Boss blocks phone rolls.</summary>
+    Version3_LegacyHookAndBaitRules = 2,
+}
 
 [RequireComponent(typeof(Collider))]
 public class WorkItem : MonoBehaviour
@@ -12,64 +21,150 @@ public class WorkItem : MonoBehaviour
     public float minTimeToBreak = 4f;
     public float maxTimeToBreak = 10f;
 
-    [Header("Broke / Bait 触发概率")]
-    [Tooltip("下一次故障时触发 Broke 的权重，与 Bait 权重共同决定概率。例如 8 和 2 表示约 80% Broke、20% Bait")]
+    [Tooltip("When off, BreakLoop will not auto enter Broke/Bait (tutorial or script control)")]
+    public bool enableAutoBreak = true;
+
+    [Header("Broke / Bait roll weights")]
+    [Tooltip("Weight for Broke on next failure roll; combined with baitWeight for odds (e.g. 8 and 2 ≈ 80% Broke, 20% Bait)")]
     [Min(0f)]
     public float breakWeight = 5f;
-    [Tooltip("下一次故障时触发 Bait 的权重")]
+    [Tooltip("Weight for Bait on next failure roll")]
     [Min(0f)]
     public float baitWeight = 1f;
 
+    [Tooltip("Seconds before non-phone Bait auto-resolves (Version 3 phone Bait uses pickup flow instead).")]
+    [Min(0.01f)]
+    public float baitSelfFixDurationSeconds = 3f;
+
     [Header("Hotkey Repair (Input System)")]
+    [Tooltip("When off: this object's Input System binding and key polling never call TryRepair(); Uduino / Inspector can still invoke TryRepair")]
+    public bool enableHotkeyRepair = true;
+
     [Tooltip("Examples: <Keyboard>/1  <Keyboard>/2  <Keyboard>/numpad1  <Keyboard>/q")]
     public string repairBindingPath = "<Keyboard>/1";
-    [Tooltip("与上面按键一致，用于 Uduino/模拟按键时的备用轮询；若使用 UduinoPinToKeyTrigger 建议同时把该脚本的「直接修好目标」指向本物体")]
+    [Tooltip("Matches binding above; fallback poll for Uduino/simulated keys. With UduinoPinToKeyTrigger, point its direct-repair target at this object")]
     public KeyCode repairKeyCodeFallback = KeyCode.Alpha1;
 
     [Header("Optional Distance Requirement")]
     public bool requirePlayerInRange = false;
     public float interactRange = 2.0f;
-    public Transform player; // 不填会自动找 Tag=Player
+    public Transform player; // If unset, auto-find Tag=Player
 
     [Header("Colors")]
     public Color brokenColor = new Color(1f, 0.2f, 0.2f, 1f);
     public Color baitColor = new Color(0.2f, 1f, 0.2f, 1f);
 
-    [Header("Uduino / 外部输出（可选）")]
-    [Tooltip("故障发生时触发，可连到 Uduino 输出等")]
+    [Header("Visual sync with logic")]
+    [Tooltip("When on: each frame in Broke/Bait rewrites MaterialPropertyBlock so other scripts/Animator/material instancing cannot override tint (looks fixed but logic still broken).")]
+    public bool keepVisualSyncedWithLogic = true;
+
+    [Header("Uduino / external outputs (optional)")]
+    [Tooltip("Invoked on failure; wire to Uduino outputs etc.")]
     public UnityEvent OnBroken;
     [Tooltip("I'm scared")] 
     public UnityEvent OnBaiting;
-    [Tooltip("修好时触发（玩家击打修好时），可连到 Uduino / LED 恢复等")]
+    [Tooltip("When returning to normal: player fixed Broke (Fix), or Bait timer ended naturally (OnBaitingEnded fires same frame, slightly earlier); materials / LED / stop broken SFX")]
     public UnityEvent OnFixed;
-    [Tooltip("Bait 时间到自行结束时触发（玩家未击打），可连到 LED 恢复等")]
+    [Tooltip("When Bait expires without player hit; LED restore etc.")]
     public UnityEvent OnBaitingEnded;
+
+    [Tooltip("When hit counts as correct repair (before Fix); wire correct-repair SFX on PlaySoundOnEventAudioManager")]
+    public UnityEvent OnRepairCorrect;
+    [Tooltip("When hit counts as wrong (spam on Bait or idle wrong hit); wire wrong-repair SFX")]
+    public UnityEvent OnRepairIncorrect;
 
     [Header("Debug")]
     public bool debugLogs = false;
-    public KeyCode debugBreakKeyOldInput = KeyCode.None; // 旧Input不用（留空）
-    public string debugBreakBindingPath = "<Keyboard>/b"; // 新Input：按B强制故障（排查用）
+    [Tooltip("Log to Console when TryRepair counts as wrong (Bait/idle/phone on-hook); shows itemName or object name")]
+    public bool debugLogWrongRepair = false;
+    [Tooltip("Log when Break() or Bait() returns without doing anything (e.g. still Baiting → Break skipped). 用于查教程/电话 Bait 与 Broke 竞态。")]
+    public bool debugLogBreakBaitSkips = false;
+    public KeyCode debugBreakKeyOldInput = KeyCode.None; // Legacy input unused (leave None)
+    public string debugBreakBindingPath = "<Keyboard>/b"; // New Input: B forces break (debug)
 
     public bool IsBroken { get; private set; } = false;
     public bool IsBaiting {get; private set;} = false;
+
+    /// <summary>True when this object is configured as the phone WorkItem.</summary>
+    public bool IsPhoneWorkItem =>
+        treatAsPhoneWorkItem
+        || (!string.IsNullOrWhiteSpace(itemName) && itemName.Trim().Equals("phone", System.StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Version 3 only: legacy hook/Bait phone rules (same as pre-version-selector behavior).</summary>
+    public bool PhoneBaitRulesActive =>
+        IsPhoneWorkItem
+        && phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules
+        && (usePhoneBaitBehavior
+            || (!string.IsNullOrWhiteSpace(itemName) && itemName.Trim().Equals("phone", System.StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>For GameManager: whether phone-style Bait should decay performance score per second.</summary>
+    public bool ShouldApplyPhoneBaitPerformanceDecay => IsBaiting && PhoneBaitRulesActive;
+
+    /// <summary>For audio: under V3 phone rules, whether handset is on cradle (not off-hook).</summary>
+    public bool PhoneIsOnCradleForSfx => PhoneBaitRulesActive && !_phonePhysicallyOffHook;
+
+    /// <summary>V2/V3: off-hook suppresses Unity broken/Bait loop SFX on pickup. V1 does not.</summary>
+    public bool PhoneSuppressesUnitySfxOnPickup =>
+        IsPhoneWorkItem
+        && phoneBehaviorVersion != PhoneBehaviorVersion.Version1_StandardWithPickupAudio;
+
+    /// <summary>Handset off-hook (from PHONE_PICKUP / NotifyPhonePickedUp).</summary>
+    public bool PhonePhysicallyOffHook => _phonePhysicallyOffHook;
+
+    /// <summary>V2: first pickup in current Broke/Bait episode unlocked interaction.</summary>
+    public bool PhoneInteractionUnlocked => _phoneInteractionUnlocked;
 
     private Renderer[] allRenderers;
     private MaterialPropertyBlock mpb;
 
     private InputAction repairAction;
     private InputAction debugBreakAction;
+    bool _lastEnableHotkeyRepair;
+    bool _warnedNoSupportedColorProperty;
 
+    Coroutine _baitSelfFixCoroutine;
+    Coroutine _phoneBaitAfterPickupCoroutine;
+    bool _phoneLiftedDuringCurrentBait;
 
+    /// <summary>Maintained by pickup/hang-up events: true when handset is considered off-hook.</summary>
+    bool _phonePhysicallyOffHook;
+
+    /// <summary>V2: true after first pickup during current Broke/Bait; cleared on Fix / Bait resolve / new Broke/Bait.</summary>
+    bool _phoneInteractionUnlocked;
+
+    /// <summary>Ignore TryRepair briefly after hang-up (reduce piezo vibration false triggers).</summary>
+    float _phoneTryRepairSuppressedUntilTime;
+
+    /// <summary>Had off-hook while still Broke (broken loop stopped by pickup logic); on hang-up while still broken, resume loop.</summary>
+    bool _hadPhonePickupWhileBroken;
 
     //this doesn't really have a point but it's fun lol
     public GameObject smokeParticles;
 
-    public int breakInt;
-    public int baitInt;
-    public int rightSFX;
-    public int wrongSFX;
-
     public string itemName;
+
+    [Header("Phone")]
+    [Tooltip("Force phone behavior even if itemName is not \"phone\".")]
+    public bool treatAsPhoneWorkItem;
+
+    [Tooltip("Version 1 = normal WorkItem + Arduino audio on pickup while Broke/Bait. Version 2 = must pick up once before correct repair. Version 3 = legacy hook/Bait rules.")]
+    public PhoneBehaviorVersion phoneBehaviorVersion = PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules;
+
+    [Header("Phone · Version 3 only")]
+    [Tooltip("When on (V3): no 3s self-fix; without off-hook, Bait persists. End: off-hook then hang-up, or wait phoneBaitAutoResolveSecondsAfterPickup after pickup.")]
+    public bool usePhoneBaitBehavior;
+
+    [Tooltip("Seconds after off-hook to auto-resolve Bait; 0 = only hang-up after pickup ends it (holding without hang-up keeps Bait).")]
+    [Min(0f)]
+    public float phoneBaitAutoResolveSecondsAfterPickup = 8f;
+
+    [Tooltip("Seconds after hang-up to ignore TryRepair (no punish, no fix); reduces piezo false triggers when setting phone down.")]
+    [Min(0f)]
+    public float phonePutDownTryRepairDebounceSeconds = 0.5f;
+
+    public GameObject tutorialBox;
+    public bool isLast;
+    public GameObject finalBox;
     private static readonly int[] ColorPropIds =
     {
         Shader.PropertyToID("_BaseColor"),
@@ -78,10 +173,6 @@ public class WorkItem : MonoBehaviour
         Shader.PropertyToID("_UnlitColor"),
         Shader.PropertyToID("_MainColor"),
     };
-
-    //0 is the broken sound (if any), 1 is the bait sound (destroys self), 2 is the correct sound, 3 is the wrong sound
-    public List<GameObject> audioGameobjects = new List<GameObject>();
-    public GameObject instantiatedAudio;
 
     void Awake()
     {
@@ -103,8 +194,8 @@ public class WorkItem : MonoBehaviour
 
     void OnEnable()
     {
-        repairAction.Enable();
-        repairAction.performed += OnRepairPerformed;
+        _lastEnableHotkeyRepair = enableHotkeyRepair;
+        ConfigureHotkeyRepairInput();
 
         debugBreakAction.Enable();
         debugBreakAction.performed += OnDebugBreakPerformed;
@@ -112,23 +203,63 @@ public class WorkItem : MonoBehaviour
 
     void OnDisable()
     {
-        repairAction.performed -= OnRepairPerformed;
-        repairAction.Disable();
+        StopAllBaitCoroutines();
+
+        if (repairAction != null)
+        {
+            repairAction.performed -= OnRepairPerformed;
+            repairAction.Disable();
+        }
 
         debugBreakAction.performed -= OnDebugBreakPerformed;
         debugBreakAction.Disable();
     }
 
+    void ConfigureHotkeyRepairInput()
+    {
+        if (repairAction == null) return;
+
+        repairAction.performed -= OnRepairPerformed;
+
+        if (enableHotkeyRepair)
+        {
+            repairAction.performed += OnRepairPerformed;
+            repairAction.Enable();
+        }
+        else
+            repairAction.Disable();
+    }
+
     void Update()
     {
-        // 备用：Uduino/模拟按键有时不会触发 InputAction.performed，在 Broke/Bait 时轮询键盘
+        if (enableHotkeyRepair != _lastEnableHotkeyRepair)
+        {
+            _lastEnableHotkeyRepair = enableHotkeyRepair;
+            if (isActiveAndEnabled)
+                ConfigureHotkeyRepairInput();
+        }
 
-            if ((IsBroken || IsBaiting) && repairKeyCodeFallback != KeyCode.None && UnityEngine.InputSystem.Keyboard.current != null)
-            {
-                var key = KeyCodeToKey(repairKeyCodeFallback);
-                if (key != UnityEngine.InputSystem.Key.None && UnityEngine.InputSystem.Keyboard.current[key].wasPressedThisFrame)
-                    TryRepair();
-            }
+        // Fallback: Uduino/simulated keys may not fire InputAction.performed; poll keyboard in Broke/Bait when enableHotkeyRepair
+        if (!enableHotkeyRepair)
+            return;
+
+        if ((IsBroken || IsBaiting) && repairKeyCodeFallback != KeyCode.None && UnityEngine.InputSystem.Keyboard.current != null)
+        {
+            var key = KeyCodeToKey(repairKeyCodeFallback);
+            if (key != UnityEngine.InputSystem.Key.None && UnityEngine.InputSystem.Keyboard.current[key].wasPressedThisFrame)
+                TryRepair();
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (!keepVisualSyncedWithLogic)
+            return;
+
+        if (IsBroken)
+            ApplyTintOverride(brokenColor);
+        else if (IsBaiting)
+            ApplyTintOverride(baitColor);
     }
 
     static UnityEngine.InputSystem.Key KeyCodeToKey(KeyCode kc)
@@ -202,8 +333,163 @@ public class WorkItem : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.UnregisterItem(this);
 
+        StopAllBaitCoroutines();
+
         repairAction?.Dispose();
         debugBreakAction?.Dispose();
+    }
+
+    void StopAllBaitCoroutines()
+    {
+        if (_baitSelfFixCoroutine != null)
+        {
+            StopCoroutine(_baitSelfFixCoroutine);
+            _baitSelfFixCoroutine = null;
+        }
+
+        if (_phoneBaitAfterPickupCoroutine != null)
+        {
+            StopCoroutine(_phoneBaitAfterPickupCoroutine);
+            _phoneBaitAfterPickupCoroutine = null;
+        }
+    }
+
+    /// <summary>Call from GameManager / Arduino <c>onPhonePickup</c>.</summary>
+    public void NotifyPhonePickedUp()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+
+        bool wasOffHook = _phonePhysicallyOffHook;
+        _phonePhysicallyOffHook = true;
+
+        switch (phoneBehaviorVersion)
+        {
+            case PhoneBehaviorVersion.Version1_StandardWithPickupAudio:
+                if (IsBroken)
+                    _hadPhonePickupWhileBroken = true;
+                if ((IsBroken || IsBaiting) && !wasOffHook)
+                    TrySendPhoneHardwareAudioForCurrentState();
+                break;
+
+            case PhoneBehaviorVersion.Version2_FirstPickupInteractionGate:
+                if (IsBroken || IsBaiting)
+                {
+                    if (!_phoneInteractionUnlocked)
+                        _phoneInteractionUnlocked = true;
+                    if (IsBroken)
+                        _hadPhonePickupWhileBroken = true;
+                }
+                break;
+
+            case PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules:
+                NotifyPhonePickedUp_Version3();
+                break;
+        }
+    }
+
+    /// <summary>Call from GameManager / Arduino <c>onPhonePutdown</c>.</summary>
+    public void NotifyPhonePutDown()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+
+        _phonePhysicallyOffHook = false;
+
+        switch (phoneBehaviorVersion)
+        {
+            case PhoneBehaviorVersion.Version1_StandardWithPickupAudio:
+                break;
+
+            case PhoneBehaviorVersion.Version2_FirstPickupInteractionGate:
+            case PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules:
+                NotifyPhonePutDown_Version2And3();
+                break;
+        }
+    }
+
+    /// <summary>Legacy entry; prefer <see cref="NotifyPhonePickedUp"/>.</summary>
+    public void NotifyPhonePickedUpForBaitFlow() => NotifyPhonePickedUp();
+
+    /// <summary>Legacy entry; prefer <see cref="NotifyPhonePutDown"/>.</summary>
+    public void NotifyPhonePutDownForBaitFlow() => NotifyPhonePutDown();
+
+    void NotifyPhonePickedUp_Version3()
+    {
+        if (!PhoneBaitRulesActive)
+            return;
+
+        if (IsBroken)
+            _hadPhonePickupWhileBroken = true;
+
+        if (!IsBaiting)
+            return;
+        if (_phoneLiftedDuringCurrentBait)
+            return;
+
+        _phoneLiftedDuringCurrentBait = true;
+
+        if (_phoneBaitAfterPickupCoroutine != null)
+        {
+            StopCoroutine(_phoneBaitAfterPickupCoroutine);
+            _phoneBaitAfterPickupCoroutine = null;
+        }
+
+        if (phoneBaitAutoResolveSecondsAfterPickup > 0f)
+            _phoneBaitAfterPickupCoroutine = StartCoroutine(PhoneBaitAutoResolveAfterPickupRoutine());
+    }
+
+    void NotifyPhonePutDown_Version2And3()
+    {
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules && !PhoneBaitRulesActive)
+            return;
+
+        _phoneTryRepairSuppressedUntilTime = Time.time + Mathf.Max(0f, phonePutDownTryRepairDebounceSeconds);
+
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules
+            && IsBaiting && _phoneLiftedDuringCurrentBait)
+        {
+            ResolveBaitLikeSelfFix();
+        }
+
+        if (IsBroken && _hadPhonePickupWhileBroken)
+        {
+            _hadPhonePickupWhileBroken = false;
+            JiU.PlaySoundOnEventAudioManager.ResumeBrokenLoopAfterPhonePutdownForWorkItem(this);
+            JiU.PlaySoundOnEvent.ResumeBrokenClipAfterPhonePutdownForWorkItem(this);
+        }
+    }
+
+    void TrySendPhoneHardwareAudioForCurrentState()
+    {
+        if (GameManager.Instance == null || GameManager.Instance.arduinoBridgeScript == null)
+            return;
+        GameManager.Instance.arduinoBridgeScript.SendPhoneAudioForWorkItemState(IsBaiting);
+    }
+
+    void ResetPhoneEpisodeStateForNewBrokeOrBait()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+        _phoneInteractionUnlocked = false;
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules)
+            _phonePhysicallyOffHook = false;
+    }
+
+    void ClearPhoneEpisodeStateOnResolved()
+    {
+        if (!IsPhoneWorkItem)
+            return;
+        _phoneInteractionUnlocked = false;
+    }
+
+    /// <summary>Phone items: skip random Broke/Bait rolls while Boss warning is active or Boss is present (including fallback branches that would become Bait).</summary>
+    bool ShouldBlockPhoneRandomBrokeOrBaitForBoss()
+    {
+        if (!PhoneBaitRulesActive || GameManager.Instance == null)
+            return false;
+        GameManager gm = GameManager.Instance;
+        return gm.BossWarning || gm.BossIsHere;
     }
 
     /*private IEnumerator BaitLoop()
@@ -227,28 +513,59 @@ public class WorkItem : MonoBehaviour
     {
         while (true)
         {
-            if (!IsBroken || !IsBaiting)
+            if (!IsBroken && !IsBaiting)
             {
-                float t = Random.Range(minTimeToBreak, maxTimeToBreak);
+                if (!enableAutoBreak)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                float minT = minTimeToBreak;
+                float maxT = maxTimeToBreak;
+                if (GameManager.Instance != null && GameManager.Instance.UsePhaseBreakTiming())
+                {
+                    minT = GameManager.Instance.GetActiveBreakIntervalMin();
+                    maxT = GameManager.Instance.GetActiveBreakIntervalMax();
+                }
+
+                float t = Random.Range(minT, maxT);
                 yield return new WaitForSeconds(t);
 
-                // Boss 预警开始到离开期间：不产生新故障
                 if (GameManager.FreezeFailures)
                     continue;
 
-                // 按 Inspector 中的 breakWeight / baitWeight 决定本次是 Broke 还是 Bait
                 float total = breakWeight + baitWeight;
                 if (total <= 0f)
                 {
                     if (Random.value < 0.5f)
                     {
-                        Break();
-
+                        if (GameManager.Instance != null && GameManager.Instance.BlockNewHackEventsNow())
+                        {
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && GameManager.Instance.BlockNewBrokeDuringBossStay())
+                        {
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
+                            continue;
+                        else if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                            continue;
+                        else
+                            Break();
                     }
                     else
                     {
+                        if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                            continue;
                         Bait();
-
                     }
                 }
                 else
@@ -256,14 +573,33 @@ public class WorkItem : MonoBehaviour
                     float roll = Random.Range(0f, total);
                     if (roll < breakWeight)
                     {
-                        Break();
+                        if (GameManager.Instance != null && GameManager.Instance.BlockNewHackEventsNow())
+                        {
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && GameManager.Instance.BlockNewBrokeDuringBossStay())
+                        {
+                            if (baitWeight > 0f && !ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                                Bait();
+                            else
+                                continue;
+                        }
+                        else if (GameManager.Instance != null && !GameManager.Instance.CanStartNewBrokeState())
+                            continue;
+                        else if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                            continue;
+                        else
+                            Break();
                     }
-
                     else
                     {
+                        if (ShouldBlockPhoneRandomBrokeOrBaitForBoss())
+                            continue;
                         Bait();
                     }
-
                 }
             }
             else
@@ -273,33 +609,139 @@ public class WorkItem : MonoBehaviour
         }
     }
 
-    /// <summary>尝试修好（按键或 Uduino 触发）。可从 Inspector 中 UduinoPinToKeyTrigger 的 onTriggered 或「直接修好目标」调用。</summary>
+    /// <summary>Try repair (hotkey or Uduino). Call from UduinoPinToKeyTrigger onTriggered or direct-repair target in Inspector.</summary>
     public void TryRepair()
     {
-        Debug.Log($"I am trying to fix {this.itemName}"!);
-        if (instantiatedAudio != null )
-        {
-            Destroy(instantiatedAudio.gameObject);
-        }
+        //Debug.Log($"I am trying to fix {this.itemName}!");
+
+        if (IsPhoneWorkItem && TryHandlePhoneTryRepairBeforeGeneric())
+            return;
+
+        // Only real Broke after range checks does win + Fix; Bait / idle spam only lose and return
         if (!IsBroken)
         {
-            if (IsBaiting && GameManager.Instance != null)
+            if (IsBaiting)
             {
-                GameManager.Instance.UltraPunishment();
+                LogWrongRepairTry("bait_wrong_hit");
+                if (GameManager.Instance != null)
+                    GameManager.Instance.UltraPunishment();
+                // Punishment may game-over this frame; invoking again may run Inspector hooks that hide the fail panel
+                if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                    OnRepairIncorrect?.Invoke();
+                return;
             }
 
-            else if (GameManager.Instance != null)
-            {
+            LogWrongRepairTry("idle_wrong_hit");
+            if (GameManager.Instance != null)
                 GameManager.Instance.Punishment();
-            }
-
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
+            return;
         }
+
         if (requirePlayerInRange)
         {
             if (player == null) return;
             if (Vector3.Distance(player.position, transform.position) > interactRange) return;
         }
+
+        OnRepairCorrect?.Invoke();
         Fix();
+
+        if (GameManager.Instance != null)
+        {
+            string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+            GameManager.Instance.DebugLogPerformanceAfterSuccessfulRepair(label);
+        }
+    }
+
+    /// <returns>True if TryRepair should stop (handled or debounced).</returns>
+    bool TryHandlePhoneTryRepairBeforeGeneric()
+    {
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version2_FirstPickupInteractionGate)
+        {
+            if (Time.time < _phoneTryRepairSuppressedUntilTime)
+                return true;
+
+            if ((IsBroken || IsBaiting) && !_phoneInteractionUnlocked)
+            {
+                ApplyPhoneTryRepairWhileLockedPunishment();
+                return true;
+            }
+
+            return false;
+        }
+
+        if (phoneBehaviorVersion == PhoneBehaviorVersion.Version3_LegacyHookAndBaitRules && PhoneBaitRulesActive)
+        {
+            if (Time.time < _phoneTryRepairSuppressedUntilTime)
+                return true;
+
+            if (!_phonePhysicallyOffHook)
+            {
+                ApplyPhoneTryRepairWhileOnHookPunishment();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void ApplyPhoneTryRepairWhileLockedPunishment()
+    {
+        if (IsBaiting)
+        {
+            LogWrongRepairTry("phone_v2_locked_bait");
+            if (GameManager.Instance != null)
+                GameManager.Instance.UltraPunishment();
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
+            return;
+        }
+
+        if (IsBroken)
+        {
+            LogWrongRepairTry("phone_v2_locked_broke");
+            if (GameManager.Instance != null)
+                GameManager.Instance.Punishment();
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
+            return;
+        }
+
+        LogWrongRepairTry("phone_v2_locked_idle");
+        if (GameManager.Instance != null)
+            GameManager.Instance.Punishment();
+        if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+            OnRepairIncorrect?.Invoke();
+    }
+
+    void ApplyPhoneTryRepairWhileOnHookPunishment()
+    {
+        if (IsBaiting)
+        {
+            LogWrongRepairTry("phone_on_hook_bait");
+            if (GameManager.Instance != null)
+                GameManager.Instance.UltraPunishment();
+            if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+                OnRepairIncorrect?.Invoke();
+            return;
+        }
+
+        LogWrongRepairTry("phone_on_hook_idle");
+        if (GameManager.Instance != null)
+            GameManager.Instance.Punishment();
+        if (GameManager.Instance == null || !GameManager.Instance.IsGameOver)
+            OnRepairIncorrect?.Invoke();
+    }
+
+    void LogWrongRepairTry(string reason)
+    {
+        if (!debugLogWrongRepair)
+            return;
+        string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+        string state = IsBaiting ? "Bait" : IsBroken ? "Broke" : "Normal";
+        Debug.Log($"[WorkItem] Wrong TryRepair | item=\"{label}\" obj=\"{gameObject.name}\" state={state} reason={reason}", this);
     }
 
     private void OnRepairPerformed(InputAction.CallbackContext ctx)
@@ -314,11 +756,34 @@ public class WorkItem : MonoBehaviour
 
     public void Break()
     {
-        if (IsBroken) return;
+        if (IsBroken || IsBaiting)
+        {
+            if (debugLogBreakBaitSkips)
+            {
+                string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+                Debug.LogWarning(
+                    $"[WorkItem] Break() SKIPPED | item=\"{label}\" go=\"{gameObject.name}\" IsBroken={IsBroken} IsBaiting={IsBaiting} " +
+                    $"(若 IsBaiting 为 true，可能仍在教程 ForceBait 中，OnBroken/串口 ANOMALY 不会发)",
+                    this);
+            }
+            return;
+        }
+        _hadPhonePickupWhileBroken = false;
+        ResetPhoneEpisodeStateForNewBrokeOrBait();
         IsBroken = true;
-        instantiatedAudio = Instantiate(audioGameobjects[0], transform.position, Quaternion.identity);
 
-        ApplyTintOverride(brokenColor);
+        if (GameManager.Instance != null)
+        {
+            if (GameManager.Instance.isTutorialing == true)
+            {
+                if(tutorialBox != null)
+                    tutorialBox.SetActive(true);
+            }
+            GameManager.Instance.OnWorkItemEnteredHackedState(this);
+            GameManager.Instance.ApplyWorkPressureOnItemBroke();
+        }
+
+        WarnIfTintDidNotApply(ApplyTintOverride(brokenColor), "Broke");
         OnBroken?.Invoke();
 
         if (debugLogs)
@@ -327,41 +792,122 @@ public class WorkItem : MonoBehaviour
 
     public void Bait()
     {
-        if (IsBaiting) return;
+        if (IsBaiting || IsBroken)
+        {
+            if (debugLogBreakBaitSkips)
+            {
+                string label = string.IsNullOrWhiteSpace(itemName) ? name : itemName.Trim();
+                Debug.LogWarning(
+                    $"[WorkItem] Bait() SKIPPED | item=\"{label}\" go=\"{gameObject.name}\" IsBaiting={IsBaiting} IsBroken={IsBroken}",
+                    this);
+            }
+            return;
+        }
         IsBaiting = true;
-        Instantiate(audioGameobjects[1], transform.position, Quaternion.identity);
+        _phoneLiftedDuringCurrentBait = false;
+        ResetPhoneEpisodeStateForNewBrokeOrBait();
+        StopAllBaitCoroutines();
 
-        ApplyTintOverride(baitColor);
+        WarnIfTintDidNotApply(ApplyTintOverride(baitColor), "Bait");
         OnBaiting?.Invoke();
-        
+
         if (debugLogs)
             Debug.Log($"[WorkItem] {name} BAIT -> tint applied");
-        StartCoroutine(BaitSelfFix());
+
+        if (PhoneBaitRulesActive)
+        {
+            // Incoming Bait assumes on-hook (do not inherit previous call off-hook state)
+            _phonePhysicallyOffHook = false;
+            // No 3s self-fix; wait for pickup+hang-up or post-pickup timer
+        }
+        else
+            _baitSelfFixCoroutine = StartCoroutine(BaitSelfFix());
     }
 
     IEnumerator BaitSelfFix()
     {
-        yield return new WaitForSeconds(3);
-        if (IsBaiting)
-        {
-            IsBaiting = false;
-            ClearTintOverride();
-            OnBaitingEnded?.Invoke();
-        }
-        Fix();
+        yield return new WaitForSeconds(Mathf.Max(0.01f, baitSelfFixDurationSeconds));
+        _baitSelfFixCoroutine = null;
+        if (!IsBaiting)
+            yield break;
+
+        ResolveBaitLikeSelfFix();
+    }
+
+    IEnumerator PhoneBaitAutoResolveAfterPickupRoutine()
+    {
+        yield return new WaitForSeconds(phoneBaitAutoResolveSecondsAfterPickup);
+        _phoneBaitAfterPickupCoroutine = null;
+        if (!IsBaiting || !PhoneBaitRulesActive || !_phoneLiftedDuringCurrentBait)
+            yield break;
+
+        ResolveBaitLikeSelfFix();
+    }
+
+    void ResolveBaitLikeSelfFix()
+    {
+        if (!IsBaiting)
+            return;
+
+        StopAllBaitCoroutines();
+        _phoneLiftedDuringCurrentBait = false;
+
+        IsBaiting = false;
+        ClearPhoneEpisodeStateOnResolved();
+        ClearTintOverride();
+        OnBaitingEnded?.Invoke();
+
+        // Pure Bait end: Fix() would return early (no longer Broke/Bait) and skip OnFixed;
+        // if OnFixed restores normal materials in Inspector, visuals could look fixed without the same event chain as hit-to-fix.
+        if (!IsBroken)
+            OnFixed?.Invoke();
+    }
+
+    /// <summary>
+    /// 结算（胜利/失败）时由 GameManager 调用的静默复位。
+    /// 清除 Broke/Bait 状态、停止协程、恢复 tint——不触发任何 UnityEvent，不播放音效，不影响 work 值。
+    /// </summary>
+    public void ForceResetOnMatchEnd()
+    {
+        if (!IsBroken && !IsBaiting) return;
+
+        enableAutoBreak = false;
+        StopAllBaitCoroutines();
+
+        IsBroken  = false;
+        IsBaiting = false;
+        _phoneLiftedDuringCurrentBait = false;
+        _hadPhonePickupWhileBroken    = false;
+        ClearPhoneEpisodeStateOnResolved();
+        ClearTintOverride();
+        // 不调用 OnFixed/OnBaitingEnded，避免在结算时播放修复音效或触发其他 Inspector 绑定
     }
 
     public void Fix()
     {
-        // 仅当当前处于 Broke 或 Bait 时才执行修好逻辑并触发 OnFixed；正常状态下按键不触发
-        if (!IsBroken && !IsBaiting)
-        {
-            Instantiate(audioGameobjects[3], transform.position, Quaternion.identity);
-            return;
-        }
+        // Run fix logic and OnFixed only from Broke or Bait; idle keypress does nothing
+        if (!IsBroken && !IsBaiting) return;
+        StopAllBaitCoroutines();
+        _phoneLiftedDuringCurrentBait = false;
+
+        bool wasBroken = IsBroken;
         IsBroken = false;
         IsBaiting = false;
-        Instantiate(audioGameobjects[2], transform.position, Quaternion.identity);
+        ClearPhoneEpisodeStateOnResolved();
+        if (wasBroken)
+            _hadPhonePickupWhileBroken = false;
+
+        if (wasBroken && GameManager.Instance != null)
+        {
+            GameManager.Instance.ApplyWorkPressureOnBrokeRepaired();
+            // tutorialBox may point at a dialogue already Destroy()ed by ShowNextBoxForTut; treat as optional.
+            if (tutorialBox != null)
+                tutorialBox.SetActive(false);
+            if (isLast && finalBox != null)
+                finalBox.SetActive(true);
+        }
+            
+
         ClearTintOverride();
         OnFixed?.Invoke();
 
@@ -369,8 +915,23 @@ public class WorkItem : MonoBehaviour
             Debug.Log($"[WorkItem] {name} FIXED -> tint cleared");
     }
 
-    private void ApplyTintOverride(Color c)
+    void WarnIfTintDidNotApply(bool applied, string context)
     {
+        if (applied || _warnedNoSupportedColorProperty)
+            return;
+
+        _warnedNoSupportedColorProperty = true;
+        Debug.LogWarning(
+            $"[WorkItem] \"{name}\" entering {context}: could not write a color property on any Renderer material (need one of _BaseColor / _Color / _TintColor / _UnlitColor / _MainColor)." +
+            "Logic still breaks but visuals may not change, confusing hit-to-fix feedback. Use a shader with those properties or swap materials on OnBroken.",
+            this);
+    }
+
+    /// <returns>True if at least one material slot received a color write.</returns>
+    bool ApplyTintOverride(Color c)
+    {
+        bool anySlot = false;
+
         for (int r = 0; r < allRenderers.Length; r++)
         {
             Renderer rend = allRenderers[r];
@@ -410,7 +971,12 @@ public class WorkItem : MonoBehaviour
 
             if (debugLogs && !wroteAny)
                 Debug.LogWarning($"[WorkItem] {name} renderer({rend.name}) could not be tinted (no supported color props).");
+
+            if (wroteAny)
+                anySlot = true;
         }
+
+        return anySlot;
     }
 
     private void ClearTintOverride()

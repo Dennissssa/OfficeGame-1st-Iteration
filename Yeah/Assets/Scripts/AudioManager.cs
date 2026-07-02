@@ -1,7 +1,5 @@
-using NUnit.Framework;
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.Serialization;
 
 public class AudioManager : MonoBehaviour
 {
@@ -41,31 +39,59 @@ public class AudioManager : MonoBehaviour
         }
         else if (_instance != this)
         {
+            // 同一场景内出现重复实例时销毁多余的
             Destroy(gameObject);
         }
-
-        DontDestroyOnLoad(gameObject);
     }
 
-    public void PlaySound(int Index)
+    private void OnDestroy()
     {
+        if (_instance == this)
+            _instance = null;
+    }
+
+    /// <summary>
+    /// Plays EffectsList[index]. Prefers EffectsSource (same as PlaySoundOnEventAudioManager, JiUGameManagerBossAudio).
+    /// If EffectsSource is unset, falls back to the EffectsSourceList entry for that index.
+    /// Invalid indices are ignored silently to avoid exceptions inside Input System callbacks.
+    /// </summary>
+    public void PlaySound(int index)
+    {
+        if (EffectsList == null || index < 0 || index >= EffectsList.Count)
+            return;
+
+        AudioClip clip = EffectsList[index];
+        if (clip == null)
+            return;
+
+        if (EffectsSource != null)
         {
-            EffectsSourceList[Index].clip = EffectsList[Index];
-            {
-                EffectsSourceList[Index].Play();
-            }
+            EffectsSource.clip = clip;
+            EffectsSource.Play();
+            return;
+        }
+
+        if (EffectsSourceList != null && index < EffectsSourceList.Count && EffectsSourceList[index] != null)
+        {
+            EffectsSourceList[index].clip = clip;
+            EffectsSourceList[index].Play();
         }
     }
 
-    public void PlayMusic(int Index)
+    public void PlayMusic(int index)
     {
+        if (MusicSource == null || MusicList == null || index < 0 || index >= MusicList.Count)
+            return;
+
+        AudioClip clip = MusicList[index];
+        if (clip == null)
+            return;
+
         if (MusicSource.isPlaying)
-        {
             MusicSource.Stop();
-        }
 
-        MusicSource.clip = MusicList[Index];
-        MusicSource.PlayOneShot(MusicSource.clip);
+        MusicSource.clip = clip;
+        MusicSource.Play();
     }
 
     //public void PlayRandom(AudioClip clip)

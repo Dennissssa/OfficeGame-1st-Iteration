@@ -5,19 +5,19 @@ using System.Collections.Generic;
 using System.IO.Ports;
 
 /// <summary>
-/// 单板多灯：通过一个固定串口连接一块 Arduino。LED 可与 WorkItem 绑定：物品进入 Broke/Bait 时改灯颜色，玩家修好（打击）时恢复原本颜色。
+/// One board, multiple LEDs over one serial link to Arduino. Optional WorkItem bind: Broke/Bait colors; repair restores default.
 /// </summary>
 public class LEDManager : MonoBehaviour
 {
-    [Header("板子串口（所有 LED 共用同一端口）")]
-    [Tooltip("Arduino 连接的端口，例如 COM4 (Windows) 或 /dev/ttyUSB0 (Mac/Linux)")]
+    [Header("Board serial (all LEDs share one port)")]
+    [Tooltip("Arduino port, e.g. COM4 (Windows) or /dev/ttyUSB0 (Mac/Linux)")]
     [SerializeField] private string portName = "COM4";
 
-    [Tooltip("与 Arduino 串口监视器一致，常用 9600")]
+    [Tooltip("Match Arduino Serial Monitor, often 9600")]
     [SerializeField] private int baudRate = 9600;
 
-    [Header("LED 列表")]
-    [Tooltip("每个元素对应一个 LED：Pin、默认颜色、Broke/Bait 状态颜色；可绑定 WorkItem 以随物品状态自动变灯")]
+    [Header("LED list")]
+    [Tooltip("Each entry: pin, default/on color, Broke/Bait colors; optional WorkItem drives colors")]
     [SerializeField] private LEDConfig[] leds = Array.Empty<LEDConfig>();
 
     private SerialPort serial;
@@ -27,7 +27,7 @@ public class LEDManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(portName))
         {
-            Debug.LogWarning("[LEDManager] 未配置 Port Name，LED 控制已禁用。");
+            Debug.LogWarning("[LEDManager] Port Name not set; LED control disabled.");
             return;
         }
 
@@ -41,15 +41,15 @@ public class LEDManager : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"[LEDManager] Failed to open {portName}: {ex.Message}\n" +
-                "请检查：1) 端口号是否正确；2) 是否已关闭 Arduino IDE 串口监视器；3) 是否有其他程序占用该端口。");
+                "Check: 1) Correct port; 2) Serial Monitor closed; 3) Port not in use.");
             return;
         }
 
-        // 游戏开始时将所有 LED 点亮为配置的默认颜色
+        // Light all LEDs to configured default at game start
         for (int i = 0; i < leds.Length; i++)
             SetLEDColor(i, leds[i].OnColor);
 
-        // 绑定 WorkItem：Broke/Bait 时改灯颜色；玩家修好(OnFixed)或 Bait 时间到(OnBaitingEnded)时恢复原本颜色
+        // WorkItem bind: Broke/Bait colors; OnFixed or OnBaitingEnded restores default
         for (int i = 0; i < leds.Length; i++)
         {
             var config = leds[i];
@@ -71,7 +71,7 @@ public class LEDManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 将指定 LED 设为 Broke 状态颜色（物品损坏时由绑定逻辑或外部调用）。
+    /// Set LED to Broke color (from bind or manual call).
     /// </summary>
     public void SetLEDToBrokeState(int index)
     {
@@ -80,7 +80,7 @@ public class LEDManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 将指定 LED 设为 Bait 状态颜色（物品进入 Bait 时由绑定逻辑或外部调用）。
+    /// Set LED to Bait color (from bind or manual call).
     /// </summary>
     public void SetLEDToBaitState(int index)
     {
@@ -89,7 +89,7 @@ public class LEDManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 恢复指定 LED 为原本颜色（玩家修好/打击时由绑定逻辑或外部调用）。
+    /// Restore LED to default/on color (repair or manual call).
     /// </summary>
     public void RestoreLEDColor(int index)
     {
@@ -98,7 +98,7 @@ public class LEDManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 设置指定 LED 的颜色并发送“点亮”指令，供其他脚本在运行时调用；同时更新该 LED 的“原本颜色”（恢复时使用）。
+    /// Set LED color, send ON command, update stored default for restore.
     /// </summary>
     public void SetLEDColor(int index, Color color)
     {
@@ -108,7 +108,7 @@ public class LEDManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 获取指定 LED 当前配置的“点亮颜色”（可写回 SetLEDColor 保持一致性）。
+    /// Current configured on-color for LED (use with SetLEDColor for consistency).
     /// </summary>
     public Color GetLEDColor(int index)
     {
@@ -118,7 +118,7 @@ public class LEDManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 发送“点亮”指令。协议：一行 "ON pin r g b\n"，pin 区分灯珠，r/g/b 为 0-255。
+    /// Send ON line: "ON pin r g b\n", pin selects LED, r/g/b 0-255.
     /// </summary>
     private void SendLEDOnWithColor(int index, Color color)
     {
@@ -184,22 +184,22 @@ public class LEDManager : MonoBehaviour
     [Serializable]
     public class LEDConfig
     {
-        [Header("引脚 / 灯珠索引")]
-        [Tooltip("Arduino 上的数字引脚号（如 5、6、7），或 NeoPixel 条带上的灯珠索引（0、1、2…），与 Arduino 程序约定一致")]
+        [Header("Pin / pixel index")]
+        [Tooltip("Arduino digital pin (5,6,7…) or NeoPixel index (0,1,2…); match firmware")]
         public int Pin;
 
-        [Header("颜色")]
-        [Tooltip("默认/原本颜色；游戏开始时点亮，玩家修好物品时恢复为此颜色")]
+        [Header("Colors")]
+        [Tooltip("Default/on color: lit at start, restored on repair")]
         public Color OnColor = Color.green;
 
-        [Tooltip("物品进入 Broke（损坏）状态时 LED 显示的颜色")]
+        [Tooltip("LED color when item is Broke")]
         public Color BrokeColor = new Color(1f, 0.2f, 0.2f, 1f);
 
-        [Tooltip("物品进入 Bait 状态时 LED 显示的颜色")]
+        [Tooltip("LED color when item is in Bait")]
         public Color BaitColor = new Color(0.2f, 1f, 0.2f, 1f);
 
-        [Header("绑定 WorkItem（可选）")]
-        [Tooltip("若指定，则随该物品的 Broke/Bait/修好 自动切换 LED 颜色；不填则仅通过脚本调用 SetLEDToBrokeState / SetLEDToBaitState / RestoreLEDColor")]
+        [Header("WorkItem bind (optional)")]
+        [Tooltip("If set, LED follows Broke/Bait/fix; else drive via SetLEDToBrokeState / SetLEDToBaitState / RestoreLEDColor")]
         public WorkItem WorkItem;
     }
 }
