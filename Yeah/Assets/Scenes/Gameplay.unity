@@ -7230,7 +7230,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JiU.PlaySoundOnEventAudioManager
   localSfxSource: {fileID: 1127083644}
   skipBrokenAndBaitSounds: 0
-  effectIndex: 13
+  effectIndex: -1
   loopBrokenSound: 1
   baitEffectIndex: -1
   loopBaitSound: 0
@@ -7308,7 +7308,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JiU.PlaySoundOnEventAudioManager
   localSfxSource: {fileID: 983266347}
   skipBrokenAndBaitSounds: 0
-  effectIndex: 14
+  effectIndex: -1
   loopBrokenSound: 0
   baitEffectIndex: -1
   loopBaitSound: 0
@@ -15404,6 +15404,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1987669259}
   - component: {fileID: 1987669260}
+  - component: {fileID: 1987669261}
   m_Layer: 0
   m_Name: Arduino
   m_TagString: Untagged
@@ -15433,7 +15434,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1987669257}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b02ab9e4d47a56e4a9ba044684b68633, type: 3}
   m_Name: 
@@ -15549,6 +15550,130 @@ MonoBehaviour:
   debugLogSerialTx: 0
   debugLogPhonePickupPutdown: 0
   debugLogOnHitSpeaker: 0
+--- !u!114 &1987669261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1987669257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40e5da0eea96f9941b52a28a36d3c06f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArduinoSerialBridgeWithMonitor
+  portName: COM6
+  baudRate: 9600
+  onHit:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 983266344}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1141977272}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 363469229}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 206531936}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 882021887}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: TryRepair
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPhonePickup:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1141977272}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: NotifyPhonePickedUp
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPhonePutdown:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1141977272}
+        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
+        m_MethodName: NotifyPhonePutDown
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  ledBindings:
+  - LedIndex: 1
+    WorkItem: {fileID: 983266344}
+  phoneWorkItem: {fileID: 1141977272}
+  monitorWorkItem: {fileID: 363469229}
+  printerWorkItem: {fileID: 882021887}
+  debugLogSerialTx: 1
+  debugLogPhonePickupPutdown: 1
+  debugLogOnHitSpeaker: 1
 --- !u!1 &1991350955
 GameObject:
   m_ObjectHideFlags: 0
