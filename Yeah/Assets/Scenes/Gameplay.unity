@@ -6831,8 +6831,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: eaa6054f9fd809047b1ceddc04d5af0a, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -6868,13 +6868,16 @@ MonoBehaviour:
   dragBoundaryRect: {fileID: 879958897}
   filePrefab: {fileID: 1154374863482529976, guid: f3400956988677741a902070e40ee027, type: 3}
   fileCardSize: {x: 60, y: 80}
-  typeASprites: []
-  typeAColor: {r: 0.95, g: 0.25, b: 0.25, a: 1}
-  typeBSprites: []
-  typeBColor: {r: 0.25, g: 0.5, b: 1, a: 1}
-  maxFileCount: 10
+  typeASprites:
+  - {fileID: 21300000, guid: c1acd3c72c11b494ab62cc183ab6b176, type: 3}
+  typeAColor: {r: 1, g: 1, b: 1, a: 1}
+  typeBSprites:
+  - {fileID: 21300000, guid: dd656cb1ad081f54d9c8f4967ad815b3, type: 3}
+  - {fileID: 21300000, guid: 48a9e94bfe905544098be888806c83a9, type: 3}
+  typeBColor: {r: 1, g: 1, b: 1, a: 1}
+  maxFileCount: 6
   spawnIntervalSeconds: 1.5
-  workReductionPerCorrectSort: 5
+  workReductionPerCorrectSort: 3
   wrongDropBlockDuration: 1.5
   debugLog: 0
 --- !u!114 &879958901
@@ -7619,10 +7622,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 879958897}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -835, y: 0}
-  m_SizeDelta: {x: -1670, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -600, y: -280}
+  m_SizeDelta: {x: 340, y: 320}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &915814030
 MonoBehaviour:
@@ -7637,15 +7640,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0.27518845, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: d8d17806ee1980641acbf2bf758f23dd, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -10257,10 +10260,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 879958897}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 835, y: 0}
-  m_SizeDelta: {x: -1670, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 600, y: -279.99982}
+  m_SizeDelta: {x: 340, y: 320}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1289738247
 MonoBehaviour:
@@ -10275,15 +10278,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.40809155, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 5f9cd96639c392f4e8746ac438027a59, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -10976,8 +10979,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -660, y: -160}
+  m_AnchoredPosition: {x: 0, y: 75}
+  m_SizeDelta: {x: -200, y: -550}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1411907902
 MonoBehaviour:
@@ -10992,7 +10995,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.77658606, b: 0, a: 0.392}
+  m_Color: {r: 1, g: 0.77658606, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -15672,8 +15675,8 @@ MonoBehaviour:
   monitorWorkItem: {fileID: 363469229}
   printerWorkItem: {fileID: 882021887}
   debugLogSerialTx: 1
-  debugLogPhonePickupPutdown: 1
-  debugLogOnHitSpeaker: 1
+  debugLogPhonePickupPutdown: 0
+  debugLogOnHitSpeaker: 0
 --- !u!1 &1991350955
 GameObject:
   m_ObjectHideFlags: 0
