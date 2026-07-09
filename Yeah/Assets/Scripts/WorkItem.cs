@@ -462,9 +462,8 @@ public class WorkItem : MonoBehaviour
 
     void TrySendPhoneHardwareAudioForCurrentState()
     {
-        if (GameManager.Instance == null || GameManager.Instance.arduinoBridgeScript == null)
-            return;
-        GameManager.Instance.arduinoBridgeScript.SendPhoneAudioForWorkItemState(IsBaiting);
+        if (GameManager.Instance == null) return;
+        GameManager.Instance.SendPhoneAudioToArduino(IsBaiting);
     }
 
     void ResetPhoneEpisodeStateForNewBrokeOrBait()
