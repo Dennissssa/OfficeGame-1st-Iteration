@@ -509,6 +509,14 @@ public class GameManager : MonoBehaviour
 
         if (ui != null)
         {
+            if (ui.workProgressLoseRoot == null)
+            {
+                Debug.LogError(
+                    "[GameManager] **workProgressLoseRoot** on the UIManager referenced by GameManager.ui is **not assigned**; work-pressure full cannot show lose panel." +
+                    $" That UIManager is on \"{ui.gameObject.name}\" instanceID={ui.GetInstanceID()}. If another UIManager exists in scene, assign all three result refs on one component or change ui reference.",
+                    ui);
+            }
+
             ui.InitWorkSlider(maxWork);
             ui.SetWork(work);
             ui.SetTime(_victoryCountdownRemaining);
