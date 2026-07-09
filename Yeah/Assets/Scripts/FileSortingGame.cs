@@ -77,10 +77,11 @@ public class FileSortingGame : MonoBehaviour
     [Min(0f)]
     public float workReductionPerCorrectSort = 5f;
 
-    // ─── 错误投放遮挡 ──────────────────────────────────────────
+    // ─── 错误投放 ──────────────────────────────────────────────
 
     [Header("Wrong Drop")]
-    [Tooltip("错误投放后遮挡面板显示的时长（秒）")]
+    [Tooltip("（已改为 Boss 窗口演出）错误投放后输入遮挡时长（秒）；遮挡期间无法继续拖拽文件。\n" +
+             "wrongDropBlockerPanel 不再显示，改由 BossWindowPerformance 播放演出。")]
     [Min(0.1f)]
     public float wrongDropBlockDuration = 1.5f;
 
@@ -228,6 +229,7 @@ public class FileSortingGame : MonoBehaviour
     /// 玩家正确分类后由 SortableFile.OnEndDrag 调用。
     /// 销毁两个对象：spawnedRoot（留在 spawnArea 的空壳）和 file.gameObject（视觉节点，
     /// 拖拽时已被 reparent 到根 Canvas，不再是 spawnedRoot 的子节点）。
+    /// 同时触发 Boss 窗口正确分类演出（带冷却，见 BossWindowPerformance）。
     /// </summary>
     public void OnCorrectDrop(SortableFile file)
     {
@@ -251,13 +253,21 @@ public class FileSortingGame : MonoBehaviour
                 GameManager.Instance.ui.SetWork(GameManager.Instance.work);
         }
 
+        // 触发 Boss 窗口正确分类演出（带冷却）
+        BossWindowPerformance.Instance?.TriggerCorrectSort();
+
         Log($"[FileSortingGame] 正确分类 work-={reduction}");
     }
 
-    /// <summary>玩家错误分类后由 SortableFile.OnEndDrag 调用；销毁文件并触发遮挡。</summary>
+    /// <summary>
+    /// 玩家错误分类后由 SortableFile.OnEndDrag 调用。
+    /// 销毁文件，给予 workUltraPunishment，并在 Boss 窗口播放错误分类演出。
+    /// 不再显示弹窗（wrongDropBlockerPanel），改由 BossWindowPerformance 处理演出。
+    /// 输入遮挡（IsBlocked）在 wrongDropBlockDuration 秒内仍然有效，防止连续错误操作。
+    /// </summary>
     public void OnWrongDrop(SortableFile file)
     {
-        Log("[FileSortingGame] 错误分类，销毁文件 + 触发遮挡。");
+        Log("[FileSortingGame] 错误分类，销毁文件 + 触发 Boss 窗口演出 + UltraPunishment。");
 
         _activeFiles.Remove(file);
 
@@ -266,6 +276,14 @@ public class FileSortingGame : MonoBehaviour
             Destroy(file.spawnedRoot);
         Destroy(file.gameObject);
 
+        // 给予 work ultra punishment
+        if (GameManager.Instance != null)
+            GameManager.Instance.UltraPunishment();
+
+        // 触发 Boss 窗口错误分类演出（总是触发，中断其它演出）
+        BossWindowPerformance.Instance?.TriggerWrongSort();
+
+        // 保留输入遮挡（不显示面板，但阻止玩家立即再次拖拽文件）
         if (_blockCoroutine != null)
             StopCoroutine(_blockCoroutine);
         _blockCoroutine = StartCoroutine(WrongDropBlockRoutine());
@@ -274,15 +292,11 @@ public class FileSortingGame : MonoBehaviour
     IEnumerator WrongDropBlockRoutine()
     {
         _isBlocked = true;
-        if (wrongDropBlockerPanel != null)
-            wrongDropBlockerPanel.SetActive(true);
+        // wrongDropBlockerPanel 不再显示（已改为 BossWindowPerformance 演出）
 
         yield return new WaitForSeconds(wrongDropBlockDuration);
 
         _isBlocked = false;
-        if (wrongDropBlockerPanel != null)
-            wrongDropBlockerPanel.SetActive(false);
-
         _blockCoroutine = null;
     }
 }

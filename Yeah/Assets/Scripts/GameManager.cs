@@ -156,6 +156,10 @@ public class GameManager : MonoBehaviour
     public UIManager ui;
     public ScreenVignetteTint screenTint;
 
+    [Header("Virus Purge Meter (演出用进度条)")]
+    [Tooltip("病毒清除进度演出条；胜利时跳至100%，Boss失败时立即停止。留空则忽略。")]
+    public VirusPurgeMeter virusPurgeMeter;
+
     [Header("Boss events (optional)")]
     public UnityEvent OnBossWarningStarted;
     public UnityEvent OnBossArrived;
@@ -222,6 +226,8 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver => isGameOver;
 
     public ArduinoSerialBridge arduinoBridgeScript;
+    [Tooltip("Use this slot when the scene uses ArduinoSerialBridgeWithMonitor instead of ArduinoSerialBridge.")]
+    public ArduinoSerialBridgeWithMonitor arduinoBridgeWithMonitorScript;
 
     [Header("Phone pickup · SFX scope")]
     [Tooltip("Assign the phone WorkItem. V2/V3: off-hook suppresses broken/Bait loop SFX on pickup; hang-up while still Broke resumes loop. V1: no suppress; pickup may re-send PHONE:* for Arduino audio. Empty = all IsPhoneWorkItem in scene.")]
@@ -431,11 +437,25 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>When a match ends (any outcome), tell Arduino to reset all peripherals to defaults; ignored if <see cref="arduinoBridgeScript"/> is not assigned.</summary>
+    /// <summary>
+    /// Sends PHONE:ANOMALY or PHONE:BAIT to whichever Arduino bridge is assigned.
+    /// Called by WorkItem (Version1) on phone pickup while Broken/Baiting.
+    /// </summary>
+    public void SendPhoneAudioToArduino(bool isBaiting)
+    {
+        if (arduinoBridgeScript != null)
+            arduinoBridgeScript.SendPhoneAudioForWorkItemState(isBaiting);
+        else if (arduinoBridgeWithMonitorScript != null)
+            arduinoBridgeWithMonitorScript.SendPhoneAudioForWorkItemState(isBaiting);
+    }
+
+    /// <summary>When a match ends (any outcome), tell Arduino to reset all peripherals to defaults.</summary>
     void NotifyArduinoSystemResetOnMatchEnd()
     {
         if (arduinoBridgeScript != null)
             arduinoBridgeScript.ResetSystem();
+        if (arduinoBridgeWithMonitorScript != null)
+            arduinoBridgeWithMonitorScript.ResetSystem();
     }
 
     /// <summary>
@@ -1181,12 +1201,18 @@ public class GameManager : MonoBehaviour
         _bossBrokeCheckAwaitingArrivalSprites = awaiting;
     }
 
-    /// <summary>When WorkItem enters Hacked (Broke); adds phase baseScore.</summary>
+    /// <summary>When WorkItem enters Hacked (Broke); adds phase baseScore and triggers Boss window hack performance.</summary>
     public void OnWorkItemEnteredHackedState(WorkItem item)
     {
-        if (!_normalPerformanceScoringActive || item == null) return;
-        BossIncomingConfig.PhaseScoreSettings ps = GetPhaseScoreSettings();
-        _performanceScoreRaw += ps.baseScore;
+        if (item == null) return;
+
+        if (_normalPerformanceScoringActive)
+        {
+            BossIncomingConfig.PhaseScoreSettings ps = GetPhaseScoreSettings();
+            _performanceScoreRaw += ps.baseScore;
+        }
+
+        BossWindowPerformance.Instance?.TriggerHack();
     }
 
     public BossIncomingConfig.PhaseScoreSettings GetPhaseScoreSettings()
@@ -1257,6 +1283,8 @@ public class GameManager : MonoBehaviour
 
         HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
+
+        virusPurgeMeter?.OnVictory();
 
         Time.timeScale = 0f;
         _victoryCinematicCoroutine = StartCoroutine(VictoryCinematicThenPanelCoroutine());
@@ -1398,6 +1426,8 @@ public class GameManager : MonoBehaviour
 
         HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
+
+        virusPurgeMeter?.OnBossFail();
 
         if (ui != null)
         {
@@ -1910,6 +1940,8 @@ public class GameManager : MonoBehaviour
 
         HideVictoryNearEndWarning();
         ShutdownBrokenWarningSystem();
+
+        virusPurgeMeter?.OnBossFail();
 
         Time.timeScale = 0f;
         _bossFailCinematicCoroutine = StartCoroutine(BossFailCinematicThenPanelCoroutine(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, reason));
