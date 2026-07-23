@@ -109,10 +109,8 @@ const int MONITOR_DFPLAYER_TX_PIN = 13; // Arduino TX → Monitor DFPlayer RX
 const int MONITOR_DFPLAYER_VOLUME = 30; // 0–30
 const uint8_t MONITOR_AUDIO_FOLDER = 1; // /01/
 
-// Microswitch debounce / piezo blackout
+// Microswitch debounce
 const unsigned long SWITCH_DEBOUNCE_MS = 50;
-const unsigned long SWITCH_PIEZO_BLACKOUT_MS = 250;
-const unsigned long PHONE_PIEZO_CONFIRM_MS = 250;
 
 // How long folder 01 plays before switching to folder 02 (ANOMALY only)
 const unsigned long FOLDER01_PLAY_MS = 1000;
@@ -353,10 +351,8 @@ int rawSwitchState = HIGH;
 int stableSwitchState = HIGH;
 unsigned long lastSwitchActivity = 0;
 
-// Phone piezo confirm-delay
+// Phone piezo cooldown (independent of microswitch)
 unsigned long lastPhonePiezoHit = 0;
-bool phonePiezoPending = false;
-unsigned long phonePiezoPendingTime = 0;
 
 // ╔═══════════════════════════════════════════════════════════╗
 // ║  DFPlayer helpers                                         ║
@@ -391,6 +387,20 @@ void playRandomFromFolder(int folder, int count) {
   dfPlayer.playFolder(folder, track);
 }
 
+// Send a raw 8-byte command directly to the phone DFPlayer serial line.
+// Write-only — never reads back, never blocks beyond the ~8 ms SoftwareSerial
+// transmit time, and does NOT require dfSerial.listen() to be active.
+void sendPhoneRawCommand(uint8_t cmd, uint8_t param1, uint8_t param2) {
+  uint8_t packet[8] = {0x7E, 0xFF, 0x06, cmd, 0x00, param1, param2, 0xEF};
+  dfSerial.write(packet, 8);
+}
+
+// Loop all tracks in a folder (DFPlayer command 0x17).
+// Self-repeating — no end-of-track callback needed.
+void loopPhoneFolder(uint8_t folder) {
+  sendPhoneRawCommand(0x17, 0x00, folder);
+}
+
 void stopAudio() {
   dfPlayer.stop();
   audioStage = AUDIO_NONE;
@@ -410,7 +420,7 @@ void handleCommand(const String &cmd) {
     stopAudio();
     stopMonitorAudio();
     phoneState = PHONE_IDLE;
-    phonePiezoPending = false;
+    lastPhonePiezoHit = 0;
     return;
   }
 
@@ -442,8 +452,7 @@ void handleCommand(const String &cmd) {
   if (cmd == "PHONE:ANOMALY") {
     phoneState = PHONE_ANOMALY;
     if (phoneUp) {
-      // 与 folder01Count 一致；勿硬编码 2，否则仅 1 个文件时常抽到不存在的 002.mp3 → 偶发无声
-      playRandomFromFolder(1, folder01Count);
+      loopPhoneFolder(1);
       audioStage = AUDIO_FOLDER01;
     }
     return;
@@ -550,25 +559,12 @@ void loop() {
   lampRing.update();
   holyBulb.update();
 
-  // ── Phone DFPlayer End-of-Track Auto Chaining ─────────────
-  dfSerial.listen();
-  if (dfPlayer.available()) {
-    uint8_t type = dfPlayer.readType();
-    int value = dfPlayer.read(); // Consume the value
-    if (type == DFPlayerPlayFinished) {
-      if (phoneUp) {
-        if (audioStage == AUDIO_FOLDER01) {
-          playRandomFromFolder(1, folder01Count);
-          audioStage = AUDIO_FOLDER01;
-        } else if (audioStage == AUDIO_FOLDER02) {
-          // If we just finished playing the voice, automatically follow up with
-          // the hang up sound!
-          playRandomFromFolder(3, folder03Count);
-          audioStage = AUDIO_FOLDER03;
-        }
-      }
-    }
-  }
+  // Phone DFPlayer runs in write-only mode — no dfSerial.listen(), no
+  // dfPlayer.available() reads. Reading DFPlayer responses via SoftwareSerial
+  // caused interrupt-driven blocking that disrupted switch debounce timing,
+  // causing PHONE_PUTDOWN to be missed and freezing all piezo detection.
+  // Folder01 (ANOMALY) now uses the DFPlayer's built-in loop-folder command
+  // (0x17) so it repeats automatically without any end-of-track callback.
 
   // ── Incoming serial commands from Unity ──────────────────
   if (Serial.available() > 0) {
@@ -588,73 +584,51 @@ void loop() {
     }
   }
 
-  // ── Phone microswitch — always read before phone piezo ───
-  //   Any raw edge resets lastSwitchActivity, which gates the
-  //   phone piezo check. Reading first means the blackout
-  //   starts on the same loop iteration as the first bounce.
+  // ── Phone microswitch — pickup / putdown detection ───────
+  //   Purely for DFPlayer audio (bonus feature). Does NOT gate HIT_2.
   int rawSwitch = digitalRead(SWITCH_PIN);
   if (rawSwitch != rawSwitchState) {
     rawSwitchState = rawSwitch;
     lastSwitchActivity = now;
   }
 
-  // Debounced state change
   if ((now - lastSwitchActivity) >= SWITCH_DEBOUNCE_MS &&
       rawSwitchState != stableSwitchState) {
     stableSwitchState = rawSwitchState;
 
     if (stableSwitchState == LOW && !phoneUp) {
-      // ---- Phone picked up --------------------------------
+      // ---- Phone picked up — play audio if Broke/Bait -----
       phoneUp = true;
       Serial.println(F("PHONE_PICKUP"));
       if (phoneState == PHONE_ANOMALY) {
-        playRandomFromFolder(1, folder01Count);
+        // Use built-in loop-folder (0x17) so folder01 repeats automatically
+        // without needing end-of-track callbacks in the main loop.
+        loopPhoneFolder(1);
         audioStage = AUDIO_FOLDER01;
       } else if (phoneState == PHONE_BAIT) {
-        // Play folder 02 (Devil's voice) directly
         playRandomFromFolder(2, folder02Count);
         audioStage = AUDIO_FOLDER02;
       }
 
     } else if (stableSwitchState == HIGH && phoneUp) {
-      // ---- Phone put down ---------------------------------
+      // ---- Phone put down — stop audio --------------------
       phoneUp = false;
       Serial.println(F("PHONE_PUTDOWN"));
       stopAudio();
     }
   }
 
+  // ── Phone piezo hit detection — same logic as standard piezos ──
+  //   Completely independent of microswitch state.
+  //   Pickup / putdown never blocks or delays HIT_2.
   bool phoneHitThisFrame = phonePiezoTracker.update();
-
-  // ── Phone piezo hit detection ─────────────────────────────
-  bool switchQuiet = (now - lastSwitchActivity) >= SWITCH_PIEZO_BLACKOUT_MS;
-
-  // Step 1 — detect spike, start confirm window
-  if (!phonePiezoPending && switchQuiet &&
-      (now - lastPhonePiezoHit) >= PIEZO_COOLDOWN_MS) {
-    if (phoneHitThisFrame) {
-      phonePiezoPending = true;
-      phonePiezoPendingTime = now;
-    }
-  }
-
-  // Step 2 — after confirm delay, accept or discard
-  //   Discard if the microswitch moved during the window
-  if (phonePiezoPending &&
-      (now - phonePiezoPendingTime) >= PHONE_PIEZO_CONFIRM_MS) {
-    phonePiezoPending = false;
-    bool switchActiveDuringWindow =
-        (lastSwitchActivity >= phonePiezoPendingTime);
-    if (!switchActiveDuringWindow) {
-      lastPhonePiezoHit = now;
-      Serial.println(F("HIT_2")); // tells Unity the anomaly is cleared
-
-      // If we were in the middle of an anomaly, play the confirmation audio
-      if (phoneState == PHONE_ANOMALY && phoneUp &&
-          audioStage != AUDIO_FOLDER03) {
-        playRandomFromFolder(3, folder03Count);
-        audioStage = AUDIO_FOLDER03;
-      }
+  if ((now - lastPhonePiezoHit) >= PIEZO_COOLDOWN_MS && phoneHitThisFrame) {
+    lastPhonePiezoHit = now;
+    Serial.println(F("HIT_2"));
+    // Bonus: if phone is off-hook during anomaly, play confirmation audio
+    if (phoneState == PHONE_ANOMALY && phoneUp && audioStage != AUDIO_FOLDER03) {
+      playRandomFromFolder(3, folder03Count);
+      audioStage = AUDIO_FOLDER03;
     }
   }
 }

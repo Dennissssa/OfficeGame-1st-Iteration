@@ -325,17 +325,15 @@ public class ArduinoSerialBridgeWithMonitor : MonoBehaviour
 
     void OnPhoneWorkItemBrokenForSerial()
     {
-        if (phoneWorkItem != null
-            && phoneWorkItem.phoneBehaviorVersion == PhoneBehaviorVersion.Version1_StandardWithPickupAudio)
-            return;
+        // Always send PHONE:ANOMALY immediately so Arduino's phoneState is correct.
+        // In V1, Arduino's microswitch will trigger audio on pickup automatically (phoneState == PHONE_ANOMALY).
+        // HIT_2 confirmation audio also requires phoneState == PHONE_ANOMALY, so this must be sent upfront.
         SendPhone(PhoneCommand.Anomaly);
     }
 
     void OnPhoneWorkItemBaitingForSerial()
     {
-        if (phoneWorkItem != null
-            && phoneWorkItem.phoneBehaviorVersion == PhoneBehaviorVersion.Version1_StandardWithPickupAudio)
-            return;
+        // Same reasoning: always send immediately so Arduino knows the state.
         SendPhone(PhoneCommand.Bait);
     }
 

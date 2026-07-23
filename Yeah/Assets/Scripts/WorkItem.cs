@@ -368,8 +368,10 @@ public class WorkItem : MonoBehaviour
             case PhoneBehaviorVersion.Version1_StandardWithPickupAudio:
                 if (IsBroken)
                     _hadPhonePickupWhileBroken = true;
-                if ((IsBroken || IsBaiting) && !wasOffHook)
-                    TrySendPhoneHardwareAudioForCurrentState();
+                // Do NOT resend PHONE:ANOMALY/BAIT here. The serial bridge now sends it
+                // immediately on Break()/Bait(), so Arduino already has the correct phoneState.
+                // Arduino's microswitch handler plays DFPlayer audio automatically on pickup
+                // when phoneState == PHONE_ANOMALY/BAIT. Resending would restart the audio mid-play.
                 break;
 
             case PhoneBehaviorVersion.Version2_FirstPickupInteractionGate:

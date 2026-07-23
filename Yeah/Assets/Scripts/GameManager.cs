@@ -439,7 +439,9 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// Sends PHONE:ANOMALY or PHONE:BAIT to whichever Arduino bridge is assigned.
-    /// Called by WorkItem (Version1) on phone pickup while Broken/Baiting.
+    /// NOTE: Version1 no longer calls this on pickup; the bridge now sends PHONE:ANOMALY
+    /// immediately on Break()/Bait() so Arduino always has the correct state.
+    /// Kept for potential Inspector-wired or external callers.
     /// </summary>
     public void SendPhoneAudioToArduino(bool isBaiting)
     {
