@@ -147,7 +147,7 @@ public class SortableFile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
                 }
                 else
                 {
-                    controller.OnWrongDrop(this); // 错误投放：销毁文件 + 触发遮挡
+                    controller.OnWrongDrop(this, hit); // 错误投放：销毁文件 + 触发对应区域演出
                 }
                 return;
             }

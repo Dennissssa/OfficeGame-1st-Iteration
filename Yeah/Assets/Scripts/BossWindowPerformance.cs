@@ -8,8 +8,10 @@ using UnityEngine;
 ///
 ///   a) 错误分类（Wrong Sort）：
 ///      总是触发（会中断当前正在进行的 Hack / 正确分类 演出）。
-///      两段式演出：播放 Clip1 + Active Object1 → 等音频结束 → Deactive Object1 →
-///      等 wrongSortWaitBetweenSeconds → 播放 Clip2 + Active Object2 → 等音频结束 → Deactive Object2。
+///      根据 zoneIndex（0=左区，1=右区）选用对应的两段式演出配置。
+///      两段式：播放 Clip1 + Active Object1 → 等音频结束 → Deactive Object1 →
+///              等 WaitBetween → 播放 Clip2 + Active Object2 → 等音频结束 → Deactive Object2。
+///      某一段的 Clip 与 Object 均为空时，该段直接跳过；Stage2 为空时也跳过段间等待。
 ///
 ///   b) Hack 触发（Hack Performance）：
 ///      有内置冷却；演出进行中不触发。
@@ -33,24 +35,43 @@ public class BossWindowPerformance : MonoBehaviour
     [Tooltip("Boss 窗口所有演出共用的 AudioSource；留空则自动查找本 GameObject 上的 AudioSource")]
     public AudioSource bossWindowAudioSource;
 
-    // ── 错误分类演出 ──────────────────────────────────────────────────────
+    // ── 错误分类演出 · 左区 ───────────────────────────────────────────────
 
-    [Header("─── 错误分类演出 (Wrong Sort) ───")]
-    [Tooltip("演出第一段播放的音频；留空则跳过第一段音频等待")]
+    [Header("─── 错误分类演出 · 左区 (Wrong Sort · Left Zone) ───")]
+    [Tooltip("左区错误投放：第一段音频；Clip 与 Object 均留空则跳过整段")]
     public AudioClip wrongSortClip1;
 
-    [Tooltip("演出第一段 Active 的 GameObject（音频播完后自动 Deactive）；留空则忽略")]
+    [Tooltip("左区错误投放：第一段显示的 GameObject；音频播完后自动隐藏")]
     public GameObject wrongSortObject1;
 
-    [Tooltip("第一段演出结束后等待此时间（秒）再开始第二段")]
+    [Tooltip("左区：第一段结束后到第二段开始的等待时间（秒）；Stage2 为空时忽略")]
     [Min(0f)]
     public float wrongSortWaitBetweenSeconds = 1f;
 
-    [Tooltip("演出第二段播放的音频；留空则跳过第二段音频等待")]
+    [Tooltip("左区错误投放：第二段音频；Clip 与 Object 均留空则跳过整段")]
     public AudioClip wrongSortClip2;
 
-    [Tooltip("演出第二段 Active 的 GameObject（音频播完后自动 Deactive）；留空则忽略")]
+    [Tooltip("左区错误投放：第二段显示的 GameObject；音频播完后自动隐藏")]
     public GameObject wrongSortObject2;
+
+    // ── 错误分类演出 · 右区 ───────────────────────────────────────────────
+
+    [Header("─── 错误分类演出 · 右区 (Wrong Sort · Right Zone) ───")]
+    [Tooltip("右区错误投放：第一段音频；Clip 与 Object 均留空则跳过整段")]
+    public AudioClip wrongSortRightClip1;
+
+    [Tooltip("右区错误投放：第一段显示的 GameObject；音频播完后自动隐藏")]
+    public GameObject wrongSortRightObject1;
+
+    [Tooltip("右区：第一段结束后到第二段开始的等待时间（秒）；Stage2 为空时忽略")]
+    [Min(0f)]
+    public float wrongSortRightWaitBetweenSeconds = 1f;
+
+    [Tooltip("右区错误投放：第二段音频；Clip 与 Object 均留空则跳过整段")]
+    public AudioClip wrongSortRightClip2;
+
+    [Tooltip("右区错误投放：第二段显示的 GameObject；音频播完后自动隐藏")]
+    public GameObject wrongSortRightObject2;
 
     // ── Hack 演出 ─────────────────────────────────────────────────────────
 
@@ -105,10 +126,12 @@ public class BossWindowPerformance : MonoBehaviour
     void Start()
     {
         // 确保所有演出 GameObject 初始状态为隐藏
-        if (wrongSortObject1 != null) wrongSortObject1.SetActive(false);
-        if (wrongSortObject2 != null) wrongSortObject2.SetActive(false);
-        if (hackObject       != null) hackObject.SetActive(false);
-        if (correctSortObject != null) correctSortObject.SetActive(false);
+        if (wrongSortObject1       != null) wrongSortObject1.SetActive(false);
+        if (wrongSortObject2       != null) wrongSortObject2.SetActive(false);
+        if (wrongSortRightObject1  != null) wrongSortRightObject1.SetActive(false);
+        if (wrongSortRightObject2  != null) wrongSortRightObject2.SetActive(false);
+        if (hackObject             != null) hackObject.SetActive(false);
+        if (correctSortObject      != null) correctSortObject.SetActive(false);
     }
 
     void OnDestroy()
@@ -133,14 +156,28 @@ public class BossWindowPerformance : MonoBehaviour
     /// 总是触发（中断当前 Hack / 正确分类 演出）。
     /// 由 FileSortingGame.OnWrongDrop() 在执行 UltraPunishment 后调用。
     /// </summary>
-    public void TriggerWrongSort()
+    /// <param name="zoneIndex">命中区域：0 = 左区，1 = 右区</param>
+    public void TriggerWrongSort(int zoneIndex = 0)
     {
         CancelHackAndCorrectSortPerformances();
 
         if (_wrongSortRoutine != null)
             StopCoroutine(_wrongSortRoutine);
 
-        _wrongSortRoutine = StartCoroutine(WrongSortRoutine());
+        if (zoneIndex == 1)
+        {
+            _wrongSortRoutine = StartCoroutine(WrongSortRoutine(
+                wrongSortRightClip1, wrongSortRightObject1,
+                wrongSortRightWaitBetweenSeconds,
+                wrongSortRightClip2, wrongSortRightObject2));
+        }
+        else
+        {
+            _wrongSortRoutine = StartCoroutine(WrongSortRoutine(
+                wrongSortClip1, wrongSortObject1,
+                wrongSortWaitBetweenSeconds,
+                wrongSortClip2, wrongSortObject2));
+        }
     }
 
     /// <summary>
@@ -181,58 +218,71 @@ public class BossWindowPerformance : MonoBehaviour
 
     // ── 协程实现 ──────────────────────────────────────────────────────────
 
-    IEnumerator WrongSortRoutine()
+    /// <summary>
+    /// 通用两段式错误演出协程。
+    /// 某段的 clip 与 obj 均为 null 时跳过该段；Stage2 为空时也跳过段间等待。
+    /// </summary>
+    IEnumerator WrongSortRoutine(
+        AudioClip clip1, GameObject obj1, float waitBetween,
+        AudioClip clip2, GameObject obj2)
     {
         _performanceRunning = true;
         AudioSource src = GetAudioSource();
 
+        bool hasStage1 = clip1 != null || obj1 != null;
+        bool hasStage2 = clip2 != null || obj2 != null;
+
         // ── 第一段 ────────────────────────────────────────────────────────
-        bool hasClip1 = wrongSortClip1 != null;
-
-        if (hasClip1 && src != null)
-            src.PlayOneShot(wrongSortClip1);
-
-        if (wrongSortObject1 != null)
-            wrongSortObject1.SetActive(true);
-
-        if (hasClip1)
-            yield return new WaitForSecondsRealtime(wrongSortClip1.length);
-
-        if (wrongSortObject1 != null)
-            wrongSortObject1.SetActive(false);
-
-        // 游戏结束则清理退出
-        if (ShouldAbort())
+        if (hasStage1)
         {
-            CleanupWrongSort();
-            yield break;
+            if (clip1 != null && src != null)
+                src.PlayOneShot(clip1);
+
+            if (obj1 != null)
+                obj1.SetActive(true);
+
+            if (clip1 != null)
+                yield return new WaitForSecondsRealtime(clip1.length);
+
+            if (obj1 != null)
+                obj1.SetActive(false);
+
+            if (ShouldAbort())
+            {
+                CleanupWrongSort();
+                yield break;
+            }
         }
 
-        // ── 间隔等待 ──────────────────────────────────────────────────────
-        float wait = Mathf.Max(0f, wrongSortWaitBetweenSeconds);
-        if (wait > 0f)
-            yield return new WaitForSecondsRealtime(wait);
-
-        if (ShouldAbort())
+        // ── 段间等待（仅两段都有内容时才等待）────────────────────────────
+        if (hasStage1 && hasStage2)
         {
-            CleanupWrongSort();
-            yield break;
+            float wait = Mathf.Max(0f, waitBetween);
+            if (wait > 0f)
+                yield return new WaitForSecondsRealtime(wait);
+
+            if (ShouldAbort())
+            {
+                CleanupWrongSort();
+                yield break;
+            }
         }
 
         // ── 第二段 ────────────────────────────────────────────────────────
-        bool hasClip2 = wrongSortClip2 != null;
+        if (hasStage2)
+        {
+            if (clip2 != null && src != null)
+                src.PlayOneShot(clip2);
 
-        if (hasClip2 && src != null)
-            src.PlayOneShot(wrongSortClip2);
+            if (obj2 != null)
+                obj2.SetActive(true);
 
-        if (wrongSortObject2 != null)
-            wrongSortObject2.SetActive(true);
+            if (clip2 != null)
+                yield return new WaitForSecondsRealtime(clip2.length);
 
-        if (hasClip2)
-            yield return new WaitForSecondsRealtime(wrongSortClip2.length);
-
-        if (wrongSortObject2 != null)
-            wrongSortObject2.SetActive(false);
+            if (obj2 != null)
+                obj2.SetActive(false);
+        }
 
         _performanceRunning = false;
         _wrongSortRoutine = null;
@@ -301,8 +351,10 @@ public class BossWindowPerformance : MonoBehaviour
 
     void CleanupWrongSort()
     {
-        if (wrongSortObject1 != null) wrongSortObject1.SetActive(false);
-        if (wrongSortObject2 != null) wrongSortObject2.SetActive(false);
+        if (wrongSortObject1      != null) wrongSortObject1.SetActive(false);
+        if (wrongSortObject2      != null) wrongSortObject2.SetActive(false);
+        if (wrongSortRightObject1 != null) wrongSortRightObject1.SetActive(false);
+        if (wrongSortRightObject2 != null) wrongSortRightObject2.SetActive(false);
         _performanceRunning = false;
         _wrongSortRoutine = null;
     }

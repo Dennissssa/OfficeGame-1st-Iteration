@@ -769,9 +769,14 @@ MonoBehaviour:
   bossWindowAudioSource: {fileID: 63575737}
   wrongSortClip1: {fileID: 8300000, guid: d0618a29edd76db4c962d4c57cf15502, type: 3}
   wrongSortObject1: {fileID: 1300468503}
-  wrongSortWaitBetweenSeconds: 1
-  wrongSortClip2: {fileID: 8300000, guid: abca25e7a821a2845ba73955442e4b66, type: 3}
+  wrongSortWaitBetweenSeconds: 0
+  wrongSortClip2: {fileID: 0}
   wrongSortObject2: {fileID: 254383148}
+  wrongSortRightClip1: {fileID: 8300000, guid: d62ec65d80711b745996aa2d1459d29e, type: 3}
+  wrongSortRightObject1: {fileID: 254383148}
+  wrongSortRightWaitBetweenSeconds: 0
+  wrongSortRightClip2: {fileID: 0}
+  wrongSortRightObject2: {fileID: 0}
   hackClip: {fileID: 0}
   hackObject: {fileID: 1989460715}
   hackCooldownSeconds: 8
@@ -2073,8 +2078,8 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 25
-  baitWeight: 5
+  breakWeight: 0
+  baitWeight: 1
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/2
@@ -2104,8 +2109,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   debugLogs: 0
-  debugLogWrongRepair: 0
-  debugLogBreakBaitSkips: 0
+  debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 1
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -3250,8 +3255,8 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 25
-  baitWeight: 0
+  breakWeight: 0
+  baitWeight: 1
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/1
@@ -3281,8 +3286,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   debugLogs: 0
-  debugLogWrongRepair: 0
-  debugLogBreakBaitSkips: 0
+  debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 1
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -7438,8 +7443,8 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 5
-  baitWeight: 0
+  breakWeight: 0
+  baitWeight: 1
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/5
@@ -7469,8 +7474,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   debugLogs: 0
-  debugLogWrongRepair: 0
-  debugLogBreakBaitSkips: 0
+  debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 1
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -8394,8 +8399,8 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 25
-  baitWeight: 10
+  breakWeight: 0
+  baitWeight: 1
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/3
@@ -8425,8 +8430,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   debugLogs: 0
-  debugLogWrongRepair: 0
-  debugLogBreakBaitSkips: 0
+  debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 1
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
@@ -9842,7 +9847,7 @@ MonoBehaviour:
   maxTimeToBreak: 10
   enableAutoBreak: 1
   breakWeight: 25
-  baitWeight: 5
+  baitWeight: 0
   baitSelfFixDurationSeconds: 6
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/4
@@ -9872,13 +9877,13 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   debugLogs: 0
-  debugLogWrongRepair: 0
-  debugLogBreakBaitSkips: 0
+  debugLogWrongRepair: 1
+  debugLogBreakBaitSkips: 1
   debugBreakKeyOldInput: 0
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: phone
-  treatAsPhoneWorkItem: 1
+  treatAsPhoneWorkItem: 0
   phoneBehaviorVersion: 0
   usePhoneBaitBehavior: 0
   phoneBaitAutoResolveSecondsAfterPickup: 6
@@ -16205,7 +16210,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1987669259}
-  - component: {fileID: 1987669260}
   - component: {fileID: 1987669261}
   m_Layer: 0
   m_Name: Arduino
@@ -16229,129 +16233,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1987669260
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1987669257}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b02ab9e4d47a56e4a9ba044684b68633, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArduinoSerialBridge
-  portName: COM6
-  baudRate: 9600
-  onHit:
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 983266344}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: TryRepair
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1141977272}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: TryRepair
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 363469229}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: TryRepair
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 206531936}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: TryRepair
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  - m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 882021887}
-        m_TargetAssemblyTypeName: WorkItem, Assembly-CSharp
-        m_MethodName: TryRepair
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onPhonePickup:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1583755464}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: PhonePickup_SetSuppressNonBaitBrokeSfx
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onPhonePutdown:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1583755464}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: PhonePutdown_ClearSuppressNonBaitBrokeSfx
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  ledBindings:
-  - LedIndex: 1
-    WorkItem: {fileID: 983266344}
-  phoneWorkItem: {fileID: 1141977272}
-  printerWorkItem: {fileID: 882021887}
-  debugLogSerialTx: 0
-  debugLogPhonePickupPutdown: 0
-  debugLogOnHitSpeaker: 0
 --- !u!114 &1987669261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16473,7 +16354,7 @@ MonoBehaviour:
   phoneWorkItem: {fileID: 1141977272}
   monitorWorkItem: {fileID: 363469229}
   printerWorkItem: {fileID: 882021887}
-  debugLogSerialTx: 1
+  debugLogSerialTx: 0
   debugLogPhonePickupPutdown: 0
   debugLogOnHitSpeaker: 0
 --- !u!1 &1989460715

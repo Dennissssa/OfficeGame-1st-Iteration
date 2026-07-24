@@ -261,11 +261,12 @@ public class FileSortingGame : MonoBehaviour
 
     /// <summary>
     /// 玩家错误分类后由 SortableFile.OnEndDrag 调用。
-    /// 销毁文件，给予 workUltraPunishment，并在 Boss 窗口播放错误分类演出。
+    /// 销毁文件，给予 workUltraPunishment，并在 Boss 窗口播放对应区域的错误分类演出。
     /// 不再显示弹窗（wrongDropBlockerPanel），改由 BossWindowPerformance 处理演出。
     /// 输入遮挡（IsBlocked）在 wrongDropBlockDuration 秒内仍然有效，防止连续错误操作。
     /// </summary>
-    public void OnWrongDrop(SortableFile file)
+    /// <param name="hitZone">玩家实际投入的 DropZone（用于区分左/右区演出）</param>
+    public void OnWrongDrop(SortableFile file, DropZone hitZone)
     {
         Log("[FileSortingGame] 错误分类，销毁文件 + 触发 Boss 窗口演出 + UltraPunishment。");
 
@@ -280,8 +281,9 @@ public class FileSortingGame : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.UltraPunishment();
 
-        // 触发 Boss 窗口错误分类演出（总是触发，中断其它演出）
-        BossWindowPerformance.Instance?.TriggerWrongSort();
+        // 根据命中区域选用对应演出：0 = 左区，1 = 右区
+        int zoneIndex = (hitZone == leftDropZone) ? 0 : 1;
+        BossWindowPerformance.Instance?.TriggerWrongSort(zoneIndex);
 
         // 保留输入遮挡（不显示面板，但阻止玩家立即再次拖拽文件）
         if (_blockCoroutine != null)

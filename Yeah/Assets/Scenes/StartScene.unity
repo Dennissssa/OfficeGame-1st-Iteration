@@ -748,6 +748,7 @@ GameObject:
   m_Component:
   - component: {fileID: 994973992}
   - component: {fileID: 994973991}
+  - component: {fileID: 994973993}
   m_Layer: 0
   m_Name: StarterThing
   m_TagString: Untagged
@@ -767,6 +768,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf06edf97af6bf1db8c38e68ee811a21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartGame
+  targetSceneIndex: 1
+  arduinoBridge: {fileID: 994973993}
 --- !u!4 &994973992
 Transform:
   m_ObjectHideFlags: 0
@@ -782,6 +785,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &994973993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994973990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 603989c901d4f24418ba94007ce58761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StartSceneArduinoBridge
+  portName: COM6
+  baudRate: 9600
+  triggerMessage: BADGE:SCANNED
+  onArduinoTriggered:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 994973991}
+        m_TargetAssemblyTypeName: StartGame, Assembly-CSharp
+        m_MethodName: LoadNextScene
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  debugLog: 1
 --- !u!1 &1132081231
 GameObject:
   m_ObjectHideFlags: 0

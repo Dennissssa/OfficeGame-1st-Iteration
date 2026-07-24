@@ -35,11 +35,13 @@
 //  Arduino → Unity   "HIT_1" … "HIT_5"
 //                    "PHONE_PICKUP"
 //                    "PHONE_PUTDOWN"
+//                    "BADGE:SCANNED"   (one-shot; re-armed by SYSTEM:RESET)
 //
 //  Unity → Arduino   "LED1:NORMAL"   | "LED1:ANOMALY"  | "LED1:BAIT"
 //                    "PHONE:NORMAL"  | "PHONE:BAIT"    | "PHONE:ANOMALY"
 //                    "PRINTER:ON"    | "PRINTER:OFF"
 //                    "MONITOR:ANOMALY"| "MONITOR:NORMAL"
+//                    "SYSTEM:RESET"  (also re-arms badge detection)
 //
 //  Libraries required
 //    Adafruit NeoPixel     (Arduino Library Manager)
@@ -117,6 +119,10 @@ const unsigned long FOLDER01_PLAY_MS = 1000;
 
 // ---- Printer motor pins ------------------------------------
 const int MOTOR_IN1 = 4, MOTOR_IN2 = 5, MOTOR_IN3 = 6, MOTOR_IN4 = 7;
+
+// ---- Employee Badge (Micro Switch) -------------------------
+//   COM → D9   NO → GND   (INPUT_PULLUP; pressed = LOW)
+const int BADGE_PIN = 9;
 
 // ╔═══════════════════════════════════════════════════════════╗
 // ║  Enumerations                                             ║
@@ -354,6 +360,10 @@ unsigned long lastSwitchActivity = 0;
 // Phone piezo cooldown (independent of microswitch)
 unsigned long lastPhonePiezoHit = 0;
 
+// Badge state
+bool waitingForBadge = true;   // false after BADGE:SCANNED; re-armed by SYSTEM:RESET
+bool lastBadgeState  = HIGH;   // for edge detection (HIGH→LOW = card inserted)
+
 // ╔═══════════════════════════════════════════════════════════╗
 // ║  DFPlayer helpers                                         ║
 // ╚═══════════════════════════════════════════════════════════╝
@@ -380,11 +390,13 @@ void stopMonitorAudio() {
   monitorAudioOn = false;
 }
 
+// Play a random track from a phone DFPlayer folder using a raw write-only
+// command (DFPlayer 0x0F = play file in folder). Never blocks on ACK.
 void playRandomFromFolder(int folder, int count) {
   if (count < 1)
     count = 1;
-  int track = random(1, count + 1);
-  dfPlayer.playFolder(folder, track);
+  uint8_t track = (uint8_t)random(1, count + 1);
+  sendPhoneRawCommand(0x0F, (uint8_t)folder, track);
 }
 
 // Send a raw 8-byte command directly to the phone DFPlayer serial line.
@@ -401,9 +413,32 @@ void loopPhoneFolder(uint8_t folder) {
   sendPhoneRawCommand(0x17, 0x00, folder);
 }
 
+// Stop phone DFPlayer playback using a raw write-only command (0x16 = stop).
+// Never blocks on ACK, so the main loop continues running immediately.
 void stopAudio() {
-  dfPlayer.stop();
+  sendPhoneRawCommand(0x16, 0x00, 0x00);
   audioStage = AUDIO_NONE;
+}
+
+// ╔═══════════════════════════════════════════════════════════╗
+// ║  Badge module                                             ║
+// ╚═══════════════════════════════════════════════════════════╝
+
+// Called once per loop(). Non-blocking.
+// Detects the HIGH→LOW edge (card insertion) and sends BADGE:SCANNED
+// exactly once per session. Badge detection is re-armed by SYSTEM:RESET.
+void checkBadge() {
+  if (!waitingForBadge) return;
+
+  bool currentState = digitalRead(BADGE_PIN);
+
+  // Edge detection: only fire on HIGH → LOW transition
+  if (currentState == LOW && lastBadgeState == HIGH) {
+    waitingForBadge = false;
+    Serial.println(F("BADGE:SCANNED"));
+  }
+
+  lastBadgeState = currentState;
 }
 
 // ╔═══════════════════════════════════════════════════════════╗
@@ -421,6 +456,9 @@ void handleCommand(const String &cmd) {
     stopMonitorAudio();
     phoneState = PHONE_IDLE;
     lastPhonePiezoHit = 0;
+    // Re-arm badge detection for the next game session
+    waitingForBadge = true;
+    lastBadgeState  = HIGH;
     return;
   }
 
@@ -521,16 +559,25 @@ void setup() {
   // ---- Phone microswitch ----------------------------------
   pinMode(SWITCH_PIN, INPUT_PULLUP);
 
+  // ---- Employee Badge microswitch -------------------------
+  pinMode(BADGE_PIN, INPUT_PULLUP);
+
   // ---- DFPlayer -------------------------------------------
   dfSerial.begin(9600);
   monitorDfSerial.begin(9600);
   delay(1000); // allow modules to boot
 
-  if (!dfPlayer.begin(dfSerial)) {
+  // Activate dfSerial as the SoftwareSerial listener so dfPlayer.begin()
+  // can receive the DFPlayer module's init-ready byte.
+  // After begin() returns, dfSerial.listen() is never called again:
+  // all subsequent phone DFPlayer operations use raw write-only commands
+  // (sendPhoneRawCommand) that never block on ACK, keeping the main loop
+  // free to run piezo detection and microswitch debounce continuously.
+  dfSerial.listen();
+  bool phonePlayerReady = dfPlayer.begin(dfSerial, false); // isACK=false — no ACK waits after init
+  if (!phonePlayerReady) {
     Serial.println(F("[DFPlayer] Init FAILED — check wiring and SD card."));
   } else {
-    dfPlayer.volume(DFPLAYER_VOLUME);
-
     Serial.print(F("[DFPlayer] Ready. Using hardcoded folder sizes: 01 ("));
     Serial.print(folder01Count);
     Serial.print(F(" tracks) / 02 ("));
@@ -539,6 +586,9 @@ void setup() {
     Serial.print(folder03Count);
     Serial.println(F(" tracks)"));
   }
+  // Always set volume via raw command regardless of init success.
+  // Raw write is ~8 ms of SoftwareSerial bit-bang — acceptable at startup.
+  sendPhoneRawCommand(0x06, 0x00, DFPLAYER_VOLUME);
 
   // ---- Monitor / Computer DFPlayer ------------------------
   setMonitorVolume(MONITOR_DFPLAYER_VOLUME);
@@ -554,6 +604,9 @@ void setup() {
 
 void loop() {
   unsigned long now = millis();
+
+  // ── Badge (one-shot; re-armed by SYSTEM:RESET) ───────────
+  checkBadge();
 
   // ── Lamp LED flash animation ─────────────────────────────
   lampRing.update();
