@@ -169,20 +169,23 @@ public class BossWindowPerformance : MonoBehaviour
             _wrongSortRoutine = StartCoroutine(WrongSortRoutine(
                 wrongSortRightClip1, wrongSortRightObject1,
                 wrongSortRightWaitBetweenSeconds,
-                wrongSortRightClip2, wrongSortRightObject2));
+                wrongSortRightClip2, wrongSortRightObject2,
+                suppressObjects: IsBossPhase()));
         }
         else
         {
             _wrongSortRoutine = StartCoroutine(WrongSortRoutine(
                 wrongSortClip1, wrongSortObject1,
                 wrongSortWaitBetweenSeconds,
-                wrongSortClip2, wrongSortObject2));
+                wrongSortClip2, wrongSortObject2,
+                suppressObjects: false));
         }
     }
 
     /// <summary>
     /// 触发 Hack Boss 窗口演出。
     /// 有内置冷却；当前有演出进行时不触发。
+    /// Boss 到来阶段（BossWarning 或 BossIsHere）时只播放音频，不显示对象。
     /// 由 GameManager.OnWorkItemEnteredHackedState() 调用。
     /// </summary>
     public void TriggerHack()
@@ -195,12 +198,13 @@ public class BossWindowPerformance : MonoBehaviour
         if (_hackRoutine != null)
             StopCoroutine(_hackRoutine);
 
-        _hackRoutine = StartCoroutine(HackRoutine());
+        _hackRoutine = StartCoroutine(HackRoutine(suppressObjects: IsBossPhase()));
     }
 
     /// <summary>
     /// 触发正确分类 Boss 窗口演出。
     /// 有内置冷却；当前有演出进行时不触发。
+    /// Boss 到来阶段（BossWarning 或 BossIsHere）时只播放音频，不显示对象。
     /// 由 FileSortingGame.OnCorrectDrop() 调用。
     /// </summary>
     public void TriggerCorrectSort()
@@ -213,7 +217,7 @@ public class BossWindowPerformance : MonoBehaviour
         if (_correctSortRoutine != null)
             StopCoroutine(_correctSortRoutine);
 
-        _correctSortRoutine = StartCoroutine(CorrectSortRoutine());
+        _correctSortRoutine = StartCoroutine(CorrectSortRoutine(suppressObjects: IsBossPhase()));
     }
 
     // ── 协程实现 ──────────────────────────────────────────────────────────
@@ -221,10 +225,12 @@ public class BossWindowPerformance : MonoBehaviour
     /// <summary>
     /// 通用两段式错误演出协程。
     /// 某段的 clip 与 obj 均为 null 时跳过该段；Stage2 为空时也跳过段间等待。
+    /// suppressObjects 为 true 时（Boss 到来阶段）只播放音频，不显示 GameObject。
     /// </summary>
     IEnumerator WrongSortRoutine(
         AudioClip clip1, GameObject obj1, float waitBetween,
-        AudioClip clip2, GameObject obj2)
+        AudioClip clip2, GameObject obj2,
+        bool suppressObjects = false)
     {
         _performanceRunning = true;
         AudioSource src = GetAudioSource();
@@ -238,7 +244,7 @@ public class BossWindowPerformance : MonoBehaviour
             if (clip1 != null && src != null)
                 src.PlayOneShot(clip1);
 
-            if (obj1 != null)
+            if (!suppressObjects && obj1 != null)
                 obj1.SetActive(true);
 
             if (clip1 != null)
@@ -274,7 +280,7 @@ public class BossWindowPerformance : MonoBehaviour
             if (clip2 != null && src != null)
                 src.PlayOneShot(clip2);
 
-            if (obj2 != null)
+            if (!suppressObjects && obj2 != null)
                 obj2.SetActive(true);
 
             if (clip2 != null)
@@ -288,7 +294,7 @@ public class BossWindowPerformance : MonoBehaviour
         _wrongSortRoutine = null;
     }
 
-    IEnumerator HackRoutine()
+    IEnumerator HackRoutine(bool suppressObjects = false)
     {
         _performanceRunning = true;
         AudioSource src = GetAudioSource();
@@ -298,7 +304,7 @@ public class BossWindowPerformance : MonoBehaviour
         if (hasClip && src != null)
             src.PlayOneShot(hackClip);
 
-        if (hackObject != null)
+        if (!suppressObjects && hackObject != null)
             hackObject.SetActive(true);
 
         if (hasClip)
@@ -311,7 +317,7 @@ public class BossWindowPerformance : MonoBehaviour
         _hackRoutine = null;
     }
 
-    IEnumerator CorrectSortRoutine()
+    IEnumerator CorrectSortRoutine(bool suppressObjects = false)
     {
         _performanceRunning = true;
         AudioSource src = GetAudioSource();
@@ -321,7 +327,7 @@ public class BossWindowPerformance : MonoBehaviour
         if (hasClip && src != null)
             src.PlayOneShot(correctSortClip);
 
-        if (correctSortObject != null)
+        if (!suppressObjects && correctSortObject != null)
             correctSortObject.SetActive(true);
 
         if (hasClip)
@@ -347,6 +353,13 @@ public class BossWindowPerformance : MonoBehaviour
     {
         if (GameManager.Instance == null) return false;
         return GameManager.Instance.IsGameOver || GameManager.Instance.IsVictory;
+    }
+
+    /// <summary>当前是否处于 Boss 到来阶段（BossWarning 或 BossIsHere）。</summary>
+    bool IsBossPhase()
+    {
+        if (GameManager.Instance == null) return false;
+        return GameManager.Instance.BossWarning || GameManager.Instance.BossIsHere;
     }
 
     void CleanupWrongSort()
