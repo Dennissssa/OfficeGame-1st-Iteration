@@ -52,12 +52,20 @@ public class FileSortingGame : MonoBehaviour
     public List<Sprite> typeASprites = new List<Sprite>();
     public Color typeAColor = new Color(0.95f, 0.25f, 0.25f, 1f);
 
+    [Tooltip("Type A 的刷新权重；与 typeBWeight 共同决定两种文件的出现概率（均为 1 时各占 50%）")]
+    [Min(0f)]
+    public float typeAWeight = 1f;
+
     // ─── Type B（蓝色文件）──────────────────────────────────────
 
     [Header("Type B  (e.g. Blue)")]
     [Tooltip("Type B 可随机选取的 Sprite 列表；留空则使用纯色 typeBColor")]
     public List<Sprite> typeBSprites = new List<Sprite>();
     public Color typeBColor = new Color(0.25f, 0.5f, 1f, 1f);
+
+    [Tooltip("Type B 的刷新权重；与 typeAWeight 共同决定两种文件的出现概率（均为 1 时各占 50%）")]
+    [Min(0f)]
+    public float typeBWeight = 1f;
 
     // ─── 刷新配置 ──────────────────────────────────────────────
 
@@ -211,7 +219,8 @@ public class FileSortingGame : MonoBehaviour
 
         file.spawnedRoot = go;
 
-        SortableFile.FileType type = Random.value < 0.5f
+        float totalWeight = typeAWeight + typeBWeight;
+        SortableFile.FileType type = (totalWeight <= 0f || Random.value < typeAWeight / totalWeight)
             ? SortableFile.FileType.TypeA
             : SortableFile.FileType.TypeB;
 
