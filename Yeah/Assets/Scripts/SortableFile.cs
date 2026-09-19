@@ -15,11 +15,11 @@ public class SortableFile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     public enum FileType { TypeA, TypeB }
 
     [HideInInspector] public FileType fileType;
-    [HideInInspector] public FileSortingGame controller;
+    [HideInInspector] public BaseFileSortingGame controller;
 
     /// <summary>
-    /// 由 FileSortingGame 在 Instantiate 后赋值为整个 Prefab 的根 GameObject。
-    /// 正确投放时销毁此对象（而非仅销毁挂有 SortableFile 的子节点）。
+    /// 由 BaseFileSortingGame 在 Instantiate 后赋值为整个 Prefab 的根 GameObject。
+    /// 投放时销毁此对象（而非仅销毁挂有 SortableFile 的子节点）。
     /// </summary>
     [HideInInspector] public GameObject spawnedRoot;
 
@@ -43,8 +43,8 @@ public class SortableFile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
             _cg = gameObject.AddComponent<CanvasGroup>();
     }
 
-    /// <summary>由 FileSortingGame 在 Instantiate 后调用，完成初始化。</summary>
-    public void Setup(FileType type, List<Sprite> possibleSprites, Color fallbackColor, FileSortingGame ctrl)
+    /// <summary>由 BaseFileSortingGame 在 Instantiate 后调用，完成初始化。</summary>
+    public void Setup(FileType type, List<Sprite> possibleSprites, Color fallbackColor, BaseFileSortingGame ctrl)
     {
         fileType   = type;
         controller = ctrl;

@@ -1,83 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
-/// 文件分类小游戏主控制器。
+/// 文件分类小游戏主控制器（游戏流程版本）。
+///
+/// 继承自 <see cref="BaseFileSortingGame"/>，在公共逻辑之上增加：
+///   · GameManager 集成（work 减少、UltraPunishment）
+///   · BossWindowPerformance 演出触发
+///   · 无限刷新循环（游戏结束时自动停止）
+///
+/// IntroScene 中请使用 <see cref="StoryFileSortingGame"/> 代替。
 ///
 /// 场景层级建议：
 ///   Mini Game Panel (FileSortingGame)
 ///   ├── Spawn Area        (spawnArea 引用)
 ///   ├── Left Drop Zone    (DropZone, acceptedType = TypeA)
-///   ├── Right Drop Zone   (DropZone, acceptedType = TypeB)
-///   └── Wrong Drop Blocker (Image + CanvasGroup, blocksRaycasts=true; 默认 SetActive false)
+///   └── Right Drop Zone   (DropZone, acceptedType = TypeB)
 ///
 /// File Prefab 要求：Image + SortableFile（CanvasGroup 运行时自动添加）。
 /// </summary>
 [AddComponentMenu("MiniGame/File Sorting Game")]
-public class FileSortingGame : MonoBehaviour
+public class FileSortingGame : BaseFileSortingGame
 {
-    // ─── 场景引用 ──────────────────────────────────────────────
-
-    [Header("Scene References")]
-    [Tooltip("文件卡片刷新的矩形区域 RectTransform")]
-    public RectTransform spawnArea;
-
-    [Tooltip("左侧投放区域（DropZone 组件）")]
-    public DropZone leftDropZone;
-
-    [Tooltip("右侧投放区域（DropZone 组件）")]
-    public DropZone rightDropZone;
-
-    [Tooltip("错误投放时显示的遮挡面板（需含 CanvasGroup 且 blocksRaycasts = true）")]
-    public GameObject wrongDropBlockerPanel;
-
-    // ─── Prefab ────────────────────────────────────────────────
-
-    [Tooltip("文件卡片的拖拽范围限制（通常比 Spawn Area 更大，是包含关系）；\n留空则以 spawnArea 作为拖拽边界。")]
-    public RectTransform dragBoundaryRect;
-
-    [Header("File Prefab")]
-    [Tooltip("需含 Image + SortableFile 组件；CanvasGroup 若未预设，运行时自动添加")]
-    public GameObject filePrefab;
-
-    [Tooltip("每张卡片的 UI 尺寸（单位：像素）")]
-    public Vector2 fileCardSize = new Vector2(60f, 80f);
-
-    // ─── Type A（红色文件）──────────────────────────────────────
-
-    [Header("Type A  (e.g. Red)")]
-    [Tooltip("Type A 可随机选取的 Sprite 列表；留空则使用纯色 typeAColor")]
-    public List<Sprite> typeASprites = new List<Sprite>();
-    public Color typeAColor = new Color(0.95f, 0.25f, 0.25f, 1f);
-
-    [Tooltip("Type A 的刷新权重；与 typeBWeight 共同决定两种文件的出现概率（均为 1 时各占 50%）")]
-    [Min(0f)]
-    public float typeAWeight = 1f;
-
-    // ─── Type B（蓝色文件）──────────────────────────────────────
-
-    [Header("Type B  (e.g. Blue)")]
-    [Tooltip("Type B 可随机选取的 Sprite 列表；留空则使用纯色 typeBColor")]
-    public List<Sprite> typeBSprites = new List<Sprite>();
-    public Color typeBColor = new Color(0.25f, 0.5f, 1f, 1f);
-
-    [Tooltip("Type B 的刷新权重；与 typeAWeight 共同决定两种文件的出现概率（均为 1 时各占 50%）")]
-    [Min(0f)]
-    public float typeBWeight = 1f;
-
-    // ─── 刷新配置 ──────────────────────────────────────────────
-
-    [Header("Spawning")]
-    [Tooltip("场内文件数量上限；未达到上限时每隔 spawnIntervalSeconds 刷新一张")]
-    [Min(1)]
-    public int maxFileCount = 6;
-
-    [Tooltip("刷新间隔（秒）")]
-    [Min(0.1f)]
-    public float spawnIntervalSeconds = 2.5f;
-
     // ─── Work 减少 ─────────────────────────────────────────────
 
     [Header("Work Reduction")]
@@ -85,71 +30,10 @@ public class FileSortingGame : MonoBehaviour
     [Min(0f)]
     public float workReductionPerCorrectSort = 5f;
 
-    // ─── 错误投放 ──────────────────────────────────────────────
+    // ─── 初始化 ────────────────────────────────────────────────
 
-    [Header("Wrong Drop")]
-    [Tooltip("（已改为 Boss 窗口演出）错误投放后输入遮挡时长（秒）；遮挡期间无法继续拖拽文件。\n" +
-             "wrongDropBlockerPanel 不再显示，改由 BossWindowPerformance 播放演出。")]
-    [Min(0.1f)]
-    public float wrongDropBlockDuration = 1.5f;
-
-    // ─── Debug ─────────────────────────────────────────────────
-
-    [Header("Debug")]
-    [Tooltip("开启后在 Console 打印详细日志（关闭后只保留 Error）")]
-    [SerializeField] bool debugLog = false;
-
-    // ─── 运行时状态 ────────────────────────────────────────────
-
-    /// <summary>当前是否处于错误投放遮挡状态（SortableFile.OnBeginDrag 检测此值）。</summary>
-    public bool IsBlocked => _isBlocked;
-
-    readonly List<SortableFile> _activeFiles = new List<SortableFile>();
-    bool _isBlocked;
-    Coroutine _spawnCoroutine;
-    Coroutine _blockCoroutine;
-
-    // ─── 日志辅助 ──────────────────────────────────────────────
-
-    void Log(string msg)        { if (debugLog) Debug.Log(msg, this); }
-    void LogWarn(string msg)    { if (debugLog) Debug.LogWarning(msg, this); }
-    void LogError(string msg)   { Debug.LogError(msg, this); }   // Error 始终显示
-
-    // ─── 生命周期 ──────────────────────────────────────────────
-
-    IEnumerator Start()
+    protected override IEnumerator OnAfterBaseInit()
     {
-        Log($"[FileSortingGame] Start() | GameObject={gameObject.name} activeInHierarchy={gameObject.activeInHierarchy}");
-
-        // 引用完整性检查（Error 始终显示，不受 debugLog 控制）
-        if (spawnArea == null)  LogError("[FileSortingGame] ❌ spawnArea 未赋值！");
-        if (filePrefab == null) LogError("[FileSortingGame] ❌ filePrefab 未赋值！");
-        if (leftDropZone == null)  LogWarn("[FileSortingGame] ⚠ leftDropZone 未赋值。");
-        if (rightDropZone == null) LogWarn("[FileSortingGame] ⚠ rightDropZone 未赋值。");
-
-        if (spawnArea == null || filePrefab == null)
-        {
-            LogError("[FileSortingGame] 关键引用缺失，终止初始化。");
-            yield break;
-        }
-
-        if (leftDropZone != null)  leftDropZone.controller  = this;
-        if (rightDropZone != null) rightDropZone.controller = this;
-
-        if (wrongDropBlockerPanel != null)
-            wrongDropBlockerPanel.SetActive(false);
-
-        // 等一帧：Canvas 布局在 Start 期间未必完成
-        yield return null;
-
-        Log($"[FileSortingGame] spawnArea.rect={spawnArea.rect} filePrefab={filePrefab.name}");
-
-        if (filePrefab.GetComponentInChildren<SortableFile>() == null)
-        {
-            LogError("[FileSortingGame] ❌ filePrefab 层级中找不到 SortableFile 组件！");
-            yield break;
-        }
-
         int initialCount = Mathf.Min(maxFileCount, 3);
         Log($"[FileSortingGame] 初始刷新 {initialCount} 张");
         for (int i = 0; i < initialCount; i++)
@@ -157,12 +41,7 @@ public class FileSortingGame : MonoBehaviour
 
         _spawnCoroutine = StartCoroutine(SpawnLoop());
         Log("[FileSortingGame] 初始化完成，SpawnLoop 已启动。");
-    }
-
-    void OnDestroy()
-    {
-        if (_spawnCoroutine != null) StopCoroutine(_spawnCoroutine);
-        if (_blockCoroutine != null) StopCoroutine(_blockCoroutine);
+        yield break;
     }
 
     // ─── 刷新循环 ──────────────────────────────────────────────
@@ -173,6 +52,7 @@ public class FileSortingGame : MonoBehaviour
         {
             yield return new WaitForSeconds(spawnIntervalSeconds);
 
+            // 游戏结束时停止刷新
             if (GameManager.Instance != null &&
                 (GameManager.Instance.IsGameOver || GameManager.Instance.IsVictory))
                 yield break;
@@ -183,73 +63,15 @@ public class FileSortingGame : MonoBehaviour
         }
     }
 
-    void SpawnFile()
-    {
-        if (filePrefab == null || spawnArea == null) return;
-
-        GameObject go = Instantiate(filePrefab, spawnArea);
-
-        RectTransform rt = go.GetComponent<RectTransform>();
-        if (rt != null)
-        {
-            rt.sizeDelta = fileCardSize;
-            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot     = new Vector2(0.5f, 0.5f);
-
-            float halfW = Mathf.Max(0f, spawnArea.rect.width  * 0.5f - fileCardSize.x * 0.5f);
-            float halfH = Mathf.Max(0f, spawnArea.rect.height * 0.5f - fileCardSize.y * 0.5f);
-            rt.anchoredPosition = new Vector2(
-                Random.Range(-halfW, halfW),
-                Random.Range(-halfH, halfH));
-
-            Log($"[FileSortingGame] Spawn at {rt.anchoredPosition} | spawnArea={spawnArea.rect}");
-        }
-        else
-        {
-            LogWarn("[FileSortingGame] ⚠ filePrefab 根节点上没有 RectTransform！");
-        }
-
-        SortableFile file = go.GetComponentInChildren<SortableFile>();
-        if (file == null)
-        {
-            LogError("[FileSortingGame] ❌ 实例化后层级中找不到 SortableFile，销毁。");
-            Destroy(go);
-            return;
-        }
-
-        file.spawnedRoot = go;
-
-        float totalWeight = typeAWeight + typeBWeight;
-        SortableFile.FileType type = (totalWeight <= 0f || Random.value < typeAWeight / totalWeight)
-            ? SortableFile.FileType.TypeA
-            : SortableFile.FileType.TypeB;
-
-        List<Sprite> sprites = type == SortableFile.FileType.TypeA ? typeASprites : typeBSprites;
-        Color        color   = type == SortableFile.FileType.TypeA ? typeAColor   : typeBColor;
-
-        file.Setup(type, sprites, color, this);
-        _activeFiles.Add(file);
-        Log($"[FileSortingGame] 生成成功 type={type} total={_activeFiles.Count}");
-    }
-
-    // ─── DropZone 回调 ─────────────────────────────────────────
+    // ─── 投放回调 ──────────────────────────────────────────────
 
     /// <summary>
     /// 玩家正确分类后由 SortableFile.OnEndDrag 调用。
-    /// 销毁两个对象：spawnedRoot（留在 spawnArea 的空壳）和 file.gameObject（视觉节点，
-    /// 拖拽时已被 reparent 到根 Canvas，不再是 spawnedRoot 的子节点）。
-    /// 同时触发 Boss 窗口正确分类演出（带冷却，见 BossWindowPerformance）。
+    /// 销毁文件，减少 work 压力，触发 Boss 窗口正确分类演出。
     /// </summary>
-    public void OnCorrectDrop(SortableFile file)
+    public override void OnCorrectDrop(SortableFile file)
     {
-        _activeFiles.Remove(file);
-
-        // spawnedRoot 是 prefab 根（可能已是空壳，因为 FileImage 在拖拽中被提升到根 Canvas）
-        if (file.spawnedRoot != null && file.spawnedRoot != file.gameObject)
-            Destroy(file.spawnedRoot);
-
-        // 始终销毁视觉节点本身（即 SortableFile 所在的 GameObject）
-        Destroy(file.gameObject);
+        DestroyFile(file);
 
         float reduction = workReductionPerCorrectSort;
         if (GameManager.Instance != null)
@@ -257,7 +79,7 @@ public class FileSortingGame : MonoBehaviour
 
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.work = Mathf.Max(0f, GameManager.Instance.work - reduction);
+            GameManager.Instance.ReduceWork(reduction); // 走统一入口，按 workDecreaseMultiplier 缩小回跳
             if (GameManager.Instance.ui != null)
                 GameManager.Instance.ui.SetWork(GameManager.Instance.work);
         }
@@ -270,23 +92,17 @@ public class FileSortingGame : MonoBehaviour
 
     /// <summary>
     /// 玩家错误分类后由 SortableFile.OnEndDrag 调用。
-    /// 销毁文件，给予 workUltraPunishment，并在 Boss 窗口播放对应区域的错误分类演出。
-    /// 不再显示弹窗（wrongDropBlockerPanel），改由 BossWindowPerformance 处理演出。
-    /// 输入遮挡（IsBlocked）在 wrongDropBlockDuration 秒内仍然有效，防止连续错误操作。
+    /// 销毁文件，给予 workUltraPunishment，在 Boss 窗口播放对应区域的错误分类演出。
+    /// 同时开启输入遮挡防止连续误操作。
     /// </summary>
     /// <param name="hitZone">玩家实际投入的 DropZone（用于区分左/右区演出）</param>
-    public void OnWrongDrop(SortableFile file, DropZone hitZone)
+    public override void OnWrongDrop(SortableFile file, DropZone hitZone)
     {
         Log("[FileSortingGame] 错误分类，销毁文件 + 触发 Boss 窗口演出 + UltraPunishment。");
 
-        _activeFiles.Remove(file);
+        SortableFile.FileType fileType = file.fileType;
+        DestroyFile(file);
 
-        // 同 OnCorrectDrop：销毁空壳根节点和视觉节点
-        if (file.spawnedRoot != null && file.spawnedRoot != file.gameObject)
-            Destroy(file.spawnedRoot);
-        Destroy(file.gameObject);
-
-        // 给予 work ultra punishment
         if (GameManager.Instance != null)
             GameManager.Instance.UltraPunishment();
 
@@ -294,20 +110,7 @@ public class FileSortingGame : MonoBehaviour
         int zoneIndex = (hitZone == leftDropZone) ? 0 : 1;
         BossWindowPerformance.Instance?.TriggerWrongSort(zoneIndex);
 
-        // 保留输入遮挡（不显示面板，但阻止玩家立即再次拖拽文件）
-        if (_blockCoroutine != null)
-            StopCoroutine(_blockCoroutine);
-        _blockCoroutine = StartCoroutine(WrongDropBlockRoutine());
-    }
-
-    IEnumerator WrongDropBlockRoutine()
-    {
-        _isBlocked = true;
-        // wrongDropBlockerPanel 不再显示（已改为 BossWindowPerformance 演出）
-
-        yield return new WaitForSeconds(wrongDropBlockDuration);
-
-        _isBlocked = false;
-        _blockCoroutine = null;
+        // 按错误文件类型替换 Wrong Block Sprite，并遮挡输入
+        StartWrongDropBlock(fileType);
     }
 }

@@ -37,6 +37,10 @@ public class GameManager : MonoBehaviour
     [Header("Work pressure (from 0; reaching maxWork fails; defaults below when no phases)")]
     public float work = 0f;
     public float maxWork = 100f;
+
+    [Tooltip("往回跳（减少 work）的整体缩放：1=原样，越小往回跳越少，保证进度条总体向前。作用于持续工作缓解、修复瞬时缓解、连击 Reward、正确分类减压。")]
+    [Range(0f, 1f)]
+    public float workDecreaseMultiplier = 0.35f;
     public float workPunishment;
     public float workUltraPunishment;
     [Tooltip("每秒基础 work 增加量（无阶段配置时的默认值）")]
@@ -95,6 +99,9 @@ public class GameManager : MonoBehaviour
 
     [Tooltip("When enableTutorial: each reference is SetActive(false) once, when the first Boss warning starts after the tutorial sequence ends.")]
     public GameObject[] deactivateOnFirstBossWarningAfterTutorial;
+
+    [Tooltip("When enableTutorial: SetActive(false) at tutorial start; SetActive(true) once the tutorial break sequence ends. （教程期间关闭、教程结束后开启的物体）")]
+    public GameObject[] deactivateDuringTutorial;
 
     [Header("Virus die (work overload / work bar full)")]
     [Tooltip("If set: after cleanup and pause, this plays first; work-progress lose panel opens when the clip duration elapses (realtime). Leave null = open panel immediately like before.")]
@@ -533,7 +540,10 @@ public class GameManager : MonoBehaviour
         {
             ui.InitWorkSlider(maxWork);
             ui.SetWork(work);
-            ui.SetTime(_victoryCountdownRemaining);
+            if (enableTutorial)
+                ui.SetTimeGarbled(); // 教程期间显示乱码，避免开局闪出真实时间
+            else
+                ui.SetTime(_victoryCountdownRemaining);
             ui.HideAllResultPanels();
         }
 
@@ -559,11 +569,16 @@ public class GameManager : MonoBehaviour
 
         if (enableTutorial)
         {
+            // 让 enableTutorial 自动进入教程态：WorkItem.Break() 只有 isTutorialing==true 时才会弹出 tutorialBox。
+            // （Update 会在 _tutorialBreakSequenceDone 时自动把它置回 false。）
+            isTutorialing = true;
+            SetTutorialTempDisabledObjects(false); // 教程期间关闭指定物体
             SetAllWorkItemsAutoBreak(false);
             _tutorialCoroutine = StartCoroutine(TutorialBreakSequenceCoroutine());
         }
         else
         {
+            isTutorialing = false;
             _tutorialBreakSequenceDone = true;
             _allowRandomWorkItemFailures = true;
         }
@@ -712,7 +727,7 @@ public class GameManager : MonoBehaviour
         }
 
         work += broken * workLossPerSecondPerBrokenItem * Time.deltaTime;
-        work -= working * workGainPerSecondPerWorkingItem * Time.deltaTime;
+        work -= working * workGainPerSecondPerWorkingItem * Time.deltaTime * Mathf.Clamp01(workDecreaseMultiplier);
         work += workBaseIncreasePerSecond * Time.deltaTime;
 
         work = Mathf.Clamp(work, 0f, maxWork);
@@ -734,7 +749,10 @@ public class GameManager : MonoBehaviour
         if (ui != null)
         {
             ui.SetWork(work);
-            ui.SetTime(_victoryCountdownRemaining);
+            if (enableTutorial && !_tutorialBreakSequenceDone)
+                ui.SetTimeGarbled(); // 教程期间不计入实际时长 → 显示乱码
+            else
+                ui.SetTime(_victoryCountdownRemaining);
         }
     }
 
@@ -757,6 +775,17 @@ public class GameManager : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(n))
             return n.Trim();
         return wi.name;
+    }
+
+    /// <summary>教程期间临时关闭的物体：start=false 关闭、end=true 恢复。</summary>
+    void SetTutorialTempDisabledObjects(bool activeState)
+    {
+        if (deactivateDuringTutorial == null) return;
+        for (int i = 0; i < deactivateDuringTutorial.Length; i++)
+        {
+            GameObject go = deactivateDuringTutorial[i];
+            if (go != null) go.SetActive(activeState);
+        }
     }
 
     IEnumerator TutorialBreakSequenceCoroutine()
@@ -829,6 +858,7 @@ public class GameManager : MonoBehaviour
         _immediateBossAfterTutorial = true;
         _tutorialBreakSequenceDone = true;
         _tutorialCoroutine = null;
+        SetTutorialTempDisabledObjects(true); // 教程结束，重新开启这些物体
 
         if (gamePhases != null && gamePhases.Count > 0)
         {
@@ -1349,7 +1379,15 @@ public class GameManager : MonoBehaviour
 
     public void Reward()
     {
-        work -= workMashGain;
+        ReduceWork(workMashGain);
+    }
+
+    /// <summary>统一的 work 往回减少入口：按 workDecreaseMultiplier 缩小回跳幅度，保证进度条总体向前。</summary>
+    public void ReduceWork(float rawAmount)
+    {
+        if (isGameOver || IsVictory) return;
+        if (rawAmount <= 0f) return;
+        work -= rawAmount * Mathf.Clamp01(workDecreaseMultiplier);
         work = Mathf.Max(0f, work);
     }
 
@@ -1372,9 +1410,7 @@ public class GameManager : MonoBehaviour
     /// <summary>When player repairs Broke; called from WorkItem, instant work bar relief.</summary>
     public void ApplyWorkPressureOnBrokeRepaired()
     {
-        if (isGameOver || IsVictory) return;
-        work -= _activeWorkPressureInstantOnBrokeRepair;
-        work = Mathf.Max(0f, work);
+        ReduceWork(_activeWorkPressureInstantOnBrokeRepair);
     }
 
     void ClampWorkProgressAndMaybeLose()

@@ -198,7 +198,46 @@ public class UIManager : MonoBehaviour
     public void SetTime(float t)
     {
         if (timeText != null)
-            timeText.text = $"TIME: {Mathf.Max(0f, t):0.0}s";
+            timeText.text = $"SAM'S HACK ETA: {Mathf.Max(0f, t):0.0}s";
+    }
+
+    [Header("Tutorial Time Garble — 教程期间 Time 文本乱码（教程不计入实际时长）")]
+    [Tooltip("乱码前缀，可留空。默认保留标签让玩家知道这是时间栏")]
+    public string timeGarblePrefix = "SAM'S HACK ETA: ";
+
+    [Tooltip("用于生成乱码的字符集")]
+    public string timeGarbleCharset = "!@#$%^&*<>?/\\|=+~ABCDEF0123456789";
+
+    [Tooltip("乱码字符个数")]
+    [Min(1)]
+    public int timeGarbleLength = 6;
+
+    [Tooltip("乱码刷新间隔（秒，unscaled）。0 = 每帧刷新")]
+    [Min(0f)]
+    public float timeGarbleRefreshInterval = 0.08f;
+
+    float _nextGarbleTime;
+    string _garbleCache = "";
+    readonly StringBuilder _garbleSb = new StringBuilder();
+
+    /// <summary>教程期间调用：把 Time 文本显示为随机乱码（按 refresh 间隔刷新，制造故障闪动效果）。</summary>
+    public void SetTimeGarbled()
+    {
+        if (timeText == null) return;
+
+        float now = Time.unscaledTime;
+        if (_garbleCache.Length == 0 || now >= _nextGarbleTime)
+        {
+            string set = string.IsNullOrEmpty(timeGarbleCharset) ? "#%&*?" : timeGarbleCharset;
+            int len = Mathf.Max(1, timeGarbleLength);
+            _garbleSb.Clear();
+            for (int i = 0; i < len; i++)
+                _garbleSb.Append(set[Random.Range(0, set.Length)]);
+            _garbleCache = _garbleSb.ToString();
+            _nextGarbleTime = now + Mathf.Max(0f, timeGarbleRefreshInterval);
+        }
+
+        timeText.text = timeGarblePrefix + _garbleCache;
     }
 
     public void ShowGameOver(float surviveTime, float finalWork, string reason, float performanceScore)
