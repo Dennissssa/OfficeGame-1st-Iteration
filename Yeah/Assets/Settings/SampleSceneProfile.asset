@@ -148,37 +148,37 @@ MonoBehaviour:
   active: 1
   enableEffect:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.7
+    m_Value: 0
   edgeCurl:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.08
   curlX:
     m_OverrideState: 1
-    m_Value: 0.01
+    m_Value: 0.12
   curlY:
     m_OverrideState: 1
-    m_Value: 0.01
+    m_Value: 0.11
   cornerPinch:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.03
   overscan:
     m_OverrideState: 1
-    m_Value: 0.0089
+    m_Value: 0.015
   aspectCorrection:
     m_OverrideState: 1
     m_Value: 1
   bezelRoundness:
     m_OverrideState: 1
-    m_Value: 0.013
+    m_Value: 0.02
   bezelThickness:
     m_OverrideState: 1
-    m_Value: 0.0126
+    m_Value: 0.012
   bezelSoftness:
     m_OverrideState: 1
-    m_Value: 0.001
+    m_Value: 0.04
   bezelColor:
     m_OverrideState: 1
     m_Value: {r: 0.02, g: 0.02, b: 0.025, a: 1}
@@ -187,31 +187,31 @@ MonoBehaviour:
     m_Value: 0
   scanlineIntensity:
     m_OverrideState: 1
-    m_Value: 0.125
+    m_Value: 0.55
   scanlineCount:
     m_OverrideState: 1
-    m_Value: 220
+    m_Value: 360
   scanlineSharpness:
     m_OverrideState: 1
     m_Value: 1.4
   enableMask:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   maskType:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   maskIntensity:
     m_OverrideState: 1
-    m_Value: 0.18
+    m_Value: 0.22
   maskScale:
     m_OverrideState: 1
     m_Value: 1
   enableChromatic:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   chromaticAberration:
     m_OverrideState: 1
-    m_Value: 0.0015
+    m_Value: 0.001
   chromaticEdgeBoost:
     m_OverrideState: 1
     m_Value: 2.2
@@ -220,43 +220,43 @@ MonoBehaviour:
     m_Value: 1
   vignetteIntensity:
     m_OverrideState: 1
-    m_Value: 0.423
+    m_Value: 0.22
   vignetteSmoothness:
     m_OverrideState: 1
-    m_Value: 0.396
+    m_Value: 0.55
   brightness:
     m_OverrideState: 1
-    m_Value: 0.026
+    m_Value: -0.18
   contrast:
     m_OverrideState: 1
-    m_Value: 1.072
+    m_Value: 0.96
   saturation:
     m_OverrideState: 1
-    m_Value: 0.866
+    m_Value: 0.55
   phosphorTint:
     m_OverrideState: 1
-    m_Value: {r: 0.96, g: 1.02, b: 0.94, a: 1}
+    m_Value: {r: 0.85, g: 1.05, b: 0.9, a: 1}
   glow:
     m_OverrideState: 1
-    m_Value: 0.342
+    m_Value: 0.18
   enableFlicker:
     m_OverrideState: 1
     m_Value: 1
   flicker:
     m_OverrideState: 1
-    m_Value: 0.0178
+    m_Value: 0.016
   enableNoise:
     m_OverrideState: 1
     m_Value: 1
   noise:
     m_OverrideState: 1
-    m_Value: 0.022
+    m_Value: 0.08
   wobble:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.0018
   rollBar:
     m_OverrideState: 1
-    m_Value: 0.037
+    m_Value: 0.16
 --- !u!114 &7391319092446245454
 MonoBehaviour:
   m_ObjectHideFlags: 3

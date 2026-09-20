@@ -6197,7 +6197,7 @@ MonoBehaviour:
   phoneWorkItemForPickupAudioSuppressScope: {fileID: 1141977272}
   debugLogPhonePickupPlaySoundSkipFlags: 0
   isTutorialing: 0
-  surviveTime: 100
+  surviveTime: 90
 --- !u!4 &1583755465
 Transform:
   m_ObjectHideFlags: 0
@@ -7315,7 +7315,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40e5da0eea96f9941b52a28a36d3c06f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArduinoSerialBridgeWithMonitor
-  portName: COM6
+  portName: COM4
   baudRate: 9600
   onHit:
   - m_PersistentCalls:

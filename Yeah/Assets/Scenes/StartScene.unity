@@ -973,7 +973,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 603989c901d4f24418ba94007ce58761, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartSceneArduinoBridge
-  portName: COM6
+  portName: COM4
   baudRate: 9600
   triggerMessage: BADGE:SCANNED
   onArduinoTriggered:
