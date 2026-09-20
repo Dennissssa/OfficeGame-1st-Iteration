@@ -59,7 +59,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899c54efeace73346a0a16faa3afe726, type: 3}
   m_Name: Vignette
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   color:
     m_OverrideState: 0
     m_Value: {r: 0, g: 0, b: 0, a: 1}
@@ -92,6 +92,7 @@ MonoBehaviour:
   - {fileID: -7893295128165547882}
   - {fileID: 7391319092446245454}
   - {fileID: -3357603926938260329}
+  - {fileID: 6793669680140787200}
 --- !u!114 &849379129802519247
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -132,6 +133,130 @@ MonoBehaviour:
   maxNits:
     m_OverrideState: 1
     m_Value: 647
+--- !u!114 &6793669680140787200
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d99dcb2679dd03a4490897f5ef041a16, type: 3}
+  m_Name: CRTVolume
+  m_EditorClassIdentifier: Assembly-CSharp::CRTVolume
+  active: 1
+  enableEffect:
+    m_OverrideState: 1
+    m_Value: 1
+  intensity:
+    m_OverrideState: 1
+    m_Value: 0.7
+  edgeCurl:
+    m_OverrideState: 1
+    m_Value: 1
+  curlX:
+    m_OverrideState: 1
+    m_Value: 0.01
+  curlY:
+    m_OverrideState: 1
+    m_Value: 0.01
+  cornerPinch:
+    m_OverrideState: 1
+    m_Value: 0
+  overscan:
+    m_OverrideState: 1
+    m_Value: 0.0089
+  aspectCorrection:
+    m_OverrideState: 1
+    m_Value: 1
+  bezelRoundness:
+    m_OverrideState: 1
+    m_Value: 0.013
+  bezelThickness:
+    m_OverrideState: 1
+    m_Value: 0.0126
+  bezelSoftness:
+    m_OverrideState: 1
+    m_Value: 0.001
+  bezelColor:
+    m_OverrideState: 1
+    m_Value: {r: 0.02, g: 0.02, b: 0.025, a: 1}
+  enableScanlines:
+    m_OverrideState: 1
+    m_Value: 0
+  scanlineIntensity:
+    m_OverrideState: 1
+    m_Value: 0.125
+  scanlineCount:
+    m_OverrideState: 1
+    m_Value: 220
+  scanlineSharpness:
+    m_OverrideState: 1
+    m_Value: 1.4
+  enableMask:
+    m_OverrideState: 1
+    m_Value: 1
+  maskType:
+    m_OverrideState: 1
+    m_Value: 0
+  maskIntensity:
+    m_OverrideState: 1
+    m_Value: 0.18
+  maskScale:
+    m_OverrideState: 1
+    m_Value: 1
+  enableChromatic:
+    m_OverrideState: 1
+    m_Value: 1
+  chromaticAberration:
+    m_OverrideState: 1
+    m_Value: 0.0015
+  chromaticEdgeBoost:
+    m_OverrideState: 1
+    m_Value: 2.2
+  enableVignette:
+    m_OverrideState: 1
+    m_Value: 1
+  vignetteIntensity:
+    m_OverrideState: 1
+    m_Value: 0.423
+  vignetteSmoothness:
+    m_OverrideState: 1
+    m_Value: 0.396
+  brightness:
+    m_OverrideState: 1
+    m_Value: 0.026
+  contrast:
+    m_OverrideState: 1
+    m_Value: 1.072
+  saturation:
+    m_OverrideState: 1
+    m_Value: 0.866
+  phosphorTint:
+    m_OverrideState: 1
+    m_Value: {r: 0.96, g: 1.02, b: 0.94, a: 1}
+  glow:
+    m_OverrideState: 1
+    m_Value: 0.342
+  enableFlicker:
+    m_OverrideState: 1
+    m_Value: 1
+  flicker:
+    m_OverrideState: 1
+    m_Value: 0.0178
+  enableNoise:
+    m_OverrideState: 1
+    m_Value: 1
+  noise:
+    m_OverrideState: 1
+    m_Value: 0.022
+  wobble:
+    m_OverrideState: 1
+    m_Value: 0
+  rollBar:
+    m_OverrideState: 1
+    m_Value: 0.037
 --- !u!114 &7391319092446245454
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -144,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccf1aba9553839d41ae37dd52e9ebcce, type: 3}
   m_Name: MotionBlur
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   mode:
     m_OverrideState: 0
     m_Value: 0

@@ -7803,7 +7803,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 976652690033074825, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 54
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 976652690033074825, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -8066,6 +8066,22 @@ PrefabInstance:
       propertyPath: boundaryRect
       value: 
       objectReference: {fileID: 356946987}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseAmountMax
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseAmountMin
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseCooldownMax
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseCooldownMin
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

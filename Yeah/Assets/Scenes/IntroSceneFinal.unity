@@ -157,7 +157,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Player
+  m_text: Berry(You)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2c9ddead18b75364a886d3e789efe7bd, type: 2}
   m_sharedMaterial: {fileID: 9143716374363814668, guid: 2c9ddead18b75364a886d3e789efe7bd, type: 2}
@@ -166,8 +166,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4290493439
-  m_fontColor: {r: 1, g: 0.7327044, b: 0.7327044, a: 1}
+    rgba: 4291809231
+  m_fontColor: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -993,7 +993,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &429690926
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1036,7 +1036,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2515,8 +2515,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4290493439
-  m_fontColor: {r: 1, g: 0.7327044, b: 0.7327044, a: 1}
+    rgba: 4291809231
+  m_fontColor: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2921,6 +2921,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JiU.GlobalBackgroundMusic
   playOnStart: {fileID: 8300000, guid: ae235624559aa08449eb40198d6308fe, type: 3}
   playOnStartVolume: 0.05
+  startSceneName: StartScene
+  fadeSeconds: 0.75
+  themeNormal: {fileID: 0}
+  themeStupid: {fileID: 0}
+  themeMain: {fileID: 0}
+  themeBadEnding: {fileID: 0}
+  themeGoodEnding: {fileID: 0}
+  loopNormal: 1
+  loopStupid: 1
+  loopMain: 1
+  loopBadEnding: 0
+  loopGoodEnding: 0
+  volumeNormal: 0.2
+  volumeStupid: 0.2
+  volumeMain: 0.2
+  volumeBadEnding: 0.2
+  volumeGoodEnding: 0.2
 --- !u!82 &1214892552
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3722,6 +3739,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mini Game Panel
       objectReference: {fileID: 0}
+    - target: {fileID: 7352033416417035985, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2227286192660621397, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
     m_RemovedGameObjects: []
@@ -3736,6 +3757,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7352033416417035985, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1462196039}
+    - targetCorrespondingSourceObject: {fileID: 7352033416417035985, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1462196041}
   m_SourcePrefab: {fileID: 100100000, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
 --- !u!224 &1462196033 stripped
 RectTransform:
@@ -3923,6 +3947,22 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   completionDelaySeconds: 0.5
+--- !u!114 &1462196041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462196038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f0e1f6a5a681964d9120957a70a41dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
+  gyrateAmount: 0
+  targetSize: {x: 0.8, y: 0.8, z: 0.8}
+  isGrowing: 1
+  lerpSpeed: 20
 --- !u!1 &1463033133
 GameObject:
   m_ObjectHideFlags: 0
@@ -4229,6 +4269,22 @@ PrefabInstance:
       propertyPath: increaseRatePerSecond
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseAmountMax
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseAmountMin
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseCooldownMax
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: randomDecreaseCooldownMin
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6061616902391307186, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
     m_RemovedGameObjects: []
@@ -4287,6 +4343,7 @@ MonoBehaviour:
     vocalSound: {fileID: 7778681539260138732, guid: 31a760518a3eafd4fb046b70e4c976f4, type: 3}
     advanceMode: 0
     autoAdvanceDelay: 1.5
+    bgmTheme: 0
   - portrait: {fileID: 0}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: Boss
@@ -4305,6 +4362,7 @@ MonoBehaviour:
     vocalSound: {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 8
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: Boss
@@ -4323,6 +4381,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
     advanceMode: 0
     autoAdvanceDelay: 1.5
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: Boss
@@ -4341,6 +4400,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 2474e18e60d8329a7a66b140f048f9df, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 9
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 91d5df396eaf0d7ddbf597de3b1f1268, type: 3}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: Boss
@@ -4359,6 +4419,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 127f5fc195e72af359cc23207d93cd1a, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 7
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 6cf1f3bc4b10910efa8ebf7e008f3e4c, type: 3}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: Boss
@@ -4377,6 +4438,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: d96595a248e125f5ab683c42a9d16199, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 7
+    bgmTheme: 0
   - portrait: {fileID: 0}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: 
@@ -4395,6 +4457,7 @@ MonoBehaviour:
     vocalSound: {fileID: 2567162694690245550, guid: d793647e35bf3a9fa893dbcb22a6af16, type: 3}
     advanceMode: 0
     autoAdvanceDelay: 1
+    bgmTheme: 0
   - portrait: {fileID: 0}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: 
@@ -4412,7 +4475,8 @@ MonoBehaviour:
     autoAdvanceWhenSpamComplete: 0
     vocalSound: {fileID: 2567162694690245550, guid: fc978c35c063c799f987bde224920380, type: 3}
     advanceMode: 1
-    autoAdvanceDelay: 1.5
+    autoAdvanceDelay: 4
+    bgmTheme: 0
   - portrait: {fileID: 0}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: 
@@ -4431,6 +4495,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
     advanceMode: 0
     autoAdvanceDelay: 1.5
+    bgmTheme: 2
   - portrait: {fileID: 0}
     boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
     speakerName: 
@@ -4449,6 +4514,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 5666410ce1d62aa2294ee78900443157, type: 3}
     advanceMode: 0
     autoAdvanceDelay: 0
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4467,6 +4533,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 8993c8d1a827aa673a276833bd8cff62, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 6
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4486,6 +4553,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 60d482181ba70e73196f8295d400da88, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 8
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4504,6 +4572,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 970492c1102eb47258aaa854d57dfcd9, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 3.5
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4522,6 +4591,7 @@ MonoBehaviour:
     vocalSound: {fileID: 2567162694690245550, guid: e89f80144e6aad52b89ae6bc63a3b7f9, type: 3}
     advanceMode: 0
     autoAdvanceDelay: 1.5
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4540,6 +4610,7 @@ MonoBehaviour:
     vocalSound: {fileID: 2567162694690245550, guid: 9a614c177cf440f44833e573aa9a06b5, type: 3}
     advanceMode: 0
     autoAdvanceDelay: 0.5
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4558,6 +4629,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 6da7eb063a9cbc1f791fe4d17110b857, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 3
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4576,6 +4648,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: c10b2e6ef76465d678d30b439a44aa6a, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 3
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4595,6 +4668,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: b3b7209a879616c448fd95325522c8c2, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 4
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4613,6 +4687,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: b0a17d566de4fce68864dd8711ee4833, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 5
+    bgmTheme: 0
   - portrait: {fileID: 21300000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
     boxSprite: {fileID: 21300000, guid: 50b5b7fcebf71c83bb40feed99248b99, type: 3}
     speakerName: Sam
@@ -4631,6 +4706,7 @@ MonoBehaviour:
     vocalSound: {fileID: 87716062201910069, guid: 529388bd586968d69acbcee6a001c246, type: 3}
     advanceMode: 1
     autoAdvanceDelay: 3
+    bgmTheme: 0
   dialogueGroup: {fileID: 429690925}
   dialogueHead: {fileID: 766614175}
   messageBox: {fileID: 429690927}
@@ -4657,6 +4733,29 @@ MonoBehaviour:
   maxAdCount: 8
   nextSceneBuildIndex: 2
   startImmediately: 0
+  preambleLines:
+  - portrait: {fileID: 0}
+    boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    speakerName: Berry (You)
+    text: Let's see...
+    vocalClip: {fileID: 0}
+    advanceMode: 1
+    autoAdvanceDelay: 2.5
+  - portrait: {fileID: 0}
+    boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    speakerName: Berry (You)
+    text: today's job is organizing documents.
+    vocalClip: {fileID: 0}
+    advanceMode: 1
+    autoAdvanceDelay: 3
+  - portrait: {fileID: 0}
+    boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+    speakerName: Berry (You)
+    text: Let's get started.
+    vocalClip: {fileID: 0}
+    advanceMode: 1
+    autoAdvanceDelay: 2.5
+  preambleAudioSource: {fileID: 0}
 --- !u!4 &1536970594
 Transform:
   m_ObjectHideFlags: 0
@@ -4685,10 +4784,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IntroManager
   sortingGame: {fileID: 1462196040}
+  introController: {fileID: 1536970593}
   introDelaySeconds: 0
   objectsToHideBeforeGame:
   - {fileID: 0}
-  objectsToShowBeforeGame: []
+  objectsToShowBeforeGame:
+  - {fileID: 1462196038}
   objectsToHideOnStoryBegin: []
   objectsToShowOnStoryBegin: []
   onStoryBegin:

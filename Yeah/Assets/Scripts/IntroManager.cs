@@ -8,11 +8,12 @@ using UnityEngine.Events;
 /// 负责协调文件分类演出小游戏与故事剧情之间的衔接：
 ///
 ///   开场延迟（introDelaySeconds）
-///   → 激活/隐藏开场对象
-///   → 小游戏可操作（StoryFileSortingGame 自动开始）
-///   → 所有文件处理完毕（OnAllFilesSorted 回调）
+///   → 播放小游戏前自述（IntroController.PlayPreamble，使用 DialogueBox）
+///   → 隐藏 DialogueBox，激活/隐藏开场对象（小游戏窗口出现）
+///   → 小游戏可操作（StoryFileSortingGame 此时才开始）
+///   → 规定文件处理完毕（OnAllFilesSorted 回调）
 ///   → 隐藏/激活故事对象
-///   → 触发 onStoryBegin UnityEvent（启动对话/过场/场景切换等）
+///   → 触发 onStoryBegin UnityEvent（BeginDialogue 重新唤醒 DialogueBox）
 ///
 /// 推荐挂载到 IntroScene 的管理器空 GameObject 上。
 /// </summary>
@@ -24,6 +25,9 @@ public class IntroManager : MonoBehaviour
     [Header("Mini Game")]
     [Tooltip("IntroScene 中的 StoryFileSortingGame 组件；留空则跳过小游戏直接触发故事")]
     public StoryFileSortingGame sortingGame;
+
+    [Tooltip("对话控制器；留空则在本物体上查找 IntroController")]
+    public IntroController introController;
 
     // ─── 开场序列 ──────────────────────────────────────────────
 
@@ -68,6 +72,11 @@ public class IntroManager : MonoBehaviour
 
     void Start()
     {
+        if (introController == null)
+            introController = GetComponent<IntroController>();
+
+        // 小游戏窗口等到自述结束后再显示，避免文件提前刷新
+        SetActiveAll(objectsToShowBeforeGame, false);
         // 将"故事阶段"对象初始隐藏，防止闪烁
         SetActiveAll(objectsToShowOnStoryBegin, false);
 
@@ -82,15 +91,19 @@ public class IntroManager : MonoBehaviour
         if (introDelaySeconds > 0f)
             yield return new WaitForSeconds(introDelaySeconds);
 
-        // ── 2. 切换开场对象 ──────────────────────────────────────
+        // ── 2. 小游戏前自述（DialogueBox）────────────────────────
+        if (introController != null)
+            yield return introController.PlayPreamble();
+
+        // ── 3. 切换开场对象（显示小游戏窗口）────────────────────
         SetActiveAll(objectsToHideBeforeGame, false);
         SetActiveAll(objectsToShowBeforeGame, true);
 
-        // ── 3. 播放小游戏音乐 ────────────────────────────────────
+        // ── 4. 播放小游戏音乐 ────────────────────────────────────
         if (gameplayMusic != null && !gameplayMusic.isPlaying)
             gameplayMusic.Play();
 
-        // ── 4. 订阅小游戏完成事件 ───────────────────────────────
+        // ── 5. 订阅小游戏完成事件 ───────────────────────────────
         if (sortingGame != null)
         {
             sortingGame.onAllFilesSorted.AddListener(OnAllFilesSorted);

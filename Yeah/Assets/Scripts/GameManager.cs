@@ -164,7 +164,7 @@ public class GameManager : MonoBehaviour
     public ScreenVignetteTint screenTint;
 
     [Header("Virus Purge Meter (演出用进度条)")]
-    [Tooltip("病毒清除进度演出条；胜利时跳至100%，Boss失败时立即停止。留空则忽略。")]
+    [Tooltip("病毒清除进度演出条；胜利时归零，Boss失败时立即停止。留空则忽略。")]
     public VirusPurgeMeter virusPurgeMeter;
 
     [Header("Boss events (optional)")]
@@ -574,6 +574,7 @@ public class GameManager : MonoBehaviour
             isTutorialing = true;
             SetTutorialTempDisabledObjects(false); // 教程期间关闭指定物体
             SetAllWorkItemsAutoBreak(false);
+            PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.Stupid);
             _tutorialCoroutine = StartCoroutine(TutorialBreakSequenceCoroutine());
         }
         else
@@ -581,6 +582,7 @@ public class GameManager : MonoBehaviour
             isTutorialing = false;
             _tutorialBreakSequenceDone = true;
             _allowRandomWorkItemFailures = true;
+            PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.Main);
         }
 
         // Sync all WorkItems in list (covers objects registered before this Start and autoFind without RegisterItem)
@@ -859,6 +861,7 @@ public class GameManager : MonoBehaviour
         _tutorialBreakSequenceDone = true;
         _tutorialCoroutine = null;
         SetTutorialTempDisabledObjects(true); // 教程结束，重新开启这些物体
+        PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.Main);
 
         if (gamePhases != null && gamePhases.Count > 0)
         {
@@ -1317,6 +1320,7 @@ public class GameManager : MonoBehaviour
         ShutdownBrokenWarningSystem();
 
         virusPurgeMeter?.OnVictory();
+        PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.GoodEnding);
 
         Time.timeScale = 0f;
         _victoryCinematicCoroutine = StartCoroutine(VictoryCinematicThenPanelCoroutine());
@@ -1971,7 +1975,10 @@ public class GameManager : MonoBehaviour
 
         bool bossCaused = reason != null && reason.Contains("Boss");
         if (bossCaused)
+        {
             OnGameOverBossCaused?.Invoke();
+            PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.BadEnding);
+        }
 
         if (screenTint != null)
             screenTint.SetTarget(0f, 0.1f);
@@ -2109,6 +2116,12 @@ public class GameManager : MonoBehaviour
         _bossFailCinematicCoroutine = null;
         if (ui != null)
             ui.ShowGameOver(capturedSurviveTime, capturedWork, reason, TotalPerformanceScore);
+    }
+
+    static void PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme theme)
+    {
+        if (JiU.GlobalBackgroundMusic.Instance != null)
+            JiU.GlobalBackgroundMusic.Instance.PlayTheme(theme);
     }
 
     public void Restart()

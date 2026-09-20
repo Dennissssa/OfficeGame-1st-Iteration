@@ -9,7 +9,7 @@ using UnityEngine.UI;
 ///   - 游戏进行中按 increaseRatePerSecond 缓慢自动增长（0~100）
 ///   - 随机触发突然扣减（保证不低于 0）
 ///   - Fill 颜色从 colorAtZero（红）平滑过渡到 colorAtFull（绿）
-///   - 触发胜利结局 → 立即跳至 100% 并停止所有行为
+///   - 触发胜利结局 → 立即归零并停止所有行为
 ///   - 触发 Boss 失败结局 → 立即停止（保持当前值）
 ///
 /// 使用方式：
@@ -110,13 +110,13 @@ public class VirusPurgeMeter : MonoBehaviour
     // ── 公共接口 ──────────────────────────────────────────────────────────
 
     /// <summary>
-    /// 触发胜利结局时调用：立即将进度跳至 100% 并停止所有动态行为。
+    /// 触发胜利结局时调用：立即将进度归零并停止所有动态行为。
     /// 由 GameManager.TriggerVictory() 调用。
     /// </summary>
     public void OnVictory()
     {
         StopAllBehavior();
-        _value = k_Max;
+        _value = k_Min;
         ApplyVisuals();
     }
 

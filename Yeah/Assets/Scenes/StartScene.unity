@@ -360,8 +360,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b23a2d934cc79e4081b8ac39a8e240e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JiU.GlobalBackgroundMusic
-  playOnStart: {fileID: 8300000, guid: 1fc2b5aa6b61284428103545f5c0cc76, type: 3}
-  playOnStartVolume: 0.05
+  playOnStart: {fileID: 8300000, guid: 6274466819f85964ab321674417378f2, type: 3}
+  playOnStartVolume: 0.2
+  startSceneName: StartScene
+  fadeSeconds: 0.75
+  themeNormal: {fileID: 8300000, guid: 6274466819f85964ab321674417378f2, type: 3}
+  themeStupid: {fileID: 8300000, guid: 89612767e2d151146af9c78ee3b8b37d, type: 3}
+  themeMain: {fileID: 8300000, guid: d5e28de4285f34e4c982e9482c78dcf7, type: 3}
+  themeBadEnding: {fileID: 8300000, guid: 88ab63ba86a72ae40a1f665fc99affb0, type: 3}
+  themeGoodEnding: {fileID: 8300000, guid: 5b6e7a3ba77e69b4b8de8048816f58be, type: 3}
+  loopNormal: 1
+  loopStupid: 1
+  loopMain: 1
+  loopBadEnding: 0
+  loopGoodEnding: 0
+  volumeNormal: 0.4
+  volumeStupid: 0.3
+  volumeMain: 0.2
+  volumeBadEnding: 0.8
+  volumeGoodEnding: 0.8
 --- !u!82 &497466880
 AudioSource:
   m_ObjectHideFlags: 0
@@ -373,7 +390,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 1fc2b5aa6b61284428103545f5c0cc76, type: 3}
+  m_Resource: {fileID: 8300000, guid: 6274466819f85964ab321674417378f2, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0.05
   m_Pitch: 1

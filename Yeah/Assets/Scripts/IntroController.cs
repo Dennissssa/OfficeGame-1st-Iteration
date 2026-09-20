@@ -84,6 +84,10 @@ public class IntroController : MonoBehaviour
         [Tooltip("AutoAdvance 模式：等待多少秒后自动推进\nWaitForClick 模式：超过此秒数未点击时自动推进（0 = 禁用超时，永远等待点击）")]
         [Min(0f)]
         public float autoAdvanceDelay = 1.5f;
+
+        [Header("BGM — 背景音乐")]
+        [Tooltip("进入此步骤时切换全局 BGM。None = 不切换。用于 Intro 指定事件（例如广告刷屏）切到 Theme Stupid。")]
+        public JiU.GlobalBackgroundMusic.Theme bgmTheme = JiU.GlobalBackgroundMusic.Theme.None;
     }
 
     /// <summary>对话步骤的推进方式。</summary>
@@ -171,6 +175,40 @@ public class IntroController : MonoBehaviour
     [Tooltip("勾选后忽略小游戏，场景加载即刻开始对话（测试 / 跳过小游戏专用）")]
     public bool startImmediately = false;
 
+    [Header("Preamble — 小游戏前自述")]
+    [Tooltip("小游戏出现前播放的自述台词；全部结束后隐藏 DialogueBox，再显示小游戏。之后由 BeginDialogue() 重新唤醒。")]
+    public List<PreambleLine> preambleLines = new List<PreambleLine>();
+
+    [Tooltip("播放 preamble 配音的 AudioSource；留空则使用本物体上的 AudioSource（没有则运行时添加）")]
+    public AudioSource preambleAudioSource;
+
+    /// <summary>小游戏前自述的单句配置。</summary>
+    [System.Serializable]
+    public class PreambleLine
+    {
+        [Tooltip("角色立绘；留空则不替换当前头像")]
+        public Sprite portrait;
+
+        [Tooltip("气泡框 Sprite；留空则不替换")]
+        public Sprite boxSprite;
+
+        [Tooltip("角色名")]
+        public string speakerName = "Berry (You)";
+
+        [TextArea(2, 4)]
+        public string text;
+
+        [Tooltip("配音 AudioClip；尚未就绪可留空")]
+        public AudioClip vocalClip;
+
+        [Tooltip("AutoAdvance = 等 autoAdvanceDelay 秒后自动下一句\nWaitForClick = 点击推进，delay>0 时超时也会推进")]
+        public AdvanceMode advanceMode = AdvanceMode.WaitForClick;
+
+        [Tooltip("自动推进 / 点击超时秒数。若有配音，实际等待不会短于配音时长")]
+        [Min(0f)]
+        public float autoAdvanceDelay = 2.5f;
+    }
+
     // ══════════════════════════════════════════════════════════════
     // 运行时私有状态
     // ══════════════════════════════════════════════════════════════
@@ -184,6 +222,7 @@ public class IntroController : MonoBehaviour
     bool   _canSpawnAd = true;
 
     GameObject _currentVocalSource;
+    AudioSource _preambleAudio;
 
     // ══════════════════════════════════════════════════════════════
     // 生命周期
@@ -195,6 +234,8 @@ public class IntroController : MonoBehaviour
 
         if (startImmediately)
             BeginDialogue();
+        else if (dialogueGroup != null)
+            dialogueGroup.SetActive(false);
     }
 
     void Update()
@@ -242,7 +283,7 @@ public class IntroController : MonoBehaviour
 
     /// <summary>
     /// 解锁对话推进逻辑，从第 0 步开始。
-    /// 由 IntroManager.onStoryBegin UnityEvent 调用。
+    /// 由 IntroManager.onStoryBegin UnityEvent 调用（小游戏规定文件分完后唤醒 DialogueBox）。
     /// </summary>
     public void BeginDialogue()
     {
@@ -250,8 +291,40 @@ public class IntroController : MonoBehaviour
         _dialogueActive  = true;
         _isAutoAdvancing = false;
 
+        if (dialogueHead != null)
+            SetActive(dialogueHead.gameObject, true);
+
         if (dialogueList != null && dialogueList.Count > 0)
-            PlayVocalSound(dialogueList[0].vocalSound);
+            EnterDialogueStep(dialogueList[0]);
+    }
+
+    /// <summary>
+    /// 小游戏出现前的自述演出。播完后隐藏 DialogueBox，由调用方再显示小游戏。
+    /// </summary>
+    public IEnumerator PlayPreamble()
+    {
+        if (preambleLines == null || preambleLines.Count == 0)
+            yield break;
+
+        _mouse = Mouse.current;
+        SetActive(dialogueGroup, true);
+
+        for (int i = 0; i < preambleLines.Count; i++)
+        {
+            PreambleLine line = preambleLines[i];
+            ApplyPreambleUI(line);
+            PlayPreambleClip(line.vocalClip);
+            yield return WaitForPreambleAdvance(line);
+        }
+
+        StopPreambleClip();
+        SetActive(dialogueGroup, false);
+    }
+
+    /// <summary>供 Inspector UnityEvent 直接切到 Stupid 主题（也可在对话步骤上设置 bgmTheme）。</summary>
+    public void SwitchBgmToStupid()
+    {
+        PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.Stupid);
     }
 
     /// <summary>
@@ -278,7 +351,7 @@ public class IntroController : MonoBehaviour
         if (_currentIndex < dialogueList.Count - 1)
         {
             _currentIndex++;
-            PlayVocalSound(dialogueList[_currentIndex].vocalSound);
+            EnterDialogueStep(dialogueList[_currentIndex]);
         }
         else
         {
@@ -295,8 +368,21 @@ public class IntroController : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════════════
-    // 语音播放
+    // 步骤进入：语音 + 可选 BGM 切换
     // ══════════════════════════════════════════════════════════════
+
+    void EnterDialogueStep(DialoguePack pack)
+    {
+        PlayVocalSound(pack.vocalSound);
+        PlayGlobalBgm(pack.bgmTheme);
+    }
+
+    static void PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme theme)
+    {
+        if (theme == JiU.GlobalBackgroundMusic.Theme.None) return;
+        if (JiU.GlobalBackgroundMusic.Instance != null)
+            JiU.GlobalBackgroundMusic.Instance.PlayTheme(theme);
+    }
 
     void PlayVocalSound(GameObject soundPrefab)
     {
@@ -384,6 +470,80 @@ public class IntroController : MonoBehaviour
         bool spamDone = _adSpawnCount >= maxAdCount || _adSpawnCount >= adSpam.Count;
         if (spamDone && dialogueList[_currentIndex].autoAdvanceWhenSpamComplete)
             AdvanceToNext();
+    }
+
+    void ApplyPreambleUI(PreambleLine line)
+    {
+        if (dialogueText != null)
+            dialogueText.text = line.text;
+
+        if (dialogueName != null)
+            dialogueName.text = line.speakerName;
+
+        if (dialogueHead != null)
+        {
+            if (line.portrait != null)
+            {
+                dialogueHead.texture = line.portrait.texture;
+                SetActive(dialogueHead.gameObject, true);
+            }
+            else
+            {
+                SetActive(dialogueHead.gameObject, false);
+            }
+        }
+
+        if (messageBox != null && line.boxSprite != null)
+            messageBox.sprite = line.boxSprite;
+    }
+
+    void PlayPreambleClip(AudioClip clip)
+    {
+        StopPreambleClip();
+        if (clip == null) return;
+
+        if (_preambleAudio == null)
+        {
+            _preambleAudio = preambleAudioSource != null
+                ? preambleAudioSource
+                : GetComponent<AudioSource>();
+            if (_preambleAudio == null)
+            {
+                _preambleAudio = gameObject.AddComponent<AudioSource>();
+                _preambleAudio.playOnAwake = false;
+            }
+        }
+
+        _preambleAudio.PlayOneShot(clip);
+    }
+
+    void StopPreambleClip()
+    {
+        if (_preambleAudio != null)
+            _preambleAudio.Stop();
+    }
+
+    IEnumerator WaitForPreambleAdvance(PreambleLine line)
+    {
+        float delay = line.autoAdvanceDelay;
+        if (line.vocalClip != null)
+            delay = Mathf.Max(delay, line.vocalClip.length);
+
+        float t = 0f;
+        while (true)
+        {
+            if (line.advanceMode == AdvanceMode.WaitForClick
+                && _mouse != null
+                && _mouse.leftButton.wasPressedThisFrame)
+                yield break;
+
+            t += Time.deltaTime;
+            bool timedOut = delay > 0f && t >= delay;
+            if (timedOut && line.advanceMode != AdvanceMode.WaitForEvent)
+                yield break;
+
+            yield return null;
+        }
     }
 
     // ══════════════════════════════════════════════════════════════
