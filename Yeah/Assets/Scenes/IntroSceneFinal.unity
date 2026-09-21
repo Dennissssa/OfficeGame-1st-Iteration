@@ -993,7 +993,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &429690926
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1766,7 +1766,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 206e0c45dc735df6097f8d65a34ba2fe, type: 3}
+  m_Texture: {fileID: 2800000, guid: 0a1a123b60e76564e82424b182f1dfeb, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -4734,22 +4734,22 @@ MonoBehaviour:
   nextSceneBuildIndex: 2
   startImmediately: 0
   preambleLines:
-  - portrait: {fileID: 0}
-    boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+  - portrait: {fileID: 21300000, guid: 0a1a123b60e76564e82424b182f1dfeb, type: 3}
+    boxSprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
     speakerName: Berry (You)
     text: Let's see...
     vocalClip: {fileID: 0}
     advanceMode: 1
     autoAdvanceDelay: 2.5
-  - portrait: {fileID: 0}
-    boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+  - portrait: {fileID: 21300000, guid: 0a1a123b60e76564e82424b182f1dfeb, type: 3}
+    boxSprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
     speakerName: Berry (You)
-    text: today's job is organizing documents.
+    text: Today's job is organizing documents.
     vocalClip: {fileID: 0}
     advanceMode: 1
     autoAdvanceDelay: 3
-  - portrait: {fileID: 0}
-    boxSprite: {fileID: 21300000, guid: b4ca9f6b7da87f84bb4bd1a1a21a7aa5, type: 3}
+  - portrait: {fileID: 21300000, guid: 0a1a123b60e76564e82424b182f1dfeb, type: 3}
+    boxSprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
     speakerName: Berry (You)
     text: Let's get started.
     vocalClip: {fileID: 0}
