@@ -1697,7 +1697,7 @@ MonoBehaviour:
   - {fileID: 8395510339607571483, guid: f86872fc5407eb343b46c8690e766a00, type: 3}
   spawnParent: {fileID: 356946987}
   boundsRect: {fileID: 356946987}
-  spawnInterval: 0.25
+  spawnInterval: 0.1
   bringToFront: 1
 --- !u!1 &387048556
 GameObject:
@@ -8067,6 +8067,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 356946987}
     - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
+      propertyPath: increaseRatePerSecond
+      value: 1.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
       propertyPath: randomDecreaseAmountMax
       value: 3
       objectReference: {fileID: 0}
@@ -8076,7 +8080,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
       propertyPath: randomDecreaseCooldownMax
-      value: 10
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8670346875772407115, guid: d18de22e1abe92b47a0ab036b795a980, type: 3}
       propertyPath: randomDecreaseCooldownMin
