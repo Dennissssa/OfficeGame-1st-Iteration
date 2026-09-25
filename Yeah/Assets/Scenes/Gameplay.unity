@@ -819,8 +819,8 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 0
-  baitWeight: 1
+  breakWeight: 1
+  baitWeight: 0
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/2
@@ -1613,8 +1613,8 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 0
-  baitWeight: 1
+  breakWeight: 1
+  baitWeight: 0
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/1
@@ -1695,8 +1695,8 @@ MonoBehaviour:
   prefabs:
   - {fileID: 1828913251503759595, guid: a088911acc5b1a646b023edb3bd492c0, type: 3}
   - {fileID: 8395510339607571483, guid: f86872fc5407eb343b46c8690e766a00, type: 3}
-  spawnParent: {fileID: 0}
-  boundsRect: {fileID: 0}
+  spawnParent: {fileID: 356946987}
+  boundsRect: {fileID: 356946987}
   spawnInterval: 0.25
   bringToFront: 1
 --- !u!1 &387048556
@@ -3270,8 +3270,8 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 0
-  baitWeight: 1
+  breakWeight: 1
+  baitWeight: 0
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
   repairBindingPath: <Keyboard>/5
@@ -3707,7 +3707,7 @@ MonoBehaviour:
   minTimeToBreak: 4
   maxTimeToBreak: 10
   enableAutoBreak: 1
-  breakWeight: 0
+  breakWeight: 5
   baitWeight: 1
   baitSelfFixDurationSeconds: 3
   enableHotkeyRepair: 1
