@@ -856,6 +856,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Speaker
+  brokenWarningMessage: 
+  brokenWarningClip: {fileID: 8300000, guid: ccc1986ebd9888d4ba63ede5e8e4ab4d, type: 3}
   treatAsPhoneWorkItem: 0
   phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
@@ -1650,6 +1652,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Monitor
+  brokenWarningMessage: 
+  brokenWarningClip: {fileID: 8300000, guid: 689d5f179c8b80840aaf5c7be659d8b0, type: 3}
   treatAsPhoneWorkItem: 0
   phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
@@ -3307,6 +3311,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Printer
+  brokenWarningMessage: 
+  brokenWarningClip: {fileID: 8300000, guid: 6cdf4440bb864234dbbf166e08352343, type: 3}
   treatAsPhoneWorkItem: 0
   phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
@@ -3744,6 +3750,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: Skull
+  brokenWarningMessage: 
+  brokenWarningClip: {fileID: 8300000, guid: 115ef8d368498e34184bf8d58507dc81, type: 3}
   treatAsPhoneWorkItem: 0
   phoneBehaviorVersion: 2
   usePhoneBaitBehavior: 0
@@ -4037,8 +4045,8 @@ MonoBehaviour:
   animatorController: {fileID: 9100000, guid: 624c39a2ccb2ba44a8ec3c24d651181a, type: 2}
   sentences:
   - animatorController: {fileID: 9100000, guid: 624c39a2ccb2ba44a8ec3c24d651181a, type: 2}
-    text: Waiting for edit
-    voiceClip: {fileID: 8300000, guid: bc3df158da0722e4ca9cec632d2093f2, type: 3}
+    text: Last one, the phone! Same deal, smack it with the bone!
+    voiceClip: {fileID: 8300000, guid: f829b5b166a17de4a80c3fc67579fab4, type: 3}
     extraHoldSeconds: 0.2
     hideDuringExtraHold:
     - {fileID: 655975525}
@@ -4735,6 +4743,8 @@ MonoBehaviour:
   debugBreakBindingPath: <Keyboard>/b
   smokeParticles: {fileID: 7834365151588663595, guid: 480f836bc1737703b9502808639383b4, type: 3}
   itemName: phone
+  brokenWarningMessage: 
+  brokenWarningClip: {fileID: 8300000, guid: 71e1f26e779e4c844815af93e43d4fde, type: 3}
   treatAsPhoneWorkItem: 0
   phoneBehaviorVersion: 0
   usePhoneBaitBehavior: 0
@@ -5639,12 +5649,8 @@ MonoBehaviour:
   gameOverRoot: {fileID: 496400306}
   gameOverTitleText: {fileID: 0}
   gameOverDetailText: {fileID: 1013129476}
-  workProgressLoseRoot: {fileID: 0}
-  workProgressLoseTitleText: {fileID: 0}
-  workProgressLoseDetailText: {fileID: 0}
   gameWinRoot: {fileID: 650030629}
   gameWinPerformanceText: {fileID: 1710018929}
-  debugLogWorkProgressLoseFlow: 0
   timeGarblePrefix: 'SAM''S HACK ETA: '
   timeGarbleCharset: '!@#$%^&*<>?/\|=+~ABCDEF0123456789'
   timeGarbleLength: 6
@@ -6052,8 +6058,6 @@ MonoBehaviour:
   - {fileID: 1848505527}
   deactivateDuringTutorial:
   - {fileID: 37691537}
-  virusDiePrePanelClip: {fileID: 8300000, guid: 73a7e65cc5e90d1418aa06bfc53a3623, type: 3}
-  virusDiePrePanelAudioSource: {fileID: 387048560}
   cinematicAudioSource: {fileID: 387048560}
   victoryCinematicClips:
   - {fileID: 8300000, guid: e207a6b67ea5bf44e80ef92b18a8173a, type: 3}
@@ -6063,6 +6067,15 @@ MonoBehaviour:
   - {fileID: 293262219}
   - {fileID: 412877139}
   bossFailCinematicActivateObjects: []
+  settlementDialogue: {fileID: 1848505530}
+  victorySamLines:
+  - text: Got it in time.
+    voiceClip: {fileID: 8300000, guid: 328bd54cee5592147b04e02d4edce722, type: 3}
+    extraHoldSeconds: 0.35
+  bossFailSamLines:
+  - text: He saw.
+    voiceClip: {fileID: 8300000, guid: de1177f8382c6af42899d6f3065ba1ab, type: 3}
+    extraHoldSeconds: 0.35
   gamePhases:
   - phaseName: phase 0
     maxConcurrentBrokenWorkItems: 1
@@ -6153,6 +6166,8 @@ MonoBehaviour:
   enableVictoryNearEndWarning: 1
   nearEndWarningWhenRemainingSeconds: 20
   nearEndWarningMessage: I'm trying! Hang in there!
+  nearEndWarningClip: {fileID: 8300000, guid: ee189e93a798ba847ae640e43bf60877, type: 3}
+  hintVoiceSource: {fileID: 0}
   nearEndWarningPanelRoot: {fileID: 1194857482}
   nearEndWarningText: {fileID: 1836573039}
   ui: {fileID: 1440283419}
@@ -6175,7 +6190,6 @@ MonoBehaviour:
       m_Calls: []
   autoFindItemsOnStart: 0
   debugLogPhaseAndScore: 0
-  debugLogWorkProgressDeath: 0
   items:
   - {fileID: 983266344}
   - {fileID: 1141977272}
@@ -7235,6 +7249,7 @@ MonoBehaviour:
   bossLeaveAnimationDuration: 3
   enableITGuyWarning: 1
   itGuyWarningMessage: BOSS is heading your way!
+  itGuyWarningClip: {fileID: 8300000, guid: 5064d935c6c95c34086b5868ca309fea, type: 3}
   enableBossPatrolAnimation: 1
   patrolAnimationClip: {fileID: 7400000, guid: 63dd142c3c085b143a6d6c7248d4d9e4, type: 2}
   enableBossPhaseHackLimit: 1

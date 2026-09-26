@@ -54,6 +54,9 @@ public class BossIncomingConfig : MonoBehaviour
     [Tooltip("Sam hint text (no placeholders)")]
     public string itGuyWarningMessage = "Sam: Boss incoming!";
 
+    [Tooltip("Voice played when the Boss-incoming hint is shown.")]
+    public AudioClip itGuyWarningClip;
+
     [Tooltip("Play patrol animation on BossArrivalUISprite Image during warning")]
     public bool enableBossPatrolAnimation;
 

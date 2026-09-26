@@ -36,36 +36,27 @@ public class UIManager : MonoBehaviour
     public TMP_Text gameOverTitleText;
     public TMP_Text gameOverDetailText;
 
-    [Header("Work Progress lose panel (Virus Die)")]
-    [Tooltip("Sibling to Game Over / Game Win; starts hidden; opens when work bar fills; shows outcome text here (does not open Game Over).")]
-    public GameObject workProgressLoseRoot;
-    public TMP_Text workProgressLoseTitleText;
-    public TMP_Text workProgressLoseDetailText;
+    // 工作过载失败面板已废弃：work 条满不会打开失败界面。场景里这几个引用也是空的。
+    // public GameObject workProgressLoseRoot;
+    // public TMP_Text workProgressLoseTitleText;
+    // public TMP_Text workProgressLoseDetailText;
 
     [Header("Victory UI")]
     public GameObject gameWinRoot;
     public TMP_Text gameWinPerformanceText;
 
-    [Header("Debug (work pressure lose panel)")]
-    [Tooltip("When enabled, logs active chain and CanvasGroups on Show/Hide WorkProgressLose; Hide includes stack trace; end-of-frame log to catch same-frame deactivation.")]
-    public bool debugLogWorkProgressLoseFlow;
-
-    Coroutine _debugWplEndOfFrameRoutine;
+    // public bool debugLogWorkProgressLoseFlow;
+    // Coroutine _debugWplEndOfFrameRoutine;
 
     void Awake()
     {
-        if (debugLogWorkProgressLoseFlow)
-            Debug.Log($"[UIManager/WPL] Awake -> HideAllResultPanels (instanceID={GetInstanceID()})", this);
         HideAllResultPanels();
     }
 
     /// <summary>On start / scene load: hide Game Over, work-pressure lose, and win roots (regardless of default active state in Inspector).</summary>
     public void HideAllResultPanels()
     {
-        if (debugLogWorkProgressLoseFlow)
-            Debug.Log("[UIManager/WPL] HideAllResultPanels()", this);
         HideGameOver();
-        HideWorkProgressLose();
         HideGameWin();
     }
 
@@ -242,7 +233,6 @@ public class UIManager : MonoBehaviour
 
     public void ShowGameOver(float surviveTime, float finalWork, string reason, float performanceScore)
     {
-        HideWorkProgressLose();
         HideGameWin();
         EnsureObjectAndAncestorsActive(gameOverRoot);
         EnsureCanvasEnabledInAncestors(gameOverRoot);
@@ -265,6 +255,9 @@ public class UIManager : MonoBehaviour
     {
         if (gameOverRoot != null) gameOverRoot.SetActive(false);
     }
+
+    /*
+    工作过载失败面板已废弃。work 条满不会调用这里。
 
     static string HierarchyPath(Transform t)
     {
@@ -329,6 +322,7 @@ public class UIManager : MonoBehaviour
             yield break;
         DebugDumpWorkProgressLoseHierarchy("After WaitForEndOfFrame same frame (check if SetActive false this frame)");
     }
+    */
 
     /// <summary>
     /// Activates inactive parents from root toward the panel; otherwise activating only the child leaves parents off and UI stays hidden.
@@ -389,6 +383,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    /*
     /// <summary>
     /// Sole resolution when work bar fills: show this panel only (sibling to Game Over); does not open Game Over.
     /// </summary>
@@ -472,11 +467,11 @@ public class UIManager : MonoBehaviour
         }
         if (workProgressLoseRoot != null) workProgressLoseRoot.SetActive(false);
     }
+    */
 
     public void ShowGameWin(float performanceScore)
     {
         HideGameOver();
-        HideWorkProgressLose();
         if (gameWinRoot != null) gameWinRoot.SetActive(true);
         if (gameWinPerformanceText != null)
             gameWinPerformanceText.text = $"Performance Score: {performanceScore:0}";

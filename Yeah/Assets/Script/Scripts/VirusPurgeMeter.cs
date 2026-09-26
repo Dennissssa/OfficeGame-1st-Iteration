@@ -122,7 +122,7 @@ public class VirusPurgeMeter : MonoBehaviour
 
     /// <summary>
     /// 触发 Boss 失败结局时调用：立即停止所有动态行为，保持当前进度值。
-    /// 由 GameManager.GameOver() 及 GameManager.GameOverWorkProgressFull() 调用。
+    /// 由 GameManager.GameOver() 调用（Boss 看到被黑工位）。工作过载失败已废弃。
     /// </summary>
     public void OnBossFail()
     {

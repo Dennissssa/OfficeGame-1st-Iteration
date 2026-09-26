@@ -143,6 +143,14 @@ public class WorkItem : MonoBehaviour
 
     public string itemName;
 
+    [Header("Broken warning hint")]
+    [TextArea(2, 4)]
+    [Tooltip("Hint shown after this item stays Broke. Leave empty to use the phase/tutorial format (for example \"{0} has been hacked!\").")]
+    public string brokenWarningMessage;
+
+    [Tooltip("Voice played when this item's broken warning is shown.")]
+    public AudioClip brokenWarningClip;
+
     [Header("Phone")]
     [Tooltip("Force phone behavior even if itemName is not \"phone\".")]
     public bool treatAsPhoneWorkItem;

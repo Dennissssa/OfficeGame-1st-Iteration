@@ -306,4 +306,123 @@ public class TutorialDialogueController : MonoBehaviour
     {
         if (debugLog) Debug.Log(msg, this);
     }
+
+    /// <summary>
+    /// 结算演出：在对话框上逐句显示文字并播放语音。使用真实时间，timeScale 为 0 时也能播完。
+    /// 父物体被关掉时会临时打开到对话框这一支，播完后恢复。
+    /// </summary>
+    public IEnumerator PlayLinesRealtime(List<DialoguePlaybackLine> lines)
+    {
+        if (!HasPlayableLine(lines) || boxRoot == null)
+            yield break;
+
+        if (_runRoutine != null)
+        {
+            StopCoroutine(_runRoutine);
+            _runRoutine = null;
+            _currentTrigger = null;
+        }
+
+        List<GameObject> turnedOn = ActivateWithAncestors(boxRoot);
+
+        if (voiceSource != null)
+        {
+            voiceSource.playOnAwake = false;
+            voiceSource.ignoreListenerPause = true;
+            voiceSource.Stop();
+        }
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            DialoguePlaybackLine line = lines[i];
+            if (line == null || !line.HasContent)
+                continue;
+
+            if (dialogueText != null)
+            {
+                dialogueText.text = line.text ?? string.Empty;
+                dialogueText.ForceMeshUpdate();
+            }
+
+            float wait = Mathf.Max(0f, line.extraHoldSeconds);
+            if (line.voiceClip != null && voiceSource != null)
+            {
+                voiceSource.Stop();
+                voiceSource.PlayOneShot(line.voiceClip);
+                wait = Mathf.Max(wait, line.voiceClip.length + Mathf.Max(0f, line.extraHoldSeconds));
+            }
+            else if (wait <= 0f)
+            {
+                wait = 1.5f;
+            }
+
+            if (wait > 0f)
+                yield return new WaitForSecondsRealtime(wait);
+        }
+
+        HideBox();
+        RestoreActivatedAncestors(turnedOn, boxRoot);
+    }
+
+    static bool HasPlayableLine(List<DialoguePlaybackLine> lines)
+    {
+        if (lines == null) return false;
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (lines[i] != null && lines[i].HasContent)
+                return true;
+        }
+        return false;
+    }
+
+    static List<GameObject> ActivateWithAncestors(GameObject leaf)
+    {
+        var chain = new List<GameObject>();
+        Transform t = leaf.transform;
+        while (t != null)
+        {
+            chain.Add(t.gameObject);
+            t = t.parent;
+        }
+
+        var turnedOn = new List<GameObject>();
+        for (int i = chain.Count - 1; i >= 0; i--)
+        {
+            GameObject go = chain[i];
+            if (go != null && !go.activeSelf)
+            {
+                go.SetActive(true);
+                turnedOn.Add(go);
+            }
+        }
+        return turnedOn;
+    }
+
+    static void RestoreActivatedAncestors(List<GameObject> turnedOn, GameObject keepHandledByHide)
+    {
+        if (turnedOn == null) return;
+        for (int i = turnedOn.Count - 1; i >= 0; i--)
+        {
+            GameObject go = turnedOn[i];
+            if (go == null || go == keepHandledByHide)
+                continue;
+            go.SetActive(false);
+        }
+    }
+}
+
+/// <summary>对话框一句：文字 + 语音。结算演出和以后的单次播放都用这个。</summary>
+[System.Serializable]
+public class DialoguePlaybackLine
+{
+    [TextArea(2, 4)]
+    public string text;
+
+    public AudioClip voiceClip;
+
+    [Tooltip("语音结束后再停留的秒数。没有语音时，整句至少显示这么久（短于 0 则按 1.5 秒）。")]
+    [Min(0f)]
+    public float extraHoldSeconds = 0.35f;
+
+    public bool HasContent => voiceClip != null || !string.IsNullOrWhiteSpace(text);
 }

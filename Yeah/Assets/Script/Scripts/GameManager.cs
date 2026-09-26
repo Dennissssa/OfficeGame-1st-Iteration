@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
         return boundWorkItem != null && boundWorkItem == scope;
     }
 
-    [Header("Work pressure (from 0; reaching maxWork fails; defaults below when no phases)")]
+    [Header("Work pressure (from 0; reaching maxWork triggers Boss immediately, it does not end the game)")]
     public float work = 0f;
     public float maxWork = 100f;
 
@@ -103,12 +103,10 @@ public class GameManager : MonoBehaviour
     [Tooltip("When enableTutorial: SetActive(false) at tutorial start; SetActive(true) once the tutorial break sequence ends. （教程期间关闭、教程结束后开启的物体）")]
     public GameObject[] deactivateDuringTutorial;
 
-    [Header("Virus die (work overload / work bar full)")]
-    [Tooltip("If set: after cleanup and pause, this plays first; work-progress lose panel opens when the clip duration elapses (realtime). Leave null = open panel immediately like before.")]
-    public AudioClip virusDiePrePanelClip;
-
-    [Tooltip("Plays virusDiePrePanelClip; if null, uses first AudioSource on this GameObject (add one if needed).")]
-    public AudioSource virusDiePrePanelAudioSource;
+    // 工作过载失败已废弃：work 条满不会结算失败，只会在 BossLoop 里立刻触发 Boss。
+    // [Header("Virus die (work overload / work bar full)")]
+    // public AudioClip virusDiePrePanelClip;
+    // public AudioSource virusDiePrePanelAudioSource;
 
     [Header("Victory Cinematic (plays after close-up, before result panel; leave all lists empty to skip)")]
     [Tooltip("AudioSource used to play cinematic clips (shared by both victory and boss-fail). If null, falls back to the first AudioSource on this GameObject.")]
@@ -130,7 +128,19 @@ public class GameManager : MonoBehaviour
     [Tooltip("Boss fail: GameObjects to SetActive(true) when the cinematic starts.")]
     public List<GameObject> bossFailCinematicActivateObjects = new List<GameObject>();
 
-    Coroutine _virusDieRevealPanelRoutine;
+    [Header("Settlement · Sam dialogue")]
+    [Tooltip("Sam 的对话框（场景里的 Tutorial Dialogue）。结算面板出现前，用它逐句显示文字并播放语音。")]
+    public TutorialDialogueController settlementDialogue;
+
+    [Tooltip("胜利结算：Sam 的台词。每句有文字和语音，播完才打开胜利面板。")]
+    public List<DialoguePlaybackLine> victorySamLines = new List<DialoguePlaybackLine>();
+
+    [Tooltip("Boss 失败结算：Sam 的台词。播完才打开失败面板。")]
+    public List<DialoguePlaybackLine> bossFailSamLines = new List<DialoguePlaybackLine>();
+
+    // 工作过载失败已废弃，不再有单独的 Sam 台词和结算协程。
+    // public List<DialoguePlaybackLine> workOverloadSamLines = new List<DialoguePlaybackLine>();
+    // Coroutine _virusDieRevealPanelRoutine;
 
     [Header("Normal phase flow")]
     [Tooltip("Apply index 0 at start; phase advance when normalized performance score (TotalPerformanceScore/divisor) hits thresholds (independent of Boss). Empty list keeps Inspector defaults")]
@@ -142,7 +152,7 @@ public class GameManager : MonoBehaviour
     public float performanceCountdownSeconds = 300f;
 
     [Header("Victory countdown · near-end warning (optional)")]
-    [Tooltip("Show once when remaining seconds first drop to or below threshold; like Boss warning, prefer separate UI so it does not fight broken-item TMP")]
+    [Tooltip("Show once when remaining seconds first drop to or below threshold. If this uses the same panel as broken-item / Boss hints, it waits until that panel is free and comes back after those hints finish.")]
     public bool enableVictoryNearEndWarning = true;
 
     [Tooltip("Trigger when remaining seconds ≤ this value; 0 disables")]
@@ -152,6 +162,12 @@ public class GameManager : MonoBehaviour
     [TextArea(2, 5)]
     [Tooltip("Warning message text; multi-line in Inspector")]
     public string nearEndWarningMessage = "Time is almost up!";
+
+    [Tooltip("Voice played with the near-end hint. Lowest priority: waits until the warning panel is free, and will not cut off a broken-item or Boss hint.")]
+    public AudioClip nearEndWarningClip;
+
+    [Tooltip("Plays broken-item, near-end, and Boss hint voices. If empty, a source is added on this object at runtime.")]
+    public AudioSource hintVoiceSource;
 
     [Tooltip("Root GameObject for warning panel; can duplicate broken-warning layout in scene and assign here")]
     public GameObject nearEndWarningPanelRoot;
@@ -184,8 +200,8 @@ public class GameManager : MonoBehaviour
     [Tooltip("When enabled: log phase promotion score info at start; log current performance after each successful Broke repair")]
     public bool debugLogPhaseAndScore;
 
-    [Tooltip("When enabled: log when work bar fills and GameOverWorkProgressFull runs (work, UIManager bound), for debugging that path")]
-    public bool debugLogWorkProgressDeath = true;
+    // 工作过载失败已废弃，这条调试开关不再有对应路径。
+    // public bool debugLogWorkProgressDeath = true;
 
     public List<WorkItem> items = new List<WorkItem>();
 
@@ -309,8 +325,17 @@ public class GameManager : MonoBehaviour
     float _performanceScoreRaw;
     float _performanceScoreRawWhenEnteredCurrentPhase;
 
+    const int HintVoicePriorityNearEnd = 0;
+    const int HintVoicePriorityBrokenItem = 1;
+    const int HintVoicePriorityBoss = 2;
+
     float _victoryCountdownRemaining;
     bool _victoryNearEndWarningShown;
+    bool _nearEndWarningPending;
+    bool _nearEndWarningVisible;
+    bool _nearEndWarningVoicePlayed;
+    AudioSource _hintVoiceSource;
+    int _playingHintVoicePriority = -1;
     bool _phasePromotionArmed;
     float _timeSinceLastScorePhasePromotion = 1000f;
 
@@ -468,7 +493,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 结算时（胜利/失败/work满）统一清理所有 WorkItem 的运行状态：
+    /// 结算时（胜利，或 Boss 看到被黑工位而失败）统一清理所有 WorkItem 的运行状态：
     /// 禁用自动 break、静默复位 Broke/Bait 状态与 tint，停止 Bait 协程。
     /// 不触发 OnFixed 等 UnityEvent，不影响 work 值，不播放音效。
     /// Arduino 硬件侧已由 NotifyArduinoSystemResetOnMatchEnd() 发 SYSTEM:RESET 处理。
@@ -495,15 +520,12 @@ public class GameManager : MonoBehaviour
 
         var sb = new System.Text.StringBuilder();
         sb.AppendLine(
-            "[GameManager] **Multiple UIManager** instances in scene. GameManager only uses the one assigned under References → ui in Inspector;");
-        sb.AppendLine(
-            "if the work-pressure lose panel lives on another Canvas/object's UIManager and is not assigned to this ui, ShowWorkProgressLose may return immediately or hit null refs; Awake instanceID in Console may differ from the one used on fail.");
+            "[GameManager] **Multiple UIManager** instances in scene. GameManager only uses the one assigned under References → ui in Inspector.");
         for (int i = 0; i < all.Length; i++)
         {
             bool isBound = ui != null && all[i] == ui;
             sb.AppendLine(
                 $"  [{i}] instanceID={all[i].GetInstanceID()} object=\"{all[i].gameObject.name}\" " +
-                $"workProgressLoseRoot={(all[i].workProgressLoseRoot != null ? "assigned" : "null")} " +
                 $"is this GameManager.ui: {isBound}");
         }
 
@@ -684,8 +706,11 @@ public class GameManager : MonoBehaviour
             && _gameTimeRemaining > 0f && _gameTimeRemaining <= nearEndWarningWhenRemainingSeconds
             && (nearEndWarningPanelRoot != null || nearEndWarningText != null))
         {
-            TryShowVictoryNearEndWarning();
+            RequestVictoryNearEndWarning();
         }
+
+        if (_nearEndWarningVisible && !_nearEndWarningVoicePlayed)
+            TryPlayNearEndWarningVoice();
 
         if (_gameTimeRemaining <= 0f && _tutorialBreakSequenceDone)
         {
@@ -1326,32 +1351,197 @@ public class GameManager : MonoBehaviour
         _victoryCinematicCoroutine = StartCoroutine(VictoryCinematicThenPanelCoroutine());
     }
 
-    void TryShowVictoryNearEndWarning()
+    void RequestVictoryNearEndWarning()
     {
         if (_victoryNearEndWarningShown) return;
         if (nearEndWarningPanelRoot == null && nearEndWarningText == null)
             return;
 
         _victoryNearEndWarningShown = true;
-        string msg = nearEndWarningMessage != null ? nearEndWarningMessage : "";
-        if (nearEndWarningText != null)
-        {
-            nearEndWarningText.text = msg;
-            nearEndWarningText.ForceMeshUpdate();
-        }
-
-        if (nearEndWarningPanelRoot != null)
-            nearEndWarningPanelRoot.SetActive(true);
-        else if (nearEndWarningText != null)
-            nearEndWarningText.gameObject.SetActive(true);
+        _nearEndWarningPending = true;
+        TryPresentNearEndWarning();
     }
 
-    void HideVictoryNearEndWarning()
+    bool NearEndSharesBrokenWarningPanel()
     {
+        if (nearEndWarningPanelRoot != null && brokenWarningPanelRoot != null
+            && nearEndWarningPanelRoot == brokenWarningPanelRoot)
+            return true;
+        return nearEndWarningText != null && brokenWarningText != null
+            && nearEndWarningText == brokenWarningText;
+    }
+
+    bool WarningPanelOccupiedByHigherPriorityHint()
+    {
+        if (BossWarning || _bossWarningUiInFreezeHide)
+            return true;
+        if (_displayedBrokenWarningItem != null)
+            return true;
+        if (_brokenWarningReadyQueue.Count > 0)
+            return true;
+        if (_brokenWarningInterPauseRoutine != null)
+            return true;
+        if (_resumeBrokenWarningAfterBoss != null)
+            return true;
+        return false;
+    }
+
+    /// <summary>Shows the near-end line only while no broken-item or Boss hint owns the panel. Returns true when that line is on screen.</summary>
+    bool TryPresentNearEndWarning()
+    {
+        if (!_nearEndWarningPending || isGameOver || IsVictory)
+            return false;
+        if (WarningPanelOccupiedByHigherPriorityHint())
+            return false;
+        if (nearEndWarningPanelRoot == null && nearEndWarningText == null)
+            return false;
+
+        string msg = nearEndWarningMessage != null ? nearEndWarningMessage : "";
+        if (NearEndSharesBrokenWarningPanel())
+        {
+            TextMeshProUGUI tmp = brokenWarningText != null ? brokenWarningText : nearEndWarningText;
+            if (tmp != null)
+            {
+                tmp.text = msg;
+                tmp.ForceMeshUpdate();
+            }
+
+            GameObject root = brokenWarningPanelRoot != null ? brokenWarningPanelRoot : nearEndWarningPanelRoot;
+            if (root != null)
+                root.SetActive(true);
+            else if (nearEndWarningText != null)
+                nearEndWarningText.gameObject.SetActive(true);
+        }
+        else
+        {
+            if (nearEndWarningText != null)
+            {
+                nearEndWarningText.text = msg;
+                nearEndWarningText.ForceMeshUpdate();
+            }
+
+            if (nearEndWarningPanelRoot != null)
+                nearEndWarningPanelRoot.SetActive(true);
+            else if (nearEndWarningText != null)
+                nearEndWarningText.gameObject.SetActive(true);
+        }
+
+        _nearEndWarningVisible = true;
+        TryPlayNearEndWarningVoice();
+        return true;
+    }
+
+    void TryPlayNearEndWarningVoice()
+    {
+        if (_nearEndWarningVoicePlayed || !_nearEndWarningVisible)
+            return;
+        if (nearEndWarningClip == null)
+        {
+            _nearEndWarningVoicePlayed = true;
+            return;
+        }
+
+        AudioSource src = GetHintVoiceSource(create: false);
+        if (src != null && src.isPlaying && _playingHintVoicePriority > HintVoicePriorityNearEnd)
+            return;
+
+        PlayHintVoice(nearEndWarningClip, HintVoicePriorityNearEnd);
+        _nearEndWarningVoicePlayed = true;
+    }
+
+    void SuppressNearEndWarningForHigherHint()
+    {
+        if (!_nearEndWarningVisible)
+            return;
+
+        _nearEndWarningVisible = false;
+        StopHintVoiceIfPriority(HintVoicePriorityNearEnd);
+        if (NearEndSharesBrokenWarningPanel())
+            return;
+
         if (nearEndWarningPanelRoot != null)
             nearEndWarningPanelRoot.SetActive(false);
         else if (nearEndWarningText != null)
             nearEndWarningText.gameObject.SetActive(false);
+    }
+
+    void HideVictoryNearEndWarning()
+    {
+        _nearEndWarningPending = false;
+        _nearEndWarningVisible = false;
+        StopHintVoiceIfPriority(HintVoicePriorityNearEnd);
+
+        if (NearEndSharesBrokenWarningPanel())
+        {
+            if (!WarningPanelOccupiedByHigherPriorityHint() && brokenWarningPanelRoot != null)
+                brokenWarningPanelRoot.SetActive(false);
+            return;
+        }
+
+        if (nearEndWarningPanelRoot != null)
+            nearEndWarningPanelRoot.SetActive(false);
+        else if (nearEndWarningText != null)
+            nearEndWarningText.gameObject.SetActive(false);
+    }
+
+    AudioSource GetHintVoiceSource(bool create)
+    {
+        if (hintVoiceSource != null)
+            return hintVoiceSource;
+        if (_hintVoiceSource != null)
+            return _hintVoiceSource;
+        if (!create)
+            return null;
+
+        _hintVoiceSource = gameObject.AddComponent<AudioSource>();
+        _hintVoiceSource.playOnAwake = false;
+        _hintVoiceSource.loop = false;
+        _hintVoiceSource.spatialBlend = 0f;
+        return _hintVoiceSource;
+    }
+
+    void PlayHintVoice(AudioClip clip, int priority)
+    {
+        AudioSource src = GetHintVoiceSource(create: clip != null);
+        if (src == null)
+            return;
+        if (src.isPlaying && priority < _playingHintVoicePriority)
+            return;
+
+        if (clip == null)
+        {
+            if (src.isPlaying && _playingHintVoicePriority <= priority)
+            {
+                src.Stop();
+                _playingHintVoicePriority = -1;
+            }
+            return;
+        }
+
+        src.Stop();
+        src.clip = clip;
+        src.loop = false;
+        src.Play();
+        _playingHintVoicePriority = priority;
+    }
+
+    void StopHintVoiceIfPriority(int priority)
+    {
+        AudioSource src = GetHintVoiceSource(create: false);
+        if (src == null || !src.isPlaying)
+            return;
+        if (_playingHintVoicePriority != priority)
+            return;
+        src.Stop();
+        _playingHintVoicePriority = -1;
+    }
+
+    void StopAllHintVoices()
+    {
+        AudioSource src = GetHintVoiceSource(create: false);
+        if (src != null)
+            src.Stop();
+        _playingHintVoicePriority = -1;
     }
 
     public void Punishment()
@@ -1417,11 +1607,16 @@ public class GameManager : MonoBehaviour
         ReduceWork(_activeWorkPressureInstantOnBrokeRepair);
     }
 
+    /// <summary>把 work 限制在 0~maxWork。条满不会失败，BossLoop 会在满条时立刻开始 Boss 预警。</summary>
     void ClampWorkProgressAndMaybeLose()
     {
         if (isGameOver || IsVictory) return;
         work = Mathf.Clamp(work, 0f, maxWork);
     }
+
+    /*
+    工作过载失败结局已废弃，且没有任何调用。
+    work 条达到 maxWork 时由 BossLoop 立即触发 Boss，失败只走 GameOver（Boss 在场且仍有被黑工位）。
 
     void GameOverWorkProgressFull()
     {
@@ -1489,11 +1684,11 @@ public class GameManager : MonoBehaviour
                 if (src == null)
                 {
                     Debug.LogWarning(
-                        "[GameManager] virusDiePrePanelClip is set but no AudioSource: assign virusDiePrePanelAudioSource or add AudioSource on GameManager. Showing lose panel immediately.",
+                        "[GameManager] virusDiePrePanelClip is set but no AudioSource: assign virusDiePrePanelAudioSource or add AudioSource on GameManager. Showing lose panel after Sam.",
                         this);
                     if (debugLogWorkProgressDeath)
-                        Debug.Log("[GameManager] GameOverWorkProgressFull → ShowWorkProgressLose (no stinger source)", ui);
-                    ui.ShowWorkProgressLose(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork);
+                        Debug.Log("[GameManager] GameOverWorkProgressFull → Sam dialogue then ShowWorkProgressLose (no stinger source)", ui);
+                    BeginWorkOverloadSettlement(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork, 0f);
                 }
                 else
                 {
@@ -1502,44 +1697,61 @@ public class GameManager : MonoBehaviour
                     src.PlayOneShot(virusDiePrePanelClip);
                     if (debugLogWorkProgressDeath)
                         Debug.Log(
-                            "[GameManager] GameOverWorkProgressFull → stinger then delayed ShowWorkProgressLose | " +
+                            "[GameManager] GameOverWorkProgressFull → stinger, Sam dialogue, then ShowWorkProgressLose | " +
                             $"clipLen={virusDiePrePanelClip.length:F2}s",
                             this);
-                    _virusDieRevealPanelRoutine = StartCoroutine(
-                        VirusDieRevealPanelAfterStingerRealtime(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork, virusDiePrePanelClip.length));
+                    BeginWorkOverloadSettlement(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork, virusDiePrePanelClip.length);
                 }
             }
             else
             {
                 if (debugLogWorkProgressDeath)
                     Debug.Log(
-                        "[GameManager] GameOverWorkProgressFull → calling ShowWorkProgressLose | " +
+                        "[GameManager] GameOverWorkProgressFull → Sam dialogue then ShowWorkProgressLose | " +
                         $"UIManager.instanceID={ui.GetInstanceID()} GameObject=\"{ui.gameObject.name}\" scene={ui.gameObject.scene.name}",
                         ui);
-                ui.ShowWorkProgressLose(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork);
-                if (debugLogWorkProgressDeath)
-                    Debug.Log("[GameManager] ShowWorkProgressLose returned (no exception)", ui);
-
-                Time.timeScale = 0f;
+                BeginWorkOverloadSettlement(surviveTime - Mathf.Max(0f, _gameTimeRemaining), work, TotalPerformanceScore, maxWork, 0f);
             }
         }
         else
             Time.timeScale = 0f;
-#if UNITY_EDITOR
+        // (原 UNITY_EDITOR 警告) UIManager 未赋值时无法显示工作过载失败面板。
         if (ui == null)
             Debug.LogWarning("[GameManager] GameOverWorkProgressFull: UIManager (ui) not assigned; cannot show work-pressure lose panel.", this);
-#endif
     }
 
-    IEnumerator VirusDieRevealPanelAfterStingerRealtime(float surviveTime, float finalWork, float performanceScore, float maxWorkProgress, float waitSeconds)
+    void BeginWorkOverloadSettlement(float surviveTime, float finalWork, float performanceScore, float maxWorkProgress, float stingerWait)
     {
-        if (waitSeconds > 0f)
-            yield return new WaitForSecondsRealtime(waitSeconds);
+        Time.timeScale = 0f;
+        if (_virusDieRevealPanelRoutine != null)
+        {
+            StopCoroutine(_virusDieRevealPanelRoutine);
+            _virusDieRevealPanelRoutine = null;
+        }
+
+        _virusDieRevealPanelRoutine = StartCoroutine(
+            WorkOverloadSettlementThenPanel(surviveTime, finalWork, performanceScore, maxWorkProgress, stingerWait));
+    }
+
+    IEnumerator WorkOverloadSettlementThenPanel(float surviveTime, float finalWork, float performanceScore, float maxWorkProgress, float stingerWait)
+    {
+        if (stingerWait > 0f)
+            yield return new WaitForSecondsRealtime(stingerWait);
+
+        yield return PlaySettlementDialogue(workOverloadSamLines);
 
         _virusDieRevealPanelRoutine = null;
 
         if (ui != null)
             ui.ShowWorkProgressLose(surviveTime, finalWork, performanceScore, maxWorkProgress);
+    }
+    */
+
+    IEnumerator PlaySettlementDialogue(List<DialoguePlaybackLine> lines)
+    {
+        if (settlementDialogue == null || lines == null || lines.Count == 0)
+            yield break;
+        yield return settlementDialogue.PlayLinesRealtime(lines);
     }
 
     public void RegisterItem(WorkItem item)
@@ -1591,6 +1803,10 @@ public class GameManager : MonoBehaviour
         if (SuppressBrokenItemWarningDuringTutorial())
             return;
         if (_itemBrokenWarningDelays.ContainsKey(item))
+            return;
+        if (_displayedBrokenWarningItem == item || _resumeBrokenWarningAfterBoss == item)
+            return;
+        if (_brokenWarningReadyQueue.Contains(item))
             return;
 
         Coroutine c = StartCoroutine(ItemBrokenWarningDelayRoutine(item));
@@ -1651,6 +1867,9 @@ public class GameManager : MonoBehaviour
 
     string FormatBrokenWarningTextForItem(WorkItem item)
     {
+        if (item != null && !string.IsNullOrWhiteSpace(item.brokenWarningMessage))
+            return item.brokenWarningMessage.Trim();
+
         string name = WorkItemDisplayName(item);
         try
         {
@@ -1667,10 +1886,12 @@ public class GameManager : MonoBehaviour
         if (item == null || brokenWarningText == null || brokenWarningPanelRoot == null)
             return;
 
+        SuppressNearEndWarningForHigherHint();
         _displayedBrokenWarningItem = item;
         brokenWarningText.text = FormatBrokenWarningTextForItem(item);
         brokenWarningText.ForceMeshUpdate();
         brokenWarningPanelRoot.SetActive(true);
+        PlayHintVoice(item.brokenWarningClip, HintVoicePriorityBrokenItem);
 
         if (forceWarningIcon && brokenWarningIconImage != null && brokenWarningActiveSprite != null)
             brokenWarningIconImage.sprite = brokenWarningActiveSprite;
@@ -1689,10 +1910,15 @@ public class GameManager : MonoBehaviour
 
     void HideBrokenWarningPanelFullyIdle()
     {
-        if (brokenWarningPanelRoot != null)
-            brokenWarningPanelRoot.SetActive(false);
+        StopHintVoiceIfPriority(HintVoicePriorityBrokenItem);
         RestoreBrokenWarningIconDefault();
         _brokenWarningChainFresh = true;
+
+        if (TryPresentNearEndWarning())
+            return;
+
+        if (brokenWarningPanelRoot != null)
+            brokenWarningPanelRoot.SetActive(false);
     }
 
     void HandleDisplayedBrokenWarningResolved()
@@ -1760,12 +1986,16 @@ public class GameManager : MonoBehaviour
         _bossWarningUiInFreezeHide = false;
         StopBossWarningShakeRoutine();
         ResetBrokenWarningShakeLocalPosition();
+        SuppressNearEndWarningForHigherHint();
 
         if (brokenWarningText != null)
         {
             brokenWarningText.text = _bossApproachWarningMessage;
             brokenWarningText.ForceMeshUpdate();
         }
+
+        if (cfg != null && cfg.enableITGuyWarning)
+            PlayHintVoice(cfg.itGuyWarningClip, HintVoicePriorityBoss);
 
         if (BlockNewHackEventsNow())
             EnterBossWarningFreezeUiMode();
@@ -1824,6 +2054,7 @@ public class GameManager : MonoBehaviour
         StopBossWarningShakeRoutine();
         ResetBrokenWarningShakeLocalPosition();
         _bossWarningUiInFreezeHide = false;
+        StopHintVoiceIfPriority(HintVoicePriorityBoss);
 
         if (_resumeBrokenWarningAfterBoss != null && _resumeBrokenWarningAfterBoss.IsBroken)
         {
@@ -1919,6 +2150,7 @@ public class GameManager : MonoBehaviour
         _bossWarningUiInFreezeHide = false;
         _bossApproachWarningMessage = null;
         _holdBrokenWarningIconActiveUntilFirstBossArrived = false;
+        StopAllHintVoices();
 
         if (brokenWarningPanelRoot != null)
             brokenWarningPanelRoot.SetActive(false);
@@ -2090,6 +2322,8 @@ public class GameManager : MonoBehaviour
                 yield return PlayCinematicClipsRealtime(victoryCinematicClips);
         }
 
+        yield return PlaySettlementDialogue(victorySamLines);
+
         _victoryCinematicCoroutine = null;
         if (ui != null)
             ui.ShowGameWin(TotalPerformanceScore);
@@ -2112,6 +2346,8 @@ public class GameManager : MonoBehaviour
             if (hasClips)
                 yield return PlayCinematicClipsRealtime(bossFailCinematicClips);
         }
+
+        yield return PlaySettlementDialogue(bossFailSamLines);
 
         _bossFailCinematicCoroutine = null;
         if (ui != null)
