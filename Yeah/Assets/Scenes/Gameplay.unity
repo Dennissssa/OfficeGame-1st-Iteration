@@ -6044,7 +6044,7 @@ MonoBehaviour:
   bossWorkTriggerProbabilityPerSecond: 0.3
   bossArrivalWorkResetDuration: 1.5
   bossIncomingConfig: {fileID: 1853649707}
-  enableTutorial: 1
+  enableTutorial: 0
   tutorialBreakOrder:
   - {fileID: 363469229}
   - {fileID: 882021887}
@@ -6062,8 +6062,7 @@ MonoBehaviour:
   cinematicAudioSource: {fileID: 387048560}
   victoryCinematicClips: []
   victoryCinematicSpriteSwaps: []
-  bossFailCinematicClips:
-  - {fileID: 8300000, guid: abca25e7a821a2845ba73955442e4b66, type: 3}
+  bossFailCinematicClips: []
   bossFailCinematicDestroyObjects:
   - {fileID: 293262219}
   - {fileID: 412877139}
@@ -6074,7 +6073,7 @@ MonoBehaviour:
     voiceClip: {fileID: 8300000, guid: 328bd54cee5592147b04e02d4edce722, type: 3}
     extraHoldSeconds: 0.35
   bossFailSamLines:
-  - text: He saw.
+  - text: Damn it. He Saw It!
     voiceClip: {fileID: 8300000, guid: de1177f8382c6af42899d6f3065ba1ab, type: 3}
     extraHoldSeconds: 0.35
   gamePhases:
@@ -7318,7 +7317,7 @@ MonoBehaviour:
     phoneBaitScoreDecayMultiplier: 0.5
     performancePenaltyIdleWrongHit: 200
     performancePenaltyBaitWrongHit: 300
-  performanceScoreNormalizationDivisor: 3000
+  performanceScoreNormalizationDivisor: 1000
   scoreThresholdForNextPhase: 0
   scorePhasePromotionHysteresis: 0.05
   defaultMinPerformanceScoreGainPerPhaseForSaturatedPromotion: 10
