@@ -4738,24 +4738,24 @@ MonoBehaviour:
     boxSprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
     speakerName: Berry (You)
     text: Let's see...
-    vocalClip: {fileID: 0}
+    vocalClip: {fileID: 8300000, guid: 1d395a201bf122a4b9fc46ca7c184d31, type: 3}
     advanceMode: 1
-    autoAdvanceDelay: 2.5
+    autoAdvanceDelay: 2
   - portrait: {fileID: 21300000, guid: 0a1a123b60e76564e82424b182f1dfeb, type: 3}
     boxSprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
     speakerName: Berry (You)
     text: Today's job is organizing documents.
-    vocalClip: {fileID: 0}
+    vocalClip: {fileID: 8300000, guid: 4a0c37de7398a4c41827133e2305b4ea, type: 3}
     advanceMode: 1
-    autoAdvanceDelay: 3
+    autoAdvanceDelay: 2.5
   - portrait: {fileID: 21300000, guid: 0a1a123b60e76564e82424b182f1dfeb, type: 3}
     boxSprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
     speakerName: Berry (You)
     text: Let's get started.
-    vocalClip: {fileID: 0}
+    vocalClip: {fileID: 8300000, guid: c8bb3835a66f57647905d8a22ff8c924, type: 3}
     advanceMode: 1
-    autoAdvanceDelay: 2.5
-  preambleAudioSource: {fileID: 0}
+    autoAdvanceDelay: 2
+  preambleAudioSource: {fileID: 1848746285}
 --- !u!4 &1536970594
 Transform:
   m_ObjectHideFlags: 0
@@ -6468,6 +6468,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4771189738231630483, guid: 16ac14e5229e24d4fbb3987906036c5a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6268759265646297111, guid: 16ac14e5229e24d4fbb3987906036c5a, type: 3}
       propertyPath: m_Camera
       value: 
@@ -6478,7 +6482,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7144844243003570041, guid: 16ac14e5229e24d4fbb3987906036c5a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7767751567428270596, guid: 16ac14e5229e24d4fbb3987906036c5a, type: 3}
       propertyPath: m_Name
