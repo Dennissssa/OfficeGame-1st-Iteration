@@ -741,8 +741,10 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                if (_itemBrokenWarningDelays.ContainsKey(wi))
-                    ClearBrokenWarningForItem(wi);
+                // The delay dictionary only tracks an item until its hint appears.
+                // After DialogueBoxSam is on screen the item is no longer in that
+                // dictionary, so a repair must always drop any warning state for it.
+                ClearBrokenWarningForItem(wi);
                 if (wi.IsBaiting)
                 {
                     baiting++;
