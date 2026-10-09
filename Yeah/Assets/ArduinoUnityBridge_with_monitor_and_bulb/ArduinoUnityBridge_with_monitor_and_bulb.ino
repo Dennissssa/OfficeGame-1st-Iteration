@@ -331,7 +331,8 @@ SoftwareSerial dfSerial(DFPLAYER_RX_PIN, DFPLAYER_TX_PIN);
 DFRobotDFPlayerMini dfPlayer;
 
 // Monitor / Computer DFPlayer
-// This player is write-only in this sketch, so it does not use DFRobotDFPlayerMini.
+// Write-only at runtime. Commands still have to match DFRobotDFPlayerMini's
+// 10-byte frame, and this port must be the active SoftwareSerial while sending.
 SoftwareSerial monitorDfSerial(MONITOR_DFPLAYER_RX_PIN, MONITOR_DFPLAYER_TX_PIN);
 bool monitorAudioOn = false;
 
@@ -369,8 +370,23 @@ bool lastBadgeState  = HIGH;   // for edge detection (HIGH→LOW = card inserted
 // ╚═══════════════════════════════════════════════════════════╝
 
 void sendMonitorCommand(uint8_t cmd, uint8_t param1, uint8_t param2) {
-  uint8_t command[8] = {0x7E, 0xFF, 0x06, cmd, 0x00, param1, param2, 0xEF};
-  monitorDfSerial.write(command, 8);
+  // Same 10-byte frame DFRobotDFPlayerMini::sendStack uses. An 8-byte frame
+  // with no checksum is dropped by the module, which is why Hardware Test
+  // (loopFolder) plays and this sketch did not.
+  uint8_t command[10] = {0x7E, 0xFF, 0x06, cmd, 0x00, param1, param2, 0x00, 0x00, 0xEF};
+  uint16_t checksum = 0;
+  for (uint8_t i = 1; i < 7; i++)
+    checksum += command[i];
+  checksum = -checksum;
+  command[7] = (uint8_t)(checksum >> 8);
+  command[8] = (uint8_t)(checksum & 0xFF);
+
+  // Uno SoftwareSerial can drive only one port at a time. Hardware Test calls
+  // listen() on the monitor player before loopFolder(); without that, the
+  // phone player stays active and this write never reaches pins 12/13.
+  monitorDfSerial.listen();
+  monitorDfSerial.write(command, 10);
+  dfSerial.listen();
 }
 
 void setMonitorVolume(uint8_t volume) {
