@@ -500,7 +500,7 @@ MonoBehaviour:
   wrongSortWaitBetweenSeconds: 0
   wrongSortClip2: {fileID: 0}
   wrongSortObject2: {fileID: 1620916756506514733}
-  wrongSortRightClip1: {fileID: 8300000, guid: d62ec65d80711b745996aa2d1459d29e, type: 3}
+  wrongSortRightClip1: {fileID: 8300000, guid: 88a1b7db06eca76a7a6c99adcddb0508, type: 3}
   wrongSortRightObject1: {fileID: 1620916756506514733}
   wrongSortRightWaitBetweenSeconds: 0
   wrongSortRightClip2: {fileID: 0}
@@ -508,7 +508,7 @@ MonoBehaviour:
   hackClip: {fileID: 0}
   hackObject: {fileID: 9081000064593536740}
   hackCooldownSeconds: 8
-  correctSortClip: {fileID: 0}
+  correctSortClip: {fileID: 8300000, guid: 7d2327908b560bb4f9da1092ab136bf7, type: 3}
   correctSortObject: {fileID: 2708135954330082002}
   correctSortCooldownSeconds: 6
 --- !u!82 &2286945320748789078

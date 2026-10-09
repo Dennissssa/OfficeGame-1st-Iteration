@@ -7843,7 +7843,7 @@ PrefabInstance:
     - target: {fileID: 2227286192660621397, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
       propertyPath: typeAWrongBlockSprite
       value: 
-      objectReference: {fileID: -530620535, guid: 30454e35ba1ffb44586377a2029efe87, type: 3}
+      objectReference: {fileID: 1331750755, guid: de2385bb8b9ec8b4cbe85b004c91bfb8, type: 3}
     - target: {fileID: 2227286192660621397, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
       propertyPath: typeBWrongBlockSprite
       value: 
