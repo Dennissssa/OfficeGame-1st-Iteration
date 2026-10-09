@@ -1699,8 +1699,8 @@ MonoBehaviour:
   prefabs:
   - {fileID: 1828913251503759595, guid: a088911acc5b1a646b023edb3bd492c0, type: 3}
   - {fileID: 8395510339607571483, guid: f86872fc5407eb343b46c8690e766a00, type: 3}
-  spawnParent: {fileID: 356946987}
-  boundsRect: {fileID: 356946987}
+  spawnParent: {fileID: 1655744929}
+  boundsRect: {fileID: 1655744929}
   spawnInterval: 0.1
   bringToFront: 1
 --- !u!1 &387048556
@@ -3085,6 +3085,7 @@ RectTransform:
   - {fileID: 814287472}
   - {fileID: 356946987}
   - {fileID: 1848505528}
+  - {fileID: 1655744929}
   - {fileID: 1194857483}
   - {fileID: 496400307}
   - {fileID: 650030630}
@@ -4890,9 +4891,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JiU.PlaySoundOnEventAudioManager
   localSfxSource: {fileID: 1141977275}
   skipBrokenAndBaitSounds: 0
-  effectIndex: 16
+  effectIndex: 12
   loopBrokenSound: 1
-  baitEffectIndex: 17
+  baitEffectIndex: 12
   loopBaitSound: 1
   baitEndedEffectIndex: -1
   repairCorrectEffectIndex: 8
@@ -6281,6 +6282,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DraggableWindow
   dragHandle: {fileID: 0}
   boundaryRect: {fileID: 356946987}
+--- !u!1 &1655744928
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1655744929}
+  m_Layer: 5
+  m_Name: MonitorHack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1655744929
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1655744928}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 833216426}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1690861035
 GameObject:
   m_ObjectHideFlags: 0
@@ -7830,6 +7866,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 976652690033074825, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1325502172227872647, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1325502172227872647, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}

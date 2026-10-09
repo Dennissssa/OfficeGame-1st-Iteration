@@ -361,7 +361,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JiU.GlobalBackgroundMusic
   playOnStart: {fileID: 8300000, guid: 6274466819f85964ab321674417378f2, type: 3}
-  playOnStartVolume: 0.2
+  playOnStartVolume: 0.1
   startSceneName: StartScene
   fadeSeconds: 0.75
   themeNormal: {fileID: 8300000, guid: 6274466819f85964ab321674417378f2, type: 3}
@@ -374,9 +374,9 @@ MonoBehaviour:
   loopMain: 1
   loopBadEnding: 0
   loopGoodEnding: 0
-  volumeNormal: 0.4
-  volumeStupid: 0.3
-  volumeMain: 0.2
+  volumeNormal: 0.1
+  volumeStupid: 0.1
+  volumeMain: 0.1
   volumeBadEnding: 0.8
   volumeGoodEnding: 0.8
 --- !u!82 &497466880
