@@ -331,10 +331,9 @@ SoftwareSerial dfSerial(DFPLAYER_RX_PIN, DFPLAYER_TX_PIN);
 DFRobotDFPlayerMini dfPlayer;
 
 // Monitor / Computer DFPlayer
-// Same library path as HardwareTest: listen(), begin(), loopFolder(1).
+// Write-only at runtime. Commands still have to match DFRobotDFPlayerMini's
+// 10-byte frame, and this port must be the active SoftwareSerial while sending.
 SoftwareSerial monitorDfSerial(MONITOR_DFPLAYER_RX_PIN, MONITOR_DFPLAYER_TX_PIN);
-DFRobotDFPlayerMini monitorDfPlayer;
-bool monitorPlayerReady = false;
 bool monitorAudioOn = false;
 
 // ---- SD Card Track Configuration ----
@@ -370,30 +369,41 @@ bool lastBadgeState  = HIGH;   // for edge detection (HIGH→LOW = card inserted
 // ║  DFPlayer helpers                                         ║
 // ╚═══════════════════════════════════════════════════════════╝
 
-void setMonitorVolume(uint8_t volume) {
-  if (!monitorPlayerReady) return;
-  if (volume > 30) volume = 30;
+void sendMonitorCommand(uint8_t cmd, uint8_t param1, uint8_t param2) {
+  // Same 10-byte frame DFRobotDFPlayerMini::sendStack uses. An 8-byte frame
+  // with no checksum is dropped by the module, which is why Hardware Test
+  // (loopFolder) plays and this sketch did not.
+  uint8_t command[10] = {0x7E, 0xFF, 0x06, cmd, 0x00, param1, param2, 0x00, 0x00, 0xEF};
+  uint16_t checksum = 0;
+  for (uint8_t i = 1; i < 7; i++)
+    checksum += command[i];
+  checksum = -checksum;
+  command[7] = (uint8_t)(checksum >> 8);
+  command[8] = (uint8_t)(checksum & 0xFF);
+
+  // Uno SoftwareSerial can drive only one port at a time. Hardware Test calls
+  // listen() on the monitor player before loopFolder(); without that, the
+  // phone player stays active and this write never reaches pins 12/13.
   monitorDfSerial.listen();
-  monitorDfPlayer.volume(volume);
+  monitorDfSerial.write(command, 10);
   dfSerial.listen();
+}
+
+void setMonitorVolume(uint8_t volume) {
+  if (volume > 30) volume = 30;
+  sendMonitorCommand(0x06, 0x00, volume);
 }
 
 void startMonitorAudio() {
-  // Hardware Test plays with monitorDfSerial.listen() + loopFolder(1).
-  // Folder 01 only has 001.mp3, so this loops the computer error sound.
-  monitorDfSerial.listen();
-  if (monitorPlayerReady)
-    monitorDfPlayer.loopFolder(MONITOR_AUDIO_FOLDER);
-  monitorAudioOn = monitorPlayerReady;
-  dfSerial.listen();
+  // Loop all files in folder 01. Since the monitor SD card only has 01/001.mp3,
+  // this behaves like looping the computer error sound until stopped.
+  sendMonitorCommand(0x17, 0x00, MONITOR_AUDIO_FOLDER);
+  monitorAudioOn = true;
 }
 
 void stopMonitorAudio() {
-  monitorDfSerial.listen();
-  if (monitorPlayerReady)
-    monitorDfPlayer.stop();
+  sendMonitorCommand(0x16, 0x00, 0x00);
   monitorAudioOn = false;
-  dfSerial.listen();
 }
 
 // Play a random track from a phone DFPlayer folder using a raw write-only
@@ -575,9 +585,10 @@ void setup() {
 
   // Activate dfSerial as the SoftwareSerial listener so dfPlayer.begin()
   // can receive the DFPlayer module's init-ready byte.
-  // Phone commands after this are raw writes. Monitor commands call
-  // monitorDfSerial.listen() for the duration of the library call, then
-  // restore dfSerial.listen().
+  // After begin() returns, dfSerial.listen() is never called again:
+  // all subsequent phone DFPlayer operations use raw write-only commands
+  // (sendPhoneRawCommand) that never block on ACK, keeping the main loop
+  // free to run piezo detection and microswitch debounce continuously.
   dfSerial.listen();
   bool phonePlayerReady = dfPlayer.begin(dfSerial, false); // isACK=false — no ACK waits after init
   if (!phonePlayerReady) {
@@ -596,20 +607,9 @@ void setup() {
   sendPhoneRawCommand(0x06, 0x00, DFPLAYER_VOLUME);
 
   // ---- Monitor / Computer DFPlayer ------------------------
-  // Same sequence as HardwareTest: own listen(), library begin(), volume, then
-  // give the SoftwareSerial listener back to the phone player.
-  delay(300);
-  monitorDfSerial.listen();
-  Serial.println(F("Booting MONITOR DFPlayer on pins RX=12, TX=13..."));
-  monitorPlayerReady = monitorDfPlayer.begin(monitorDfSerial);
-  if (!monitorPlayerReady) {
-    Serial.println(F("[Monitor DFPlayer] Init FAILED — check wiring and SD card."));
-  } else {
-    monitorDfPlayer.volume(MONITOR_DFPLAYER_VOLUME);
-    monitorDfPlayer.stop();
-    Serial.println(F("[Monitor DFPlayer] Ready. MONITOR:ANOMALY loops /01/001.mp3."));
-  }
-  dfSerial.listen();
+  setMonitorVolume(MONITOR_DFPLAYER_VOLUME);
+  stopMonitorAudio();
+  Serial.println(F("[Monitor DFPlayer] Ready on pins 12/13. Using /01/001.mp3."));
 
   Serial.println(F("READY"));
 }
