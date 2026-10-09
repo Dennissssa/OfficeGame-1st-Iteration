@@ -113,10 +113,6 @@ public class ArduinoSerialBridgeWithMonitor : MonoBehaviour
     private volatile bool[] _hitPending = new bool[NumObjects];
     private volatile bool            _phonePickupPending  = false;
     private volatile bool            _phonePutdownPending = false;
-    // Set by the read thread when the sketch prints READY. Commands sent before
-    // that are queued: opening the port resets the Uno, and the tutorial hacks
-    // the monitor on the next frame, while setup() is still inside its boot delay.
-    private volatile bool            _readyLineSeen       = false;
 
     // Listener reference lists for clean removal on destroy
     private readonly List<BoundListener> _boundListeners = new List<BoundListener>();
@@ -128,11 +124,6 @@ public class ArduinoSerialBridgeWithMonitor : MonoBehaviour
     bool _hasSentPhoneLine;
     float _unscaledTimeLastPhoneLineSent;
     string _lastPhoneLineSent;
-
-    const float ArduinoBootTimeoutSeconds = 4f;
-    bool _portReadyForCommands;
-    float _serialOpenedUnscaled = -1f;
-    readonly List<string> _queuedTx = new List<string>();
 
     // ── Lifecycle ─────────────────────────────────────────────
 
@@ -169,13 +160,6 @@ public class ArduinoSerialBridgeWithMonitor : MonoBehaviour
     {
         // All Unity API calls must happen on the main thread.
         // Background thread only sets volatile flags; Update() acts on them.
-        if (!_portReadyForCommands && _serial != null && _serial.IsOpen)
-        {
-            bool bootTimedOut = _serialOpenedUnscaled >= 0f
-                && Time.unscaledTime - _serialOpenedUnscaled >= ArduinoBootTimeoutSeconds;
-            if (_readyLineSeen || bootTimedOut)
-                MarkPortReadyAndFlush();
-        }
 
         for (int i = 0; i < NumObjects; i++)
         {
@@ -269,10 +253,6 @@ public class ArduinoSerialBridgeWithMonitor : MonoBehaviour
                 DtrEnable    = true
             };
             _serial.Open();
-            _serialOpenedUnscaled = Time.unscaledTime;
-            _portReadyForCommands = false;
-            _readyLineSeen = false;
-            _queuedTx.Clear();
 
             _isRunning  = true;
             _readThread = new Thread(ReadLoop) { IsBackground = true };
@@ -451,68 +431,12 @@ public class ArduinoSerialBridgeWithMonitor : MonoBehaviour
         SendRaw("SYSTEM:RESET");
     }
 
-    void MarkPortReadyAndFlush()
-    {
-        _portReadyForCommands = true;
-        if (_queuedTx.Count == 0)
-            return;
-
-        // Keep only the latest line for each command family so a boot-time
-        // MONITOR:NORMAL cannot land after the hack's MONITOR:ANOMALY.
-        var latestByKey = new List<string>();
-        for (int i = 0; i < _queuedTx.Count; i++)
-        {
-            string msg = _queuedTx[i];
-            string key = CommandKey(msg);
-            int existing = -1;
-            for (int j = 0; j < latestByKey.Count; j++)
-            {
-                if (CommandKey(latestByKey[j]) == key)
-                {
-                    existing = j;
-                    break;
-                }
-            }
-            if (existing >= 0)
-                latestByKey[existing] = msg;
-            else
-                latestByKey.Add(msg);
-        }
-        _queuedTx.Clear();
-
-        for (int i = 0; i < latestByKey.Count; i++)
-            WriteNow(latestByKey[i]);
-    }
-
-    static string CommandKey(string msg)
-    {
-        if (string.IsNullOrEmpty(msg))
-            return "";
-        int colon = msg.IndexOf(':');
-        return colon >= 0 ? msg.Substring(0, colon) : msg;
-    }
-
     private void SendRaw(string msg)
-    {
-        if (_serial == null || !_serial.IsOpen) return;
-        if (!_portReadyForCommands)
-        {
-            _queuedTx.Add(msg);
-            if (debugLogSerialTx)
-                Debug.Log($"[ArduinoSerialBridge] Queued until Arduino READY: {msg}");
-            return;
-        }
-
-        WriteNow(msg);
-    }
-
-    void WriteNow(string msg)
     {
         if (_serial == null || !_serial.IsOpen) return;
         try
         {
             _serial.WriteLine(msg);
-            _serial.BaseStream.Flush();
             if (msg != null && msg.StartsWith("PHONE:", StringComparison.Ordinal))
             {
                 _hasSentPhoneLine = true;
@@ -555,10 +479,6 @@ public class ArduinoSerialBridgeWithMonitor : MonoBehaviour
                 else if (line == "PHONE_PUTDOWN")
                 {
                     _phonePutdownPending = true;
-                }
-                else if (line == "READY")
-                {
-                    _readyLineSeen = true;
                 }
             }
             catch (TimeoutException) { /* expected during idle */ }

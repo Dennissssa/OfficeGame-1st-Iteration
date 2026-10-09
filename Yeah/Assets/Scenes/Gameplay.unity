@@ -7475,7 +7475,7 @@ MonoBehaviour:
   phoneWorkItem: {fileID: 1141977272}
   monitorWorkItem: {fileID: 363469229}
   printerWorkItem: {fileID: 882021887}
-  debugLogSerialTx: 1
+  debugLogSerialTx: 0
   debugLogPhonePickupPutdown: 0
   debugLogOnHitSpeaker: 0
 --- !u!4 &1997837122 stripped
