@@ -176,6 +176,9 @@ public class IntroController : MonoBehaviour
     public bool startImmediately = false;
 
     [Header("Preamble — 小游戏前自述")]
+    [Tooltip("勾选后，小游戏出现前播放下面的自述。取消则跳过这段，开场延迟结束后直接进入小游戏。")]
+    public bool enablePreamble = true;
+
     [Tooltip("小游戏出现前播放的自述台词；全部结束后隐藏 DialogueBox，再显示小游戏。之后由 BeginDialogue() 重新唤醒。")]
     public List<PreambleLine> preambleLines = new List<PreambleLine>();
 
@@ -303,7 +306,7 @@ public class IntroController : MonoBehaviour
     /// </summary>
     public IEnumerator PlayPreamble()
     {
-        if (preambleLines == null || preambleLines.Count == 0)
+        if (!enablePreamble || preambleLines == null || preambleLines.Count == 0)
             yield break;
 
         _mouse = Mouse.current;

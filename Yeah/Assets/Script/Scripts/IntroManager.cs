@@ -64,11 +64,21 @@ public class IntroManager : MonoBehaviour
     [Tooltip("故事开始时切换到的背景音乐；留空则忽略")]
     public AudioSource storyMusic;
 
+    [Tooltip("小游戏窗口出现时播放。与 Intro 里弹出窗口的音效相同（windowsEvil1）。")]
+    public AudioClip miniGameAppearClip;
+
     // ─── 运行时状态 ────────────────────────────────────────────
 
     bool _storyStarted;
 
     // ─── 生命周期 ──────────────────────────────────────────────
+
+    void Awake()
+    {
+        // 必须在任何 OnEnable 之前关掉。否则面板若在加载时就是激活的，
+        // 放大动画会赶在第一帧画面之前播完。
+        SetActiveAll(objectsToShowBeforeGame, false);
+    }
 
     void Start()
     {
@@ -96,8 +106,11 @@ public class IntroManager : MonoBehaviour
             yield return introController.PlayPreamble();
 
         // ── 3. 切换开场对象（显示小游戏窗口）────────────────────
+        // 再空一帧，避开场景加载那一帧过长的间隔，让放大从玩家能看到的画面开始。
+        yield return null;
         SetActiveAll(objectsToHideBeforeGame, false);
         SetActiveAll(objectsToShowBeforeGame, true);
+        PlayMiniGameAppearSound();
 
         // ── 4. 播放小游戏音乐 ────────────────────────────────────
         if (gameplayMusic != null && !gameplayMusic.isPlaying)
@@ -150,6 +163,26 @@ public class IntroManager : MonoBehaviour
     }
 
     // ─── 辅助 ──────────────────────────────────────────────────
+
+    void PlayMiniGameAppearSound()
+    {
+        if (miniGameAppearClip == null) return;
+
+        AudioSource src = sortingGame != null ? sortingGame.feedbackAudioSource : null;
+        if (src == null && objectsToShowBeforeGame != null)
+        {
+            for (int i = 0; i < objectsToShowBeforeGame.Length; i++)
+            {
+                GameObject obj = objectsToShowBeforeGame[i];
+                if (obj == null) continue;
+                src = obj.GetComponent<AudioSource>();
+                if (src != null) break;
+            }
+        }
+
+        if (src != null)
+            src.PlayOneShot(miniGameAppearClip);
+    }
 
     static void SetActiveAll(GameObject[] objects, bool active)
     {

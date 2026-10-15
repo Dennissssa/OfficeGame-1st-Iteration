@@ -308,8 +308,8 @@ public class TutorialDialogueController : MonoBehaviour
     }
 
     /// <summary>
-    /// 结算演出：在对话框上逐句显示文字并播放语音。使用真实时间，timeScale 为 0 时也能播完。
-    /// 父物体被关掉时会临时打开到对话框这一支，播完后恢复。
+    /// 结算演出：只显示 boxRoot 下的 DialogueBox（文字和头像），不带出 Zoom Call、Animation 等教程兄弟物体。
+    /// 使用真实时间，timeScale 为 0 时也能播完。父物体被关掉时会临时打开到对话框这一支，播完后恢复。
     /// </summary>
     public IEnumerator PlayLinesRealtime(List<DialoguePlaybackLine> lines)
     {
@@ -322,6 +322,11 @@ public class TutorialDialogueController : MonoBehaviour
             _runRoutine = null;
             _currentTrigger = null;
         }
+
+        Transform dialogueVisual = FindDirectChild(boxRoot.transform, "DialogueBox");
+        List<GameObject> hiddenSiblings = HideActiveSiblings(dialogueVisual);
+        if (dialogueVisual != null && !dialogueVisual.gameObject.activeSelf)
+            dialogueVisual.gameObject.SetActive(true);
 
         List<GameObject> turnedOn = ActivateWithAncestors(boxRoot);
 
@@ -361,7 +366,49 @@ public class TutorialDialogueController : MonoBehaviour
         }
 
         HideBox();
+        RestoreActive(hiddenSiblings);
         RestoreActivatedAncestors(turnedOn, boxRoot);
+    }
+
+    static Transform FindDirectChild(Transform parent, string childName)
+    {
+        if (parent == null) return null;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child.name == childName)
+                return child;
+        }
+        return null;
+    }
+
+    /// <summary>关掉 DialogueBox 的兄弟物体（Zoom Call、Animation 等），只留对话框本身。</summary>
+    static List<GameObject> HideActiveSiblings(Transform keep)
+    {
+        var hidden = new List<GameObject>();
+        if (keep == null || keep.parent == null)
+            return hidden;
+
+        Transform parent = keep.parent;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            GameObject sibling = parent.GetChild(i).gameObject;
+            if (sibling == keep.gameObject || !sibling.activeSelf)
+                continue;
+            sibling.SetActive(false);
+            hidden.Add(sibling);
+        }
+        return hidden;
+    }
+
+    static void RestoreActive(List<GameObject> hidden)
+    {
+        if (hidden == null) return;
+        for (int i = 0; i < hidden.Count; i++)
+        {
+            if (hidden[i] != null)
+                hidden[i].SetActive(true);
+        }
     }
 
     static bool HasPlayableLine(List<DialoguePlaybackLine> lines)

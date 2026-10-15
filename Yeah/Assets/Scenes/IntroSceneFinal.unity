@@ -2792,7 +2792,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GyrateAd
   gyrateAmount: 0
-  targetSize: {x: 1, y: 1, z: 1}
+  targetSize: {x: 1.05, y: 1.05, z: 1.05}
   isGrowing: 1
   lerpSpeed: 20
 --- !u!1 &1132081231
@@ -3696,6 +3696,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1325502172227872647, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1325502172227872647, guid: 28e1ff70eb65eaf42850bff836b3f00d, type: 3}
       propertyPath: dragHandle
       value: 
       objectReference: {fileID: 685989573}
@@ -3930,18 +3934,18 @@ MonoBehaviour:
   typeBColor: {r: 1, g: 1, b: 1, a: 1}
   typeBWeight: 1
   typeBWrongBlockSprite: {fileID: 19909362, guid: bc546b40641457b459a275a644405992, type: 3}
-  maxFileCount: 6
+  maxFileCount: 5
   spawnIntervalSeconds: 2.5
   wrongDropBlockDuration: 1.5
   debugLog: 0
-  typeACount: 4
+  typeACount: 3
   typeBCount: 2
   correctFeedbackClip: {fileID: 8300000, guid: 7d2327908b560bb4f9da1092ab136bf7, type: 3}
   correctFeedbackObject: {fileID: 2708135954846284631}
   correctFeedbackHoldSeconds: 1
   wrongFeedbackClip: {fileID: 8300000, guid: 88a1b7db06eca76a7a6c99adcddb0508, type: 3}
   wrongFeedbackObject: {fileID: 6275839824630204818}
-  wrongFeedbackHoldSeconds: 4
+  wrongFeedbackHoldSeconds: 1
   feedbackAudioSource: {fileID: 1462196039}
   onAllFilesSorted:
     m_PersistentCalls:
@@ -4733,6 +4737,7 @@ MonoBehaviour:
   maxAdCount: 8
   nextSceneBuildIndex: 2
   startImmediately: 0
+  enablePreamble: 0
   preambleLines:
   - portrait: {fileID: 21300000, guid: 0a1a123b60e76564e82424b182f1dfeb, type: 3}
     boxSprite: {fileID: 21300000, guid: 61ae3117373c2ea4dbb7c808e1db3a80, type: 3}
@@ -4809,6 +4814,7 @@ MonoBehaviour:
         m_CallState: 2
   gameplayMusic: {fileID: 0}
   storyMusic: {fileID: 0}
+  miniGameAppearClip: {fileID: 8300000, guid: 0e4352a211ded08449052408ea44dccb, type: 3}
 --- !u!1 &1564367705
 GameObject:
   m_ObjectHideFlags: 0
@@ -6607,6 +6613,6 @@ SceneRoots:
   - {fileID: 924389483}
   - {fileID: 1848746284}
   - {fileID: 1132081234}
-  - {fileID: 1536970594}
   - {fileID: 1214892550}
   - {fileID: 6275839824630204817}
+  - {fileID: 1536970594}

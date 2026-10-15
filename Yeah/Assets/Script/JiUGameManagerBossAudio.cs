@@ -20,7 +20,7 @@ namespace JiU
         [Tooltip("Optional one-shot when Boss leave starts (with OnBossLeaveStarted / Leaving UI), not when fully gone")]
         public int bossLeftSfxIndex = -1;
 
-        [Tooltip("One-shot on Boss-check game over (before pause)")]
+        [Tooltip("One-shot when the Boss-fail result panel opens (after Sam's settlement lines).")]
         public int bossGameOverAngerSfxIndex = 2;
 
         [Header("MusicList indices (optional)")]

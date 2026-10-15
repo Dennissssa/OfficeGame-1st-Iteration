@@ -1347,7 +1347,6 @@ public class GameManager : MonoBehaviour
         ShutdownBrokenWarningSystem();
 
         virusPurgeMeter?.OnVictory();
-        PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.GoodEnding);
 
         Time.timeScale = 0f;
         _victoryCinematicCoroutine = StartCoroutine(VictoryCinematicThenPanelCoroutine());
@@ -2207,13 +2206,6 @@ public class GameManager : MonoBehaviour
 
         FreezeFailures = false;
 
-        bool bossCaused = reason != null && reason.Contains("Boss");
-        if (bossCaused)
-        {
-            OnGameOverBossCaused?.Invoke();
-            PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.BadEnding);
-        }
-
         if (screenTint != null)
             screenTint.SetTarget(0f, 0.1f);
 
@@ -2326,6 +2318,8 @@ public class GameManager : MonoBehaviour
 
         yield return PlaySettlementDialogue(victorySamLines);
 
+        PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.GoodEnding);
+
         _victoryCinematicCoroutine = null;
         if (ui != null)
             ui.ShowGameWin(TotalPerformanceScore);
@@ -2350,6 +2344,13 @@ public class GameManager : MonoBehaviour
         }
 
         yield return PlaySettlementDialogue(bossFailSamLines);
+
+        bool bossCaused = reason != null && reason.Contains("Boss");
+        if (bossCaused)
+        {
+            OnGameOverBossCaused?.Invoke();
+            PlayGlobalBgm(JiU.GlobalBackgroundMusic.Theme.BadEnding);
+        }
 
         _bossFailCinematicCoroutine = null;
         if (ui != null)
